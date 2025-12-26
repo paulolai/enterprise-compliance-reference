@@ -126,6 +126,14 @@ Then(/^the total discount is (\d+) cents$/, function(expected: string) {
   expect(world.result.totalDiscount).to.equal(parseInt(expected, 10));
 });
 
+// PAIN POINT: "total discount is exactly X cents" vs "total discount is X cents"
+// These are different regex patterns! If you accidentally type "exactly" in one scenario
+// but not another, you need TWO separate step definitions. The implementation is identical
+// but the text difference breaks reuse. This is the "vocabulary tax" of Gherkin.
+Then(/^the total discount is exactly (\d+) cents$/, function(expected: string) {
+  expect(world.result.totalDiscount).to.equal(parseInt(expected, 10));
+});
+
 Then(/^the bulk discount is (\d+) cents$/, function(expected: string) {
   expect(world.result.bulkDiscountTotal).to.equal(parseInt(expected, 10));
 });
@@ -163,6 +171,13 @@ Then(/^the discounted total is 70% of original$/, function() {
 
 // PAIN POINT: Shipping assertions require multiple step definitions
 // Could be one step with parameters, but feature file uses different wording
+Then(/^final total exceeds free shipping threshold$/, function() {
+  // Hard-coded threshold from pricing engine: 10000 cents = $100.00
+  // PAIN POINT: If you change the threshold in the engine, you MUST remember
+  // to update this assertion manually. No refactoring support!
+  expect(world.result.finalTotal).to.be.greaterThan(10000);
+});
+
 Then(/^shipping is free$/, function() {
   expect(world.result.shipment.isFreeShipping).to.equal(true);
   expect(world.result.shipment.totalShipping).to.equal(0);

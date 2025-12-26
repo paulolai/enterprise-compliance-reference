@@ -16,7 +16,7 @@ This repository demonstrates two approaches to testing the same Dynamic Pricing 
 | Aspect | Executable Specs | Gherkin Anti-Pattern |
 |--------|------------------|---------------------|
 | **Approach** | Mathematical invariants proven for ALL valid inputs | Hand-picked examples only |
-| **Test Count** | 47 tests that generate 1000+ random cases | 27 hand-written scenarios |
+| **Test Count** | 47 tests that generate 1000+ random cases | 35 hand-written scenarios |
 | **Coverage** | Proves business rules hold statistically | Covers only what you thought to write |
 | **Edge Cases** | Automatically discovered | Must be manually identified |
 | **Confidence** | High (mathematical proof) | Low (examples only) |
