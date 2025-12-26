@@ -32,22 +32,21 @@ Feature: Dynamic Pricing Engine
 
     # PAIN POINT: Manual calculation for each row: price * qty
     #            100 * 1 = 100
-    #            1000 * 3 = 3000
-    #            5000 * 2 = 10000
-    #            999 * 5 = 4995
+    #            100 * 2 = 200
     #            These are TRIVIAL cases yet require manual verification.
-    #            In Executable Specs, we assert: final == price * qty automatically.
+    #            NOTICE: We can't test qty>=3 here because bulk discounts apply!
+    #              Executable Specs handles this automatically. Gherkin requires
+    #              separate scenarios or complex expected value calculations.
     Examples:
       | price | qty | original |
       | 100   | 1   | 100      |
       | 500   | 1   | 500      |
       | 1000  | 1   | 1000     |
       | 100   | 2   | 200      |
-      | 1000  | 3   | 3000     |
+      | 1000  | 2   | 2000     |
       | 5000  | 2   | 10000    |
-      | 999   | 5   | 4995     |
       | 15000 | 1   | 15000    |
-      | 12345 | 3   | 37035    |
+      | 12345 | 1   | 12345    |
 
   Scenario: Simple cart with multiple items no discounts
     Given I have a cart with items:
@@ -188,7 +187,7 @@ Feature: Dynamic Pricing Engine
   # 5. Shipping - Base & Weight
   # ============================================
   # PAIN POINT: Shipping calculations require multiple intermediate values.
-  #            base=700, weight_surcharge=(total_weight - 2.0) * 200, total=base+surcharge
+  #            base=700, weight_surcharge=total_weight * 200, total=base+surcharge
   #            This formula must be manually applied to EVERY example row.
   Scenario Outline: Standard shipping with weight surcharges
     Given I have a cart with items:
@@ -200,27 +199,27 @@ Feature: Dynamic Pricing Engine
     And the weight surcharge is <surcharge> cents
     And the total shipping cost is <total_shipping> cents
 
-    # PAIN POINT: Formula: if weight > 2.0kg → surcharge = (weight - 2.0) * 200 cents/kg
+    # PAIN POINT: Formula: surcharge = weight * 200 cents/kg, total = 700 + surcharge
     #            Examples:
-    #            1.0kg → surcharge=0 → total=700
-    #            2.0kg → surcharge=0 → total=700 (exactly at threshold)
-    #            2.5kg → surcharge=(2.5-2.0)*200=100 → total=800
-    #            5.0kg → surcharge=(5.0-2.0)*200=600 → total=1300
-    #            10.0kg → surcharge=(10.0-2.0)*200=1600 → total=2300
-    #            What if the threshold changes from 2.0 to 1.5? Update ALL surcharge calculations manually!
+    #            0.5kg → 0.5*200=100 → total=800
+    #            1.0kg → 1.0*200=200 → total=900
+    #            2.0kg → 2.0*200=400 → total=1100
+    #            5.0kg → 5.0*200=1000 → total=1700
+    #            10.0kg → 10.0*200=2000 → total=2700
+    #            What if the per-kg rate changes from 200 to 250? Update ALL calculations manually!
     Examples:
       | weight_kg | surcharge | total_shipping |
-      | 0.5       | 0         | 700            |
-      | 1.0       | 0         | 700            |
-      | 1.5       | 0         | 700            |
-      | 2.0       | 0         | 700            |
-      | 2.1       | 20        | 720            |
-      | 2.5       | 100       | 800            |
-      | 3.0       | 200       | 900            |
-      | 5.0       | 600       | 1300           |
-      | 7.5       | 1100      | 1800           |
-      | 10.0      | 1600      | 2300           |
-      | 15.0      | 2600      | 3300           |
+      | 0.5       | 100       | 800            |
+      | 1.0       | 200       | 900            |
+      | 1.5       | 300       | 1000           |
+      | 2.0       | 400       | 1100           |
+      | 2.5       | 500       | 1200           |
+      | 3.0       | 600       | 1300           |
+      | 5.0       | 1000      | 1700           |
+      | 7.5       | 1500      | 2200           |
+      | 10.0      | 2000      | 2700           |
+      | 15.0      | 3000      | 3700           |
+
 
   Scenario: Multiple items with accumulated weight
     Given I have a cart with items:

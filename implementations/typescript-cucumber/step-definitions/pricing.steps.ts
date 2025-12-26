@@ -222,3 +222,10 @@ Then(/^the grand total equals final total plus shipping$/, function() {
 Then(/^the grand total equals the final total$/, function() {
   expect(world.result.grandTotal).to.equal(world.result.finalTotal);
 });
+
+// PAIN POINT: Float support (e.g., 2.1 years) requires separate regex pattern
+//            This regex only matches when there's a decimal point to avoid ambiguity
+//            Executable Specs: just use 2.1 as a number - no parsing, no ambiguity
+Given(/^I (?:am a|am a VIP) customer with (\d+\.\d+) years tenure$/, function(tenure: string) {
+  world.user = { tenureYears: parseFloat(tenure) };
+});
