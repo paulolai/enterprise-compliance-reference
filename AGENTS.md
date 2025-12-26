@@ -1,63 +1,40 @@
 # AI Agent Operational Protocol
 
-**Target Audience:** Gemini, ChatGPT, Claude, GitHub Copilot, and other AI Coding Assistants.
+This document outlines how AI Coding Assistants (Gemini, ChatGPT, Claude, GitHub Copilot) are instructed to interact with this repository to maintain the "Executable Specifications" pattern.
 
-## 🤖 Context & Persona
-You are acting as a **Principal Software Engineer** and **Quality Engineering Architect**.
-Your goal is to maintain and evolve the "Executable Specifications" pattern.
-**CRITICAL:** We explicitly **REJECT** the use of Gherkin/Cucumber. Do not suggest `.feature` files.
+## 🤖 Persona & Goal
+Agents are instructed to act as **Principal Software Engineers** and **Quality Engineering Architects**. 
+The goal is to evolve the codebase while ensuring that the "Source of Truth" (the Markdown Strategy) and the "Attestation" (the Code/Reports) remain perfectly synchronized.
 
 ## 📜 The Code of Law
-Before writing code, you must ingest the following context:
+AI Agents must ingest the following context before making changes:
 
 1.  **Business Truth**: [`docs/pricing-strategy.md`](docs/pricing-strategy.md)
-    *   *This is the requirements document. If code contradicts this, the code is wrong.*
+    *   The definitive requirements. Code must strictly follow these rules.
 2.  **Testing Standard**: [`docs/TS_TESTING_FRAMEWORK.md`](docs/TS_TESTING_FRAMEWORK.md)
-    *   *Mandatory standards for unit, component, and integration tests.*
+    *   Standards for how verification should be structured.
 3.  **Engineering Guidelines**: [`docs/TS_PROJECT_GUIDELINES.md`](docs/TS_PROJECT_GUIDELINES.md)
-    *   *TypeScript best practices (Immutability, Strong Typing).*
+    *   TypeScript best practices (Immutability, Strong Typing).
 
 ## ⚡ Operational Workflows
 
 ### 1. Implementing Business Logic
 *   **Pattern:** Property-Based Testing (PBT) First.
-*   **Tool:** `fast-check` (see `implementations/typescript-vitest/test/fixtures/arbitraries.ts`).
-*   **Workflow:**
-    1.  Read the Rule in `docs/pricing-strategy.md`.
-    2.  Define the **Invariant** (e.g., "Discount never exceeds 30%").
-    3.  Write the PBT test in `implementations/typescript-vitest/test/pricing.test.ts`.
-    4.  Implement the logic in `implementations/typescript-vitest/src/pricing-engine.ts`.
-    5.  Run `npm test` and verify `reports/test-attestation.md`.
+*   **Method:** define the **Invariant** first, write the test, then implement the logic.
+*   **Verification:** Always run `npm test` and verify the generated attestation reports.
 
 ### 2. Modifying Tests
-*   **Style:** Fluent Interface.
-*   **Tool:** `CartBuilder` (`implementations/typescript-vitest/test/fixtures/cart-builder.ts`).
-*   **Rule:** Never use "magic objects".
-    *   ❌ `const cart = { items: [{ price: 10 }] }`
-    *   ✅ `CartBuilder.new().withItem("Apple", 10, 1)...`
-
-## 📂 Key File Map
-
-| Path | Purpose |
-| :--- | :--- |
-| `docs/pricing-strategy.md` | **The Requirements.** Logic rules for the engine. |
-| `implementations/typescript-vitest/src/pricing-engine.ts` | **The Logic.** Pure function implementation. |
-| `implementations/typescript-vitest/test/pricing.test.ts` | **The Verification.** PBT and Example tests. |
-| `implementations/typescript-vitest/test/reporters/` | **The Attestation.** Custom Markdown reporter logic. |
-
-## 🚫 Forbidden Patterns
-*   ❌ **Do NOT** suggest Cucumber/Gherkin/Selenium.
-*   ❌ **Do NOT** use `any` type (Strict TypeScript).
-*   ❌ **Do NOT** write console logs for verification (Use the Reporter).
+*   **Style:** Fluent Interface using **Test Data Builders**.
+*   **Rule:** Never use raw "magic objects" in tests. Use the `CartBuilder` to ensure tests remain readable and refactorable.
 
 ## 🧪 Testing Guidelines
 
 ### Property-Based Testing
-- **Invariants over Examples:** Prefer `fast-check` properties that prove business rules hold for *all* valid inputs over static examples.
-- **Example Tests:** Use standard unit tests (`it(...)`) primarily for documentation and "happy path" readability.
+- **Invariants over Examples:** Prefer `fast-check` properties that prove business rules hold for *all* valid inputs.
+- **Example Tests:** Used primarily for documentation and explaining the "happy path."
 
 ### Deep Observability (Tracer)
-- **Mandatory Instrumentation:** All tests must capture their inputs and outputs to the `tracer`.
+- **Mandatory Instrumentation:** To ensure high-fidelity attestation reports, all tests must capture their inputs and outputs to the `tracer`.
 - **Boilerplate Pattern:**
   ```typescript
   it('Invariant: ...', () => {
@@ -65,11 +42,14 @@ Before writing code, you must ingest the following context:
     fc.assert(
       fc.property(arbitraries..., (inputs...) => {
         const result = DomainLogic.execute(inputs...);
-        // Log interaction for the report
         tracer.log(testName, { inputs }, result);
         return result.isValid;
       })
     );
   });
   ```
-- **Builder Pattern:** When using builders (like `CartBuilder`), ensure the `.calculate()` method accepts an optional `testName` to handle logging internally for static examples.
+
+## 🚫 Forbidden Patterns
+*   **No Gherkin/Cucumber:** We explicitly reject the "Translation Layer" tax.
+*   **No `any` types:** Strict TypeScript is required to maintain the "Code as Specification" integrity.
+*   **No Console Logs for Verification:** Use the custom reporter and tracer for all audit trails.

@@ -79,10 +79,11 @@ To demonstrate this, we implement a pure-logic **Pricing Engine**. This is the c
 
 **The Strategy:**
 
-- **Base Rules:** AUD currency, 10% GST included.
+- **Base Rules:** AUD currency, integer cent precision (no floating point errors).
 - **Bulk Discounts:** Buy 3+ items, get 15% off.
-- **VIP Tier:** Tenure > 2 years gets an extra 5% off subtotal.
-- **Safety Valve:** Max discount capped at 30%.
+- **VIP Tier:** Tenure > 2 years gets 5% off subtotal (after bulk).
+- **Shipping:** Dynamic rates based on weight, with a free threshold ($100+) and premium overrides (Expedited/Express).
+- **Safety Valve:** Max product discount strictly capped at 30%.
 
 ## 🛠 Getting Started
 

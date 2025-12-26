@@ -98,9 +98,9 @@ describe('Pricing Engine Strategy', () => {
     // Example for human readability
     it('Example: applies 15% discount for 3+ of same SKU', () => {
       const result = CartBuilder.new()
-        .withItem('iPad', 1000.00, 3)
+        .withItem('iPad', 100000, 3)
         .calculate();
-      expect(result.bulkDiscountTotal).toBe(450); // 15% of 3000
+      expect(result.bulkDiscountTotal).toBe(45000); // 15% of 300000
     });
 
     // Invariant: Mathematical proof for ALL possible inputs
@@ -110,8 +110,8 @@ describe('Pricing Engine Strategy', () => {
           const result = PricingEngine.calculate(items, user);
           result.lineItems.forEach(li => {
             if (li.quantity >= 3) {
-              const expectedDiscount = Math.round((li.originalPrice * li.quantity * 0.15) * 100) / 100;
-              expect(li.bulkDiscount).toBeCloseTo(expectedDiscount, 2);
+              const expectedDiscount = Math.round(li.originalPrice * li.quantity * 0.15);
+              expect(li.bulkDiscount).toBe(expectedDiscount);
             } else {
               expect(li.bulkDiscount).toBe(0);
             }
@@ -125,10 +125,10 @@ describe('Pricing Engine Strategy', () => {
     // Example for documentation
     it('Example: applies 5% discount for tenure > 2 years', () => {
       const result = CartBuilder.new()
-        .withItem('Widget', 100.00, 1)
+        .withItem('Widget', 10000, 1)
         .asVipUser()
         .calculate();
-      expect(result.vipDiscount).toBe(5);
+      expect(result.vipDiscount).toBe(500);
     });
 
     // Invariant: Mathematical proof for ALL user tenures and cart sizes
@@ -137,8 +137,8 @@ describe('Pricing Engine Strategy', () => {
         fc.property(cartArb, userArb, (items, user) => {
           const result = PricingEngine.calculate(items, user);
           if (user.tenureYears > 2) {
-            const expected = Math.round((result.subtotalAfterBulk * 0.05) * 100) / 100;
-            expect(result.vipDiscount).toBeCloseTo(expected, 2);
+            const expected = Math.round(result.subtotalAfterBulk * 0.05);
+            expect(result.vipDiscount).toBe(expected);
           } else {
             expect(result.vipDiscount).toBe(0);
           }
@@ -153,13 +153,12 @@ describe('Pricing Engine Strategy', () => {
       fc.assert(
         fc.property(cartArb, userArb, (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          const maxAllowed = result.originalTotal * 0.30;
+          const maxAllowed = Math.round(result.originalTotal * 0.30);
 
-          // Use small epsilon for floating point comparison
-          expect(result.totalDiscount).toBeLessThanOrEqual(maxAllowed + 0.001);
+          expect(result.totalDiscount).toBeLessThanOrEqual(maxAllowed);
 
           if (result.isCapped) {
-            expect(result.totalDiscount).toBeCloseTo(maxAllowed, 2);
+            expect(result.totalDiscount).toBe(maxAllowed);
           }
         })
       );

@@ -41,8 +41,12 @@ Pricing Engine (System)
 ├── 3. VIP Tier
 │   ├── Invariant: Tenure > 2y -> 5% Off Subtotal
 │   └── Example: VIP User
-└── 4. Safety Valve
-    └── Invariant: Cap at 30%
+├── 4. Safety Valve
+│   └── Invariant: Cap at 30%
+└── 5. Shipping Calculation
+    ├── Invariant: Standard = $7 + ($2 * weight)
+    ├── Invariant: Free threshold > $100
+    └── Example: Express Delivery Override
 ```
 
 ## 4. Reporting & Attestation
