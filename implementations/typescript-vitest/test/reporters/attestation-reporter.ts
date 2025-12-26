@@ -112,6 +112,7 @@ ${gitInfo.dirtyFiles}
     let html = `<!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>QA Attestation Report</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; color: #333; }
