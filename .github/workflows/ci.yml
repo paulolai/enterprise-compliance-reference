@@ -33,6 +33,23 @@ jobs:
           cd implementations/typescript-vitest
           npm test
 
+      - name: Display Attestation Summary
+        if: always()
+        run: |
+          echo "## 📊 Test Attestation Summary"
+          echo ""
+          cd implementations/typescript-vitest
+          # Find the most recent attestation report
+          LATEST_REPORT=$(ls -t ../../reports/*/attestation.md 2>/dev/null | head -1)
+          if [ -n "$LATEST_REPORT" ]; then
+            echo "### Report Location: $LATEST_REPORT"
+            echo ""
+            echo ""
+            cat "$LATEST_REPORT"
+          else
+            echo "❌ No attestation report found"
+          fi
+
       - name: Upload Attestation Reports
         if: always()
         uses: actions/upload-artifact@v4
