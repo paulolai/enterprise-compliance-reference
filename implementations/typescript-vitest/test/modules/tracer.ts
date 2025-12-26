@@ -8,34 +8,44 @@ export interface Interaction {
   timestamp: number;
 }
 
+// Log entry structure for append-only file
+interface LogEntry {
+  testName: string;
+  interaction: Interaction;
+}
+
 class TestTracer {
   private tempFile: string;
 
   constructor() {
-    this.tempFile = path.join(os.tmpdir(), 'vitest-interactions-trace.json');
+    this.tempFile = path.join(os.tmpdir(), 'vitest-interactions-trace.jsonl'); // .jsonl for JSON Lines
   }
 
   log(testName: string, input: any, output: any) {
-    const data = this.read();
-    if (!data[testName]) {
-      data[testName] = [];
-    }
+    const entry: LogEntry = {
+      testName,
+      interaction: {
+        input,
+        output,
+        timestamp: Date.now()
+      }
+    };
     
-    data[testName].push({
-      input,
-      output,
-      timestamp: Date.now()
-    });
-    this.write(data);
+    // Atomic append to file
+    try {
+      fs.appendFileSync(this.tempFile, JSON.stringify(entry) + '\n');
+    } catch (e) {
+      console.error('Failed to write trace:', e);
+    }
   }
 
   get(testName: string): Interaction[] {
-    const data = this.read();
-    return data[testName] || [];
+    const allLogs = this.readAll();
+    return allLogs[testName] || [];
   }
   
   getAll(): Record<string, Interaction[]> {
-    return this.read();
+    return this.readAll();
   }
 
   clear() {
@@ -44,23 +54,33 @@ class TestTracer {
     }
   }
 
-  private read(): Record<string, Interaction[]> {
+  private readAll(): Record<string, Interaction[]> {
+    const data: Record<string, Interaction[]> = {};
+    
     try {
       if (fs.existsSync(this.tempFile)) {
-        return JSON.parse(fs.readFileSync(this.tempFile, 'utf-8'));
+        const fileContent = fs.readFileSync(this.tempFile, 'utf-8');
+        const lines = fileContent.split('\n');
+        
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          try {
+            const entry: LogEntry = JSON.parse(line);
+            if (!data[entry.testName]) {
+              data[entry.testName] = [];
+            }
+            data[entry.testName].push(entry.interaction);
+          } catch (e) {
+            // Ignore corrupted lines
+          }
+        }
       }
     } catch (e) {
       // Ignore errors
     }
-    return {};
-  }
-
-  private write(data: Record<string, Interaction[]>) {
-    try {
-      fs.writeFileSync(this.tempFile, JSON.stringify(data));
-    } catch (e) {
-      // Ignore
-    }
+    
+    return data;
   }
 }
 
