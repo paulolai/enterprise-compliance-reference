@@ -1,0 +1,42 @@
+name: Executable Specs CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-and-attest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: implementations/typescript-vitest/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd implementations/typescript-vitest
+          npm ci
+
+      - name: Run Tests & Generate Attestation
+        run: |
+          cd implementations/typescript-vitest
+          npm test
+
+      - name: Upload Attestation Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-reports
+          path: reports/
+          retention-days: 30

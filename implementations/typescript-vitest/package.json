@@ -1,0 +1,16 @@
+{
+  "name": "pricing-engine-ts-vitest",
+  "version": "1.0.0",
+  "description": "Code as Specification demo implementation",
+  "main": "src/pricing-engine.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0",
+    "ts-node": "^10.9.1",
+    "fast-check": "^3.0.0"
+  }
+}

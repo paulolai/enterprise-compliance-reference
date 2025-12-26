@@ -1,0 +1,21 @@
+import * as fc from 'fast-check';
+import { CartItem, User } from '../../src/types';
+
+// Generator for a single CartItem
+export const itemArb = fc.record<CartItem>({
+  sku: fc.uuid(),
+  name: fc.string({ minLength: 1, maxLength: 20 }).map(s => `Item-${s}`),
+  // Price between $1.00 and $5000.00
+  price: fc.float({ min: 1, max: 5000, noNaN: true }).map(p => Math.round(p * 100) / 100),
+  // Quantity between 1 and 20
+  quantity: fc.integer({ min: 1, max: 20 })
+});
+
+// Generator for a User
+export const userArb = fc.record<User>({
+  // Tenure between 0 and 10 years
+  tenureYears: fc.integer({ min: 0, max: 10 })
+});
+
+// Generator for a full Cart (List of items)
+export const cartArb = fc.array(itemArb, { minLength: 1, maxLength: 10 });
