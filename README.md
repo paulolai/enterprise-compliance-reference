@@ -55,10 +55,17 @@ This project demonstrates that the pattern is **language agnostic**. The same St
 ```text
 .
 ├── docs/
-│   └── pricing-strategy.md      # The SHARED Source of Truth.
+│   ├── pricing-strategy.md      # The SHARED Source of Truth
+│   └── GERHKIN_VS_EXECUTABLE.md # Detailed comparison of both approaches
 ├── implementations/
-│   ├── typescript-vitest/       # Implementation A: Next.js/Node style
-│   └── java-junit5/             # Implementation B: Enterprise Java style (Planned)
+│   ├── typescript-vitest/       # ✅ Executable Specifications (Recommended)
+│   │   ├── Property-based testing with mathematical invariants
+│   │   ├── Fluent builder API for readable tests
+│   │   └── Deep observability with tracer reports
+│   └── typescript-cucumber/     # ❌ Gherkin Anti-Pattern (For Comparison)
+│       ├── Hand-written scenarios with regex patterns
+│       ├── Demonstrates the "Translation Layer Tax"
+│       └── Maintenance burden and refactoring difficulty
 └── reports/                     # Generated attestations (HTML/JSON)
 ```
 
@@ -87,7 +94,7 @@ To demonstrate this, we implement a pure-logic **Pricing Engine**. This is the c
 
 ## 🛠 Getting Started
 
-### TypeScript / Vitest Implementation
+### TypeScript / Vitest Implementation (Recommended ✅)
 
 Navigate to the implementation folder:
 
@@ -98,3 +105,24 @@ npm test
 ```
 
 *Check the console output or the generated `/reports` folder to see the Attestation Report.*
+
+### TypeScript / Cucumber Implementation (Anti-Pattern ❌)
+
+See the "Translation Layer Tax" in action:
+
+```bash
+cd implementations/typescript-cucumber
+npm install
+npm test
+```
+
+**Note**: This implementation exists purely for educational comparison. It demonstrates the maintenance burden and refactoring difficulties of the Gherkin approach.
+
+### Compare Both Approaches Side-by-Side
+
+Run both implementations to experience the difference:
+
+1. **Executable Specs**: 47 tests generate 1000s of random cases, execute in ~0.7s
+2. **Gherkin/Cucumber**: 27 hand-written scenarios, execute in ~0.05s (after 3s compile)
+
+**See detailed comparison:** [`docs/GERHKIN_VS_EXECUTABLE.md`](docs/GERHKIN_VS_EXECUTABLE.md) - Includes code metrics, refactoring scenarios, and cost of ownership analysis.
