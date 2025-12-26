@@ -30,14 +30,18 @@ export default class AttestationReporter implements Reporter {
 
     // Generate Content
     const markdown = this.generateMarkdown(files, gitInfo, duration);
-    const html = this.generateHtml(files, gitInfo, duration);
+    const htmlLight = this.generateHtml(files, gitInfo, duration, false);
+    const htmlFull = this.generateHtml(files, gitInfo, duration, true);
 
     // Write Files
     fs.writeFileSync(path.join(reportDir, 'attestation.md'), markdown);
-    fs.writeFileSync(path.join(reportDir, 'attestation.html'), html);
+    fs.writeFileSync(path.join(reportDir, 'attestation-light.html'), htmlLight);
+    fs.writeFileSync(path.join(reportDir, 'attestation-full.html'), htmlFull);
 
     console.log(`
 [Attestation] Reports generated in: ${reportDir}`);
+    console.log(`  - Light: attestation-light.html`);
+    console.log(`  - Full:  attestation-full.html`);
   }
 
   private getGitInfo() {
@@ -70,10 +74,8 @@ ${gitInfo.dirtyFiles}
 ## 1. Executive Summary
 
 `;
-    md += `| Area | Passed | Failed | Status |
-`;
-    md += `| :--- | :--- | :--- | :--- |
-`;
+    md += `| Area | Passed | Failed | Status |\n`;
+    md += `| :--- | :--- | :--- | :--- |\n`;
 
     let totalPass = 0;
     let totalFail = 0;
@@ -85,15 +87,13 @@ ${gitInfo.dirtyFiles}
           totalPass += stats.passed;
           totalFail += stats.failed;
           const status = stats.failed === 0 ? '✅ PASS' : '❌ FAIL';
-          md += `| ${task.name} | ${stats.passed} | ${stats.failed} | ${status} |
-`;
+          md += `| ${task.name} | ${stats.passed} | ${stats.failed} | ${status} |\n`;
         }
       });
     });
 
     md += `
-**Total Scenarios:** ${totalPass + totalFail} | **Pass Rate:** ${((totalPass / (totalPass + totalFail)) * 100).toFixed(1)}%
-`;
+**Total Scenarios:** ${totalPass + totalFail} | **Pass Rate:** ${((totalPass / (totalPass + totalFail)) * 100).toFixed(1)}%\n`;
     md += `
 ## 2. Detailed Audit Log
 
@@ -195,17 +195,14 @@ ${indent} ${task.name}
 `;
       const hasDirectTests = task.tasks.some(t => t.type === 'test');
       if (hasDirectTests) {
-         output += `| Scenario | Result | Duration |
-`;
-         output += `| :--- | :--- | :--- |
-`;
+         output += `| Scenario | Result | Duration |\n`;
+         output += `| :--- | :--- | :--- |\n`;
       }
       task.tasks.forEach(subTask => output += this.renderTaskMd(subTask, level + 1));
     } else if (task.type === 'test') {
       const status = task.result?.state === 'pass' ? '✅ PASS' : '❌ FAIL';
       const duration = task.result?.duration ? `${task.result.duration}ms` : '-';
-      output += `| ${task.name} | ${status} | ${duration} |
-`;
+      output += `| ${task.name} | ${status} | ${duration} |\n`;
     }
     return output;
   }
@@ -261,7 +258,7 @@ ${indent} ${task.name}
       
       task.tasks.forEach(subTask => {
           if (subTask.type === 'suite') {
-              output += this.renderTaskHtml(subTask, level + 1);
+              output += this.renderTaskHtml(subTask, level + 1, includeTraces);
           }
       });
       output += `</div>`;
