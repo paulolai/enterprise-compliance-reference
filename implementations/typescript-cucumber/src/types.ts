@@ -1,10 +1,3 @@
-/**
- * TYPES DUPLICATED FROM EXECUTABLE SPECS IMPLEMENTATION
- *
- * NOTE: This code is duplicated rather than shared to keep each implementation
- * self-contained for a fair comparison. In a real project, you might share this,
- * but the duplication makes the "translation layer tax" comparison more honest.
- */
 export enum ShippingMethod {
   STANDARD = 'STANDARD',
   EXPEDITED = 'EXPEDITED',

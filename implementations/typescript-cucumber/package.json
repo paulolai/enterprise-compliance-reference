@@ -1,27 +1,19 @@
 {
-  "name": "typescript-cucumber",
+  "name": "pricing-engine-cucumber",
   "version": "1.0.0",
-  "description": "Gherkin/Cucumber implementation demonstrating the Translation Layer Tax",
+  "description": "Anti-pattern example: Gherkin-based pricing engine tests",
   "scripts": {
-    "test": "npm run build && cucumber-js --require dist/step-definitions/**/*.js",
-    "build": "npx tsc",
-    "test:report": "npm run build && cucumber-js --format json:cucumber-report.json --require dist/step-definitions/**/*.js"
+    "test": "cucumber-js --require-module ts-node/register --require 'step-definitions/**/*.ts' features/**/*.feature",
+    "report": "cucumber-js --require-module ts-node/register --require 'step-definitions/**/*.ts' features/**/*.feature --format html:cucumber-report.html"
   },
-  "keywords": ["gherkin", "cucumber", "testing", "anti-pattern"],
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "@cucumber/cucumber": "^10.0.0",
-    "@cucumber/pretty-formatter": "^1.0.0",
-    "@types/chai": "^4.3.0",
-    "@types/node": "^20.0.0",
-    "chai": "^4.3.0",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.0"
+    "chai": "^4.3.7",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
   },
-  "cucumber": {
-    "format": [
-      "pretty"
-    ]
+  "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/node": "^18.0.0"
   }
 }

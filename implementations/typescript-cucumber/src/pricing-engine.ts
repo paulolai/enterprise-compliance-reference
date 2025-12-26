@@ -1,28 +1,21 @@
-/**
- * PRICING ENGINE DUPLICATED FROM EXECUTABLE SPECS IMPLEMENTATION
- *
- * NOTE: This code is duplicated rather than shared to keep each implementation
- * self-contained for a fair comparison. In a real project, you might share this,
- * but the duplication makes the "translation layer tax" comparison more honest.
- */
 import { CartItem, User, PricingResult, LineItemResult, ShippingMethod, ShipmentInfo, Cents } from './types';
 
 export class PricingEngine {
   static calculate(items: CartItem[], user: User, shippingMethod: ShippingMethod = ShippingMethod.STANDARD): PricingResult {
     let originalTotal: Cents = 0;
     let bulkDiscountTotal: Cents = 0;
-
+    
     const lineItemResults: LineItemResult[] = items.map(item => {
       const lineOriginalTotal = item.price * item.quantity;
       originalTotal += lineOriginalTotal;
-
+      
       let bulkDiscount: Cents = 0;
       if (item.quantity >= 3) {
         bulkDiscount = Math.round(lineOriginalTotal * 0.15);
       }
-
+      
       bulkDiscountTotal += bulkDiscount;
-
+      
       return {
         sku: item.sku,
         name: item.name,
@@ -35,7 +28,7 @@ export class PricingEngine {
     });
 
     const subtotalAfterBulk = originalTotal - bulkDiscountTotal;
-
+    
     // VIP Rule: 5% off subtotal if tenure > 2 years
     let vipDiscount: Cents = 0;
     if (user.tenureYears > 2) {

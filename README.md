@@ -48,27 +48,6 @@ This project follows strict engineering standards. Agents and Engineers should r
 - [**Test Strategy**](docs/TEST_STRATEGY.md): The specific "Code as Specification" methodology used for the Pricing Engine.
 - [**Deep Dive: Why This Beats Type-Safe Gherkin**](docs/BDD_COMPARISON.md): Detailed comparison showing why eliminating the translation layer > fixing it with types.
 
-## 📂 Repository Structure
-
-This project demonstrates that the pattern is **language agnostic**. The same Strategy Document drives multiple implementations.
-
-```text
-.
-├── docs/
-│   ├── pricing-strategy.md      # The SHARED Source of Truth
-│   └── GERHKIN_VS_EXECUTABLE.md # Detailed comparison of both approaches
-├── implementations/
-│   ├── typescript-vitest/       # ✅ Executable Specifications (Recommended)
-│   │   ├── Property-based testing with mathematical invariants
-│   │   ├── Fluent builder API for readable tests
-│   │   └── Deep observability with tracer reports
-│   └── typescript-cucumber/     # ❌ Gherkin Anti-Pattern (For Comparison)
-│       ├── Hand-written scenarios with regex patterns
-│       ├── Demonstrates the "Translation Layer Tax"
-│       └── Maintenance burden and refactoring difficulty
-└── reports/                     # Generated attestations (HTML/JSON)
-```
-
 ## ⚔️ Comparison: The Gherkin Way vs. The Executable Spec Way
 
 | Feature | The Gherkin/Cucumber Way | The Executable Spec Pattern |
@@ -79,6 +58,25 @@ This project demonstrates that the pattern is **language agnostic**. The same St
 | **Debugging** | Often requires complex IDE plugins | Standard Breakpoints |
 | **Stakeholder View** | They read the Input (The Feature file) | They read the Output (The Attestation Report) |
 | **Maintenance Cost** | High (The Translation Layer) | Low (Standard Code Maintenance) |
+
+## 📂 Repository Structure
+
+This project demonstrates both the solution and the anti-pattern side-by-side.
+
+- [**Executable Specifications**](implementations/typescript-vitest/): The recommended approach using Vitest and PBT.
+- [**The Gherkin Anti-Pattern**](implementations/typescript-cucumber/): A standard Cucumber setup for comparison.
+- [**Detailed Comparison**](docs/GERHKIN_VS_EXECUTABLE.md): A technical deep dive into why eliminating the translation layer is superior.
+
+```text
+.
+├── docs/
+│   ├── pricing-strategy.md      # The SHARED Source of Truth.
+│   └── GERHKIN_VS_EXECUTABLE.md # The Technical Comparison.
+├── implementations/
+│   ├── typescript-vitest/       # The SOLUTION: Fast, safe, deep.
+│   └── typescript-cucumber/     # The ANTI-PATTERN: Slow, fragile, shallow.
+└── reports/                     # Generated attestations (HTML/Markdown)
+```
 
 ## 🚀 The Scenario: Dynamic Pricing Engine
 
