@@ -134,8 +134,8 @@ Then(/^the total discount is exactly (\d+) cents$/, function(expected: string) {
   expect(world.result.totalDiscount).to.equal(parseInt(expected, 10));
 });
 
-Then(/^the bulk discount is (\d+) cents$/, function(expected: string) {
-  expect(world.result.bulkDiscountTotal).to.equal(parseInt(expected, 10));
+Then(/^the volume discount is (\d+) cents$/, function(expected: string) {
+  expect(world.result.volumeDiscountTotal).to.equal(parseInt(expected, 10));
 });
 
 Then(/^the VIP discount is (\d+) cents$/, function(expected: string) {

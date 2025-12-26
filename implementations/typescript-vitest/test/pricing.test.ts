@@ -34,7 +34,7 @@ describe('Pricing Engine Strategy', () => {
       const result = CartBuilder.new()
         .withItem('iPad', 100000, 3)
         .calculate(expect.getState().currentTestName);
-      expect(result.bulkDiscountTotal).toBe(45000); // 15% of 300000
+      expect(result.volumeDiscountTotal).toBe(45000); // 15% of 300000
     });
 
     it('Invariant: Line items with qty >= 3 always have 15% discount', () => {
@@ -95,7 +95,7 @@ describe('Pricing Engine Strategy', () => {
       // Max allowed (30%): 90000
       // Should NOT cap (57750 < 90000)
       expect(result.originalTotal).toBe(300000);
-      expect(result.bulkDiscountTotal).toBe(45000);
+      expect(result.volumeDiscountTotal).toBe(45000);
       expect(result.vipDiscount).toBe(12750);
       expect(result.totalDiscount).toBe(57750);
       expect(result.isCapped).toBe(false);
@@ -176,7 +176,7 @@ describe('Pricing Engine Strategy', () => {
         .calculate(expect.getState().currentTestName);
 
       // All three bulk items get 15% discount
-      expect(result.bulkDiscountTotal).toBe(
+      expect(result.volumeDiscountTotal).toBe(
         (10000 * 3 * 0.15) + (20000 * 5 * 0.15) + (5000 * 4 * 0.15)
       ); // 4500 + 15000 + 3000 = 22500
     });
@@ -193,7 +193,7 @@ describe('Pricing Engine Strategy', () => {
             0
           );
 
-          expect(result.bulkDiscountTotal).toBe(sumOfBulkDiscounts);
+          expect(result.volumeDiscountTotal).toBe(sumOfBulkDiscounts);
           return true;
         })
       );
@@ -225,7 +225,7 @@ describe('Pricing Engine Strategy', () => {
         .withTenure(2.1)
         .calculate(expect.getState().currentTestName);
 
-      const expectedVip = Math.round((result.originalTotal - result.bulkDiscountTotal) * 0.05);
+      const expectedVip = Math.round((result.originalTotal - result.volumeDiscountTotal) * 0.05);
       expect(result.vipDiscount).toBe(expectedVip);
     });
 
@@ -261,7 +261,7 @@ describe('Pricing Engine Strategy', () => {
       // Final total: 403750
 
       expect(result.originalTotal).toBe(500000);
-      expect(result.bulkDiscountTotal).toBe(75000);
+      expect(result.volumeDiscountTotal).toBe(75000);
       expect(result.vipDiscount).toBe(21250);
       expect(result.totalDiscount).toBe(96250);
       expect(result.finalTotal).toBe(403750);
@@ -295,7 +295,7 @@ describe('Pricing Engine Strategy', () => {
 
       // With integers, all values are already "rounded" (whole cents)
       expect(Number.isInteger(result.originalTotal)).toBe(true);
-      expect(Number.isInteger(result.bulkDiscountTotal)).toBe(true);
+      expect(Number.isInteger(result.volumeDiscountTotal)).toBe(true);
       expect(Number.isInteger(result.subtotalAfterBulk)).toBe(true);
       expect(Number.isInteger(result.finalTotal)).toBe(true);
 
@@ -313,7 +313,7 @@ describe('Pricing Engine Strategy', () => {
 
           const fields: (keyof typeof result)[] = [
             'originalTotal',
-            'bulkDiscountTotal',
+            'volumeDiscountTotal',
             'vipDiscount',
             'totalDiscount',
             'subtotalAfterBulk',
@@ -361,7 +361,7 @@ describe('Pricing Engine Strategy', () => {
         .calculate(expect.getState().currentTestName);
 
       // Exactly 3 items should get bulk discount
-      expect(result.bulkDiscountTotal).toBe(4500); // 15% of 30000
+      expect(result.volumeDiscountTotal).toBe(4500); // 15% of 30000
       expect(result.finalTotal).toBe(25500);
     });
 
@@ -371,7 +371,7 @@ describe('Pricing Engine Strategy', () => {
         .calculate(expect.getState().currentTestName);
 
       // No bulk discount
-      expect(result.bulkDiscountTotal).toBe(0);
+      expect(result.volumeDiscountTotal).toBe(0);
       expect(result.finalTotal).toBe(20000);
     });
 
@@ -381,7 +381,7 @@ describe('Pricing Engine Strategy', () => {
         .calculate(expect.getState().currentTestName);
 
       expect(result.originalTotal).toBe(0);
-      expect(result.bulkDiscountTotal).toBe(0);
+      expect(result.volumeDiscountTotal).toBe(0);
       expect(result.vipDiscount).toBe(0);
       expect(result.totalDiscount).toBe(0);
       expect(result.finalTotal).toBe(0);

@@ -76,7 +76,7 @@ Feature: Dynamic Pricing Engine
       | sku   | name   | price | qty | weight |
       | IPAD  | iPad   | 1000  | <qty>| 0.5    |
     When I calculate the total
-    Then the bulk discount is <bulk_discount> cents
+    Then the volume discount is <bulk_discount> cents
     And the final total is <final_total> cents
 
     # PAIN POINT: Manual calculation required for each example row:
@@ -104,7 +104,7 @@ Feature: Dynamic Pricing Engine
       | SKU_A    | Product A     | 10000 | 3    | 1.0    |
       | SKU_B    | Product B     | 20000 | 5    | 2.0    |
     When I calculate the total
-    Then the bulk discount is 19500 cents
+    Then the volume discount is 19500 cents
 
   Scenario: Bulk discount only applied to qualifying items
     Given I have a cart with items:
@@ -112,7 +112,7 @@ Feature: Dynamic Pricing Engine
       | BULK_1  | Bulk Item     | 10000 | 5    | 1.0    |
       | REGULAR | Regular Item  | 20000 | 2    | 1.0    |
     When I calculate the total
-    Then the bulk discount is 7500 cents
+    Then the volume discount is 7500 cents
 
   # ============================================
   # 3. VIP Tier
@@ -155,7 +155,7 @@ Feature: Dynamic Pricing Engine
       | ITEM   | Item  | 10000 | 4   | 1.0    |
     When I calculate the total
     Then the original total is 40000 cents
-    And the bulk discount is 6000 cents
+    And the volume discount is 6000 cents
     And the subtotal after bulk is 34000 cents
     And the VIP discount is 1700 cents
 
@@ -178,7 +178,7 @@ Feature: Dynamic Pricing Engine
       | PREMIUM  | Premium Laptop  | 100000| 3   | 5.0    |
     When I calculate the total
     Then the original total is 300000 cents
-    And the bulk discount is 45000 cents
+    And the volume discount is 45000 cents
     And the VIP discount is 12750 cents
     And the total discount is 57750 cents
     And the discount is not capped
@@ -318,7 +318,7 @@ Feature: Dynamic Pricing Engine
       | PREMIUM_ITEM| Premium     | 100000| 5   | 2.0    |
     When I calculate the total
     Then the original total is 500000 cents
-    And the bulk discount is 75000 cents
+    And the volume discount is 75000 cents
     And the VIP discount is 21250 cents
     And the final total is 403750 cents
 
@@ -336,7 +336,7 @@ Feature: Dynamic Pricing Engine
       | ITEM  | Item   | 5000  | 3   | 1.0    |
     When I calculate the total
     Then the VIP discount is 0 cents
-    And the bulk discount is 2250 cents
+    And the volume discount is 2250 cents
 
   # ============================================
   # 10. Grand Total Calculations
@@ -373,7 +373,7 @@ Feature: Dynamic Pricing Engine
     And I select Expedited shipping
     When I calculate the total including shipping
     Then the original total is 600000 cents
-    And the bulk discount is 60000 cents
+    And the volume discount is 60000 cents
     And the subtotal after bulk is 540000 cents
     And the VIP discount is 27000 cents
     Then the total discount is exactly 87000 cents
@@ -388,7 +388,7 @@ Feature: Dynamic Pricing Engine
       | sku    | name    | price | qty | weight |
       | T_ITEM | Threshold | 50000 | 3   | 1.5    |
     When I calculate the total
-    Then the bulk discount is 22500 cents
+    Then the volume discount is 22500 cents
     And the final total is 127500 cents
 
   # SCENARIO: Just below bulk threshold
@@ -398,7 +398,7 @@ Feature: Dynamic Pricing Engine
       | sku    | name    | price | qty | weight |
       | N_ITEM | No Bulk | 50000 | 2   | 1.5    |
     When I calculate the total
-    Then the bulk discount is 0 cents
+    Then the volume discount is 0 cents
     And the final total is 100000 cents
 
   # ============================================
@@ -416,7 +416,7 @@ Feature: Dynamic Pricing Engine
       | ODD_B  | Odd B   | 1999  | 4   | 0.8    |
     When I calculate the total
     Then the original total is 10993 cents
-    Then the bulk discount is 1649 cents
+    Then the volume discount is 1649 cents
     And the final total is 9344 cents
 
   # ============================================
@@ -463,7 +463,7 @@ Feature: Dynamic Pricing Engine
       | PROD_2 | Prod 2  | 20000 | 5   | 1.5    |
       | PROD_3 | Prod 3  | 5000  | 4   | 0.8    |
     When I calculate the total
-    Then the bulk discount is 22500 cents
+    Then the volume discount is 22500 cents
     And the final total is 127500 cents
 
   # SCENARIO: Mixed bulk and non-bulk with VIP
@@ -482,7 +482,7 @@ Feature: Dynamic Pricing Engine
       | REG_B  | Reg Item B  | 10000 | 2   | 1.0    |
     When I calculate the total
     Then the original total is 270000 cents
-    Then the bulk discount is 37500 cents
+    Then the volume discount is 37500 cents
     Then the subtotal after bulk is 232500 cents
     Then the VIP discount is 11625 cents
     Then the final total is 220875 cents

@@ -3,7 +3,7 @@ import { CartItem, User, PricingResult, LineItemResult, ShippingMethod, Shipment
 export class PricingEngine {
   static calculate(items: CartItem[], user: User, shippingMethod: ShippingMethod = ShippingMethod.STANDARD): PricingResult {
     let originalTotal: Cents = 0;
-    let bulkDiscountTotal: Cents = 0;
+    let volumeDiscountTotal: Cents = 0;
     
     const lineItemResults: LineItemResult[] = items.map(item => {
       const lineOriginalTotal = item.price * item.quantity;
@@ -14,7 +14,7 @@ export class PricingEngine {
         bulkDiscount = Math.round(lineOriginalTotal * 0.15);
       }
       
-      bulkDiscountTotal += bulkDiscount;
+      volumeDiscountTotal += bulkDiscount;
       
       return {
         sku: item.sku,
@@ -27,7 +27,7 @@ export class PricingEngine {
       };
     });
 
-    const subtotalAfterBulk = originalTotal - bulkDiscountTotal;
+    const subtotalAfterBulk = originalTotal - volumeDiscountTotal;
     
     // VIP Rule: 5% off subtotal if tenure > 2 years
     let vipDiscount: Cents = 0;
@@ -35,7 +35,7 @@ export class PricingEngine {
       vipDiscount = Math.round(subtotalAfterBulk * 0.05);
     }
 
-    let totalDiscount = bulkDiscountTotal + vipDiscount;
+    let totalDiscount = volumeDiscountTotal + vipDiscount;
     let isCapped = false;
 
     // Safety Valve: Max 30% discount
@@ -60,7 +60,7 @@ export class PricingEngine {
 
     return {
       originalTotal,
-      bulkDiscountTotal,
+      volumeDiscountTotal,
       subtotalAfterBulk,
       vipDiscount,
       totalDiscount,

@@ -47,7 +47,7 @@ export interface ShipmentInfo {
 
 export interface PricingResult {
   originalTotal: Cents;
-  bulkDiscountTotal: Cents;
+  volumeDiscountTotal: Cents;
   subtotalAfterBulk: Cents;
   vipDiscount: Cents;
   totalDiscount: Cents;

@@ -36,7 +36,7 @@ describe('Pricing Engine Strategy', () => {
       const result = CartBuilder.new()
         .withItem('iPad', 100000, 3)
         .calculate(expect.getState().currentTestName);
-      expect(result.bulkDiscountTotal).toBe(45000); // 15% of 300000
+      expect(result.volumeDiscountTotal).toBe(45000); // 15% of 300000
     });
 
     it('Invariant: Line items with qty >= 3 always have 15% discount', () => {
@@ -230,7 +230,7 @@ describe('Pricing Engine Strategy', () => {
         expect(result.shipment.expeditedSurcharge).toBe(1350); // 15% of 9000
 
         // Bulk discount still applies to product total
-        expect(result.bulkDiscountTotal).toBe(1350); // 15% of 9000
+        expect(result.volumeDiscountTotal).toBe(1350); // 15% of 9000
       });
 
       it('Invariant: Expedited surcharge = 15% of original subtotal', () => {
