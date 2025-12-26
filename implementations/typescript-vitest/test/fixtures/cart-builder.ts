@@ -30,11 +30,13 @@ export class CartBuilder {
     return this;
   }
 
-  calculate(): PricingResult {
+  calculate(testName?: string): PricingResult {
     const input = { items: this.items, user: this.user };
     const output = PricingEngine.calculate(this.items, this.user);
     
-    tracer.log(input, output);
+    if (testName) {
+      tracer.log(testName, input, output);
+    }
     
     return output;
   }

@@ -9,6 +9,7 @@ export default class AttestationReporter implements Reporter {
 
   onInit() {
     this.startTime = Date.now();
+    tracer.clear(); // Clear old traces
   }
 
   onFinished(files: File[]) {
@@ -35,7 +36,8 @@ export default class AttestationReporter implements Reporter {
     fs.writeFileSync(path.join(reportDir, 'attestation.md'), markdown);
     fs.writeFileSync(path.join(reportDir, 'attestation.html'), html);
 
-    console.log(`\n[Attestation] Reports generated in: ${reportDir}`);
+    console.log(`
+[Attestation] Reports generated in: ${reportDir}`);
   }
 
   private getGitInfo() {
@@ -187,17 +189,23 @@ ${gitInfo.dirtyFiles}
     let output = '';
 
     if (task.type === 'suite') {
-      output += `\n${indent} ${task.name}\n\n`;
+      output += `
+${indent} ${task.name}
+
+`;
       const hasDirectTests = task.tasks.some(t => t.type === 'test');
       if (hasDirectTests) {
-         output += `| Scenario | Result | Duration |\n`;
-         output += `| :--- | :--- | :--- |\n`;
+         output += `| Scenario | Result | Duration |
+`;
+         output += `| :--- | :--- | :--- |
+`;
       }
       task.tasks.forEach(subTask => output += this.renderTaskMd(subTask, level + 1));
     } else if (task.type === 'test') {
       const status = task.result?.state === 'pass' ? '✅ PASS' : '❌ FAIL';
       const duration = task.result?.duration ? `${task.result.duration}ms` : '-';
-      output += `| ${task.name} | ${status} | ${duration} |\n`;
+      output += `| ${task.name} | ${status} | ${duration} |
+`;
     }
     return output;
   }
@@ -213,13 +221,39 @@ ${gitInfo.dirtyFiles}
       
       const hasDirectTests = task.tasks.some(t => t.type === 'test');
       if (hasDirectTests) {
-         output += `<table><tr><th>Scenario</th><th>Result</th><th>Duration</th></tr>`;
+         output += `<table><tr><th style="width: 60%">Scenario</th><th style="width: 10%">Result</th><th style="width: 10%">Duration</th></tr>`;
          task.tasks.forEach(subTask => {
              if (subTask.type === 'test') {
                  const status = subTask.result?.state === 'pass' ? '✅ PASS' : '❌ FAIL';
                  const statusClass = subTask.result?.state === 'pass' ? 'status-pass' : 'status-fail';
                  const duration = subTask.result?.duration ? `${subTask.result.duration}ms` : '-';
-                 output += `<tr><td>${subTask.name}</td><td class="${statusClass}">${status}</td><td>${duration}</td></tr>`;
+                 
+                 // Fetch Interactions
+                 const interactions = tracer.get(getFullTestName(subTask));
+                 let details = '';
+                 
+                 if (interactions.length > 0) {
+                   details = `<details><summary>View Input/Output (${interactions.length} interactions)</summary>`;
+                   interactions.forEach((interaction, idx) => {
+                     details += `
+                       <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                         <div style="font-size: 0.8em; color: #999; margin-bottom: 5px;">Interaction #${idx + 1}</div>
+                         <div class="io-block">
+                           <div class="io-section">
+                             <div class="io-label">Input</div>
+                             <pre>${JSON.stringify(interaction.input, null, 2)}</pre>
+                           </div>
+                           <div class="io-section">
+                             <div class="io-label">Output</div>
+                             <pre>${JSON.stringify(interaction.output, null, 2)}</pre>
+                           </div>
+                         </div>
+                       </div>`;
+                   });
+                   details += `</details>`;
+                 }
+
+                 output += `<tr><td>${subTask.name}${details}</td><td class="${statusClass}">${status}</td><td>${duration}</td></tr>`;
              }
          });
          output += `</table>`;
@@ -234,4 +268,14 @@ ${gitInfo.dirtyFiles}
     }
     return output;
   }
+}
+
+function getFullTestName(task: Task): string {
+  let name = task.name;
+  let parent = task.suite;
+  while (parent && parent.name) {
+    name = `${parent.name} > ${name}`;
+    parent = parent.suite;
+  }
+  return name;
 }

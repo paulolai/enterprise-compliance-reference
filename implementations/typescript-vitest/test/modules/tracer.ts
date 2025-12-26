@@ -1,4 +1,6 @@
-import { expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 export interface Interaction {
   input: any;
@@ -7,29 +9,58 @@ export interface Interaction {
 }
 
 class TestTracer {
-  private traces = new Map<string, Interaction[]>();
+  private tempFile: string;
 
-  log(input: any, output: any) {
-    // Vitest exposes current test name via expect.getState()
-    const testName = expect.getState().currentTestName || 'unknown';
-    
-    if (!this.traces.has(testName)) {
-      this.traces.set(testName, []);
+  constructor() {
+    this.tempFile = path.join(os.tmpdir(), 'vitest-interactions-trace.json');
+  }
+
+  log(testName: string, input: any, output: any) {
+    const data = this.read();
+    if (!data[testName]) {
+      data[testName] = [];
     }
     
-    this.traces.get(testName)?.push({
+    data[testName].push({
       input,
       output,
       timestamp: Date.now()
     });
+    this.write(data);
   }
 
   get(testName: string): Interaction[] {
-    return this.traces.get(testName) || [];
+    const data = this.read();
+    return data[testName] || [];
   }
   
-  getAll() {
-    return this.traces;
+  getAll(): Record<string, Interaction[]> {
+    return this.read();
+  }
+
+  clear() {
+    if (fs.existsSync(this.tempFile)) {
+      fs.unlinkSync(this.tempFile);
+    }
+  }
+
+  private read(): Record<string, Interaction[]> {
+    try {
+      if (fs.existsSync(this.tempFile)) {
+        return JSON.parse(fs.readFileSync(this.tempFile, 'utf-8'));
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+    return {};
+  }
+
+  private write(data: Record<string, Interaction[]>) {
+    try {
+      fs.writeFileSync(this.tempFile, JSON.stringify(data));
+    } catch (e) {
+      // Ignore
+    }
   }
 }
 
