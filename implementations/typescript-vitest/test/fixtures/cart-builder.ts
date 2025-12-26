@@ -1,21 +1,23 @@
-import { CartItem, User, PricingResult } from '../../src/types';
+import { CartItem, User, PricingResult, ShippingMethod, Cents } from '../../src/types';
 import { PricingEngine } from '../../src/pricing-engine';
 import { tracer } from '../modules/tracer';
 
 export class CartBuilder {
   private items: CartItem[] = [];
   private user: User = { tenureYears: 0 };
+  private shippingMethod: ShippingMethod = ShippingMethod.STANDARD;
 
   static new(): CartBuilder {
     return new CartBuilder();
   }
 
-  withItem(name: string, price: number, quantity: number, sku?: string): CartBuilder {
+  withItem(name: string, price: Cents, quantity: number, sku?: string, weightInKg: number = 1.0): CartBuilder {
     this.items.push({
       sku: sku || name.toUpperCase().replace(/\s+/g, '_'),
       name,
       price,
-      quantity
+      quantity,
+      weightInKg
     });
     return this;
   }
@@ -30,9 +32,26 @@ export class CartBuilder {
     return this;
   }
 
+  withShipping(method: ShippingMethod): CartBuilder {
+    this.shippingMethod = method;
+    return this;
+  }
+
+  withStandardShipping(): CartBuilder {
+    return this.withShipping(ShippingMethod.STANDARD);
+  }
+
+  withExpeditedShipping(): CartBuilder {
+    return this.withShipping(ShippingMethod.EXPEDITED);
+  }
+
+  withExpressShipping(): CartBuilder {
+    return this.withShipping(ShippingMethod.EXPRESS);
+  }
+
   calculate(testName?: string): PricingResult {
-    const input = { items: this.items, user: this.user };
-    const output = PricingEngine.calculate(this.items, this.user);
+    const input = { items: this.items, user: this.user, shippingMethod: this.shippingMethod };
+    const output = PricingEngine.calculate(this.items, this.user, this.shippingMethod);
     
     if (testName) {
       tracer.log(testName, input, output);
@@ -45,7 +64,8 @@ export class CartBuilder {
   getInputs() {
     return {
       items: this.items,
-      user: this.user
+      user: this.user,
+      shippingMethod: this.shippingMethod
     };
   }
 }
