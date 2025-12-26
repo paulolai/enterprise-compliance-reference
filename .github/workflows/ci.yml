@@ -21,17 +21,30 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: implementations/typescript-vitest/package-lock.json
+          cache-dependency-path: implementations/*/package-lock.json
 
-      - name: Install Dependencies
+      - name: Install Dependencies (Executable Specs)
         run: |
           cd implementations/typescript-vitest
           npm ci
 
-      - name: Run Tests & Generate Attestation
+      - name: Install Dependencies (Gherkin Anti-Pattern)
+        run: |
+          cd implementations/typescript-cucumber
+          npm install
+
+      - name: Run Executable Specs (Vitest)
         run: |
           cd implementations/typescript-vitest
           npm test
+
+      - name: Run Gherkin Anti-Pattern (Cucumber)
+        continue-on-error: true # Don't fail the build if the anti-pattern fails (it's for demo)
+        run: |
+          cd implementations/typescript-cucumber
+          npm run report
+          # Move report to common reports dir for artifact upload
+          cp cucumber-report.html ../../reports/cucumber-report.html
 
       - name: Display Attestation Summary
         if: always()
