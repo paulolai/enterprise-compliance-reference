@@ -9,14 +9,32 @@ export default class AttestationReporter implements Reporter {
 
   onInit() {
     this.startTime = Date.now();
-    tracer.clear(); // Clear old traces
+    // Don't clear - we want to preserve the run ID for workers
+    // Only clear if starting fresh (no current run file)
+    const currentRunFile = '/tmp/vitest-current-run-id.txt';
+    if (!fs.existsSync(currentRunFile)) {
+      tracer.clear();
+    }
   }
 
   onFinished(files: File[]) {
     const endTime = Date.now();
     const duration = ((endTime - this.startTime) / 1000).toFixed(2);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    
+
+    console.log(`[Attestation] Run directory: ${tracer.getRunDir()}`);
+
+    // Load metadata from shared file (all workers wrote to this)
+    tracer.loadMetadata();
+
+    console.log(`[Attestation] Loaded ${tracer.getInvariantMetadata().size} invariants from metadata`);
+
+    // Clean up run ID file so next run starts fresh
+    const currentRunFile = '/tmp/vitest-current-run-id.txt';
+    if (fs.existsSync(currentRunFile)) {
+      fs.unlinkSync(currentRunFile);
+    }
+
     // Create timestamped directory
     const reportsRoot = path.resolve(process.cwd(), '../../reports');
     const reportDir = path.join(reportsRoot, timestamp);
@@ -125,6 +143,12 @@ ${gitInfo.dirtyFiles}
   .status-fail { color: #cb2431; font-weight: bold; }
   .suite-header { background-color: #f1f8ff; padding: 10px; margin-top: 20px; border-radius: 4px; font-weight: 600; }
   .nested-suite { margin-left: 20px; border-left: 2px solid #eaeaea; padding-left: 10px; }
+  .test-metadata { font-size: 0.85em; margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; border: 1px solid #e1e4e8; }
+  .metadata-row { margin-bottom: 4px; }
+  .metadata-label { font-weight: 600; color: #666; margin-right: 6px; }
+  .metadata-value { color: #333; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { background: #e1f5ff; color: #0066cc; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
 </style>
 </head>
 <body>
@@ -221,14 +245,43 @@ ${indent} ${task.name}
          output += `<table><tr><th style="width: 60%">Scenario</th><th style="width: 10%">Result</th>${durationHeader}</tr>`;
          task.tasks.forEach(subTask => {
              if (subTask.type === 'test') {
+                 const testName = getFullTestName(subTask);
+                 let metadata = tracer.getInvariantMetadata().get(testName);
+                 // If not found with full name, try just the test name (without suite hierarchy)
+                 if (!metadata) {
+                   metadata = tracer.getInvariantMetadata().get(subTask.name);
+                 }
                  const status = subTask.result?.state === 'pass' ? '✅ PASS' : '❌ FAIL';
                  const statusClass = subTask.result?.state === 'pass' ? 'status-pass' : 'status-fail';
-                 
-                 
+
+                 // Add metadata display
+                 let metadataHtml = '';
+                 if (metadata) {
+                   metadataHtml = `<div class="test-metadata">
+                     <div class="metadata-row">
+                       <span class="metadata-label">Business Rule:</span>
+                       <span class="metadata-value">${metadata.ruleReference}</span>
+                     </div>
+                     <div class="metadata-row">
+                       <span class="metadata-label">Scenario:</span>
+                       <span class="metadata-value">${metadata.rule}</span>
+                     </div>
+                     <div class="metadata-row">
+                       <span class="metadata-label">Tags:</span>
+                       <span class="tags">${metadata.tags.map(t => `<span class="tag">${t}</span>`).join(' ')}</span>
+                     </div>
+                   </div>`;
+                 }
+
                  // Fetch Interactions
                  let details = '';
                  if (includeTraces) {
-                    const interactions = tracer.get(getFullTestName(subTask));
+                    // First try full test name, then try metadata.name (which verifyInvariant uses)
+                    let interactions = tracer.get(getFullTestName(subTask));
+                    if (interactions.length === 0 && metadata) {
+                      // Property tests log with metadata.name instead of full test name
+                      interactions = tracer.get(metadata.name);
+                    }
                     if (interactions.length > 0) {
                       details = `<details><summary>View Input/Output (${interactions.length} interactions)</summary>`;
                       interactions.forEach((interaction, idx) => {
@@ -252,7 +305,7 @@ ${indent} ${task.name}
                  }
 
                  const durationCell = includeTraces ? `<td>${subTask.result?.duration ? `${subTask.result.duration}ms` : '-'}</td>` : '';
-                 output += `<tr><td>${subTask.name}${details}</td><td class="${statusClass}">${status}</td>${durationCell}</tr>`;
+                 output += `<tr><td><strong>${subTask.name}</strong>${metadataHtml}${details}</td><td class="${statusClass}">${status}</td>${durationCell}</tr>`;
              }
          });
          output += `</table>`;

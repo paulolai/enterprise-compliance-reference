@@ -1,9 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { CartBuilder } from './fixtures/cart-builder';
 
+/**
+ * Example-based tests for Pricing Engine
+ * These tests document "happy path" scenarios and serve as business documentation.
+ *
+ * For mathematical proof of business rules, see pricing.properties.test.ts
+ */
 describe('Pricing Engine: Business Specifications', () => {
 
   describe('1. Base Rules (Currency & Tax)', () => {
+    /**
+     * Example: pricing-strategy.md §1 - Base Rules
+     * Demonstrates basic currency and tax handling with no discounts
+     */
     it('should calculate total correctly for a simple cart', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'Apple', price: 100, quantity: 1 })
@@ -15,6 +25,10 @@ describe('Pricing Engine: Business Specifications', () => {
   });
 
   describe('2. Bulk Discounts (15% for 3+ items)', () => {
+    /**
+     * Example: pricing-strategy.md §2 - Bulk Discounts
+     * Demonstrates 15% discount applied when quantity >= 3
+     */
     it('should apply 15% discount for 3+ of same SKU', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'iPad', price: 100000, quantity: 3 })
@@ -23,6 +37,10 @@ describe('Pricing Engine: Business Specifications', () => {
       expect(result).toMatchSnapshot();
     });
 
+    /**
+     * Example: pricing-strategy.md §2 - Bulk Discounts
+     * Demonstrates selective bulk discounts (some items qualify, some don't)
+     */
     it('should apply bulk discount to some items but not others', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'StandardWidget', price: 10000, quantity: 5 })

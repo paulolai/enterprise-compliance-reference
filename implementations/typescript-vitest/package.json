@@ -1,6 +1,7 @@
 {
   "name": "pricing-engine-ts-vitest",
   "version": "1.0.0",
+  "type": "module",
   "description": "Code as Specification demo implementation",
   "main": "src/pricing-engine.ts",
   "scripts": {

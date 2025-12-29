@@ -1,40 +1,48 @@
 import { describe, it, expect } from 'vitest';
-import { ShippingMethod } from '../src/types';
+import { ShippingMethod, CartItem, User, PricingResult } from '../src/types';
 import { verifyShippingInvariant } from './fixtures/invariant-helper';
 
 describe('Shipping: Mathematical Invariants', () => {
 
   it('Invariant: Standard shipping = $7 + (totalKg × $2) unless free', () => {
-    verifyShippingInvariant('Invariant: Standard Shipping Calc', (items, user, method, result) => {
-      // This invariant only applies to Standard shipping
+    verifyShippingInvariant({
+      name: 'Standard Shipping Calc',
+      ruleReference: 'pricing-strategy.md §5.1 - Base Shipping & Weight',
+      rule: 'Standard Shipping = $7.00 + (Total Weight × $2.00). Exception: Free shipping threshold overrides this.',
+      tags: ['@shipping', '@base-rules', '@customer-experience']
+    }, (items: CartItem[], _user: User, method: ShippingMethod, result: PricingResult) => {
       if (method !== ShippingMethod.STANDARD) return;
 
-      if (!result.shipment.isFreeShipping) {
+      if (result.shipment.isFreeShipping) {
+        expect(result.shipment.totalShipping).toBe(0);
+      } else {
         const totalWeight = items.reduce((sum, item) => sum + (item.weightInKg * item.quantity), 0);
         const expectedWeightCharge = Math.round(totalWeight * 200);
         expect(result.shipment.totalShipping).toBe(700 + expectedWeightCharge);
-      } else {
-        expect(result.shipment.totalShipping).toBe(0);
       }
     });
   });
 
   it('Invariant: Free shipping triggered exactly when discounted subtotal > $100', () => {
-    verifyShippingInvariant('Invariant: Free Shipping Threshold', (items, user, method, result) => {
-      // Free shipping logic is primarily for Standard (others might override or behave differently, 
-      // but the core rule check here focuses on Standard for simplicity or general rule if applicable)
+    verifyShippingInvariant({
+      name: 'Free Shipping Threshold',
+      ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
+      rule: 'If finalTotal > $100.00, then totalShipping = 0. Order: Checked AFTER all product discounts are applied. Edge Case: Exactly $100.00 does NOT qualify.',
+      tags: ['@shipping', '@free-shipping', '@customer-experience', '@critical']
+    }, (_items: CartItem[], _user: User, method: ShippingMethod, result: PricingResult) => {
       if (method !== ShippingMethod.STANDARD) return;
 
-      if (result.finalTotal > 10000) {
-        expect(result.shipment.isFreeShipping).toBe(true);
-      } else {
-        expect(result.shipment.isFreeShipping).toBe(false);
-      }
+      expect(result.shipment.isFreeShipping).toBe(result.finalTotal > 10000);
     });
   });
 
   it('Invariant: Express delivery always costs exactly $25', () => {
-    verifyShippingInvariant('Invariant: Express Delivery Fixed Cost', (items, user, method, result) => {
+    verifyShippingInvariant({
+      name: 'Express Delivery Fixed Cost',
+      ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
+      rule: 'Express Delivery always costs exactly $25.00. Interaction: NOT eligible for free shipping threshold, overrides all other shipping logic.',
+      tags: ['@shipping', '@express', '@customer-experience']
+    }, (_items: CartItem[], _user: User, method: ShippingMethod, result: PricingResult) => {
       if (method !== ShippingMethod.EXPRESS) return;
 
       expect(result.shipment.totalShipping).toBe(2500);
@@ -42,7 +50,12 @@ describe('Shipping: Mathematical Invariants', () => {
   });
 
   it('Invariant: Shipping costs are NEVER included in product discount cap', () => {
-    verifyShippingInvariant('Invariant: Shipping/Discount Separation', (items, user, method, result) => {
+    verifyShippingInvariant({
+      name: 'Shipping/Discount Separation',
+      ruleReference: 'pricing-strategy.md §5.5 - Shipping Discount Cap',
+      rule: 'Shipping costs do NOT count toward the 30% product discount cap. Enforcement: totalDiscount (product only) ≤ 30% of originalTotal. Formula: grandTotal = finalTotal + totalShipping.',
+      tags: ['@shipping', '@revenue-protection', '@critical']
+    }, (_items: CartItem[], _user: User, _method: ShippingMethod, result: PricingResult) => {
       const maxProductDiscount = Math.round(result.originalTotal * 0.30);
       expect(result.totalDiscount).toBeLessThanOrEqual(maxProductDiscount);
       expect(result.grandTotal).toBe(result.finalTotal + result.shipment.totalShipping);
