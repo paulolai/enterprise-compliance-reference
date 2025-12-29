@@ -38,6 +38,13 @@ it('Invariant: [Business Rule Description]', () => {
       return result.someValue === expected;
     })
   );
+
+  // Register Business Metadata
+  registerInvariant({
+    ruleReference: 'strategy.md §X',
+    rule: 'Description of the rule',
+    tags: ['@tag']
+  });
 });
 ```
 

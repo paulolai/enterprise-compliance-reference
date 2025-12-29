@@ -34,7 +34,12 @@ Instead of parsing English sentences, we use strongly-typed **Test Data Builders
 
 ### 4. Attestation Reports
 
-The "Human Readable" part comes at the **end**, not the beginning. We generate rich, custom test reports that serve as an **Audit Log**. These reports map inputs to outputs, verifying that the business logic (defined in the Strategy) was actually executed.
+The "Human Readable" part comes at the **end**, not the beginning. We generate rich, custom test reports that serve as an **Audit Log**.
+
+**New in v2:**
+- **Requirement Traceability Matrix:** Direct mapping from Business Rules (Strategy) to Tests (Code) to Results (Report).
+- **Smart Sampling:** Invariant tests capture and display diverse execution samples (not just one), proving the logic holds across edge cases.
+- **Deep Observability:** Inputs and outputs are captured for *every* test, creating a complete audit trail.
 
 ---
 
@@ -130,10 +135,11 @@ Engineers will share a link to the latest test report (hosted on GitHub Actions 
 
 **What to do:**
 1. Click the link engineers send you
-2. Switch to the "Business Health" tab (at the top of the page)
-3. Scroll through the business rules
+2. Look for the **Requirement Traceability Matrix**
+   - This table maps every business rule to the exact tests that verify it.
+3. Click on any test name to drill down into the **Detailed Audit Log**.
 
-**What you'll see**:
+**What you'll see in the Audit Log**:
 ```
 Safety Valve (Revenue Protection @critical)
 Protects revenue by capping discounts at 30%
@@ -240,7 +246,7 @@ Just comment on GitHub PRs or open issues. Engineers will:
 
 Run both implementations to experience the difference:
 
-1. **Executable Specs**: 47 tests generate 1000s of random cases, execute in ~0.7s
+1. **Executable Specs**: 65 tests generate 1000s of random cases, execute in ~0.7s
 2. **Gherkin/Cucumber**: 66 hand-written scenarios (with examples tables), 325 steps, execute in ~0.05s (after 3s compile)
 
 **See detailed comparison:** [`docs/GERHKIN_VS_EXECUTABLE.md`](docs/GERHKIN_VS_EXECUTABLE.md) - Includes code metrics, refactoring scenarios, and cost of ownership analysis.

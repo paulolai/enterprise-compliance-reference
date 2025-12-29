@@ -54,12 +54,13 @@ Pricing Engine (System)
 We treat the Test Report as a **Compliance Artifact**.
 - **Format:** Hierarchical Markdown (convertible to HTML).
 - **Content:**
+    - Requirement Traceability Matrix (Business Rule -> Test Link).
     - Executive Summary (Pass/Fail Rates).
-    - Detailed Audit Log (Scenario-by-Scenario).
+    - Detailed Audit Log (Scenario-by-Scenario with input/output traces).
     - Reproducibility Metadata (Seeds).
 
 ## 5. Tooling
 
 -   **Framework:** Vitest
 -   **PBT Library:** fast-check
--   **Reporter:** Custom `AttestationReporter`
+-   **Reporter:** Custom `AttestationReporter` (generates HTML & Markdown)

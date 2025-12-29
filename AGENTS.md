@@ -38,6 +38,7 @@ AI Agents must ingest the following context before making changes:
 - **Boilerplate Pattern:**
   ```typescript
   it('Invariant: ...', () => {
+    // 1. Log traces for every execution
     const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(arbitraries..., (inputs...) => {
@@ -46,8 +47,17 @@ AI Agents must ingest the following context before making changes:
         return result.isValid;
       })
     );
+
+    // 2. Register metadata for the report
+    registerInvariant({
+      name: 'Invariant: ...', // Must match test name (or be omitted if helper derives it)
+      ruleReference: 'pricing-strategy.md §X - Section Name',
+      rule: 'Plain english explanation of the business rule',
+      tags: ['@tag', '@critical']
+    });
   });
   ```
+  **Note:** Use `expect.getState().currentTestName!` to ensure the trace key matches the test name exactly.
 
 ## 🚫 Forbidden Patterns
 *   **No Gherkin/Cucumber:** We explicitly reject the "Translation Layer" tax.
