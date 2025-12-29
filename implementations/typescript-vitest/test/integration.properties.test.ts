@@ -8,14 +8,13 @@ import { tracer } from './modules/tracer';
 describe('Integration: Multi-Rule Interactions', () => {
 
   it('Integration: Bulk + VIP discounts combine correctly and respect cap', () => {
-    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          tracer.log(testName, { items, user }, result);
+          tracer.log(expect.getState().currentTestName!, { items, user }, result);
 
           const expectedBulkDiscount = result.lineItems.reduce((sum, li) => {
             return sum + (li.quantity >= 3 ? Math.round(li.originalPrice * li.quantity * 0.15) : 0);
@@ -50,14 +49,13 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Free shipping eligibility depends on POST-DISCOUNT total', () => {
-    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user, ShippingMethod.STANDARD);
-          tracer.log(testName, { items, user, method: ShippingMethod.STANDARD }, result);
+          tracer.log(expect.getState().currentTestName!, { items, user, method: ShippingMethod.STANDARD }, result);
 
           expect(result.shipment.isFreeShipping).toBe(result.finalTotal > 10000);
 
@@ -72,7 +70,6 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Express/Expedited shipping calculations are correct', () => {
-    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
@@ -82,7 +79,7 @@ describe('Integration: Multi-Rule Interactions', () => {
           const originalSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
           const totalWeight = items.reduce((sum, item) => sum + (item.weightInKg * item.quantity), 0);
           const result = PricingEngine.calculate(items, user, method);
-          tracer.log(testName, { items, user, method }, result);
+          tracer.log(expect.getState().currentTestName!, { items, user, method }, result);
 
           if (method === ShippingMethod.EXPRESS) {
             expect(result.shipment.isFreeShipping).toBe(false);
@@ -115,14 +112,13 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Complex carts with bulk, VIP, and free shipping', () => {
-    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          tracer.log(testName, { items, user }, result);
+          tracer.log(expect.getState().currentTestName!, { items, user }, result);
 
           expect(result.finalTotal).toBeLessThanOrEqual(result.originalTotal);
           const calculatedTotalDiscount = result.volumeDiscountTotal + result.vipDiscount;
@@ -205,14 +201,13 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Line item math matches cart total math', () => {
-    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          tracer.log(testName, { items, user }, result);
+          tracer.log(expect.getState().currentTestName!, { items, user }, result);
 
           const calculatedOriginalTotal = result.lineItems.reduce(
             (sum, li) => sum + li.originalPrice * li.quantity,

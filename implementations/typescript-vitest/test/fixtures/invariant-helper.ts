@@ -5,7 +5,7 @@ import { tracer } from '../modules/tracer';
 import { CartItem, User, ShippingMethod, PricingResult } from '../../src/types';
 
 export interface InvariantMetadata {
-  name: string;
+  name?: string;
   ruleReference: string; // e.g., "pricing-strategy.md §2"
   rule: string;
   tags: string[]; // Serenity-style tags: ['@pricing', '@vip', '@critical']
@@ -13,7 +13,7 @@ export interface InvariantMetadata {
 }
 
 export interface PreconditionMetadata {
-  name: string;
+  name?: string;
   ruleReference: string; // e.g., "pricing-strategy.md §2 - Bulk Discounts"
   scenario: string; // e.g., "Critical boundary: quantity = 3 (exactly at bulk threshold)"
   tags: string[]; // e.g., ['@precondition', '@pricing', '@boundary']
@@ -26,7 +26,8 @@ type ShippingAssertionCallback = (items: CartItem[], user: User, method: Shippin
  * Register invariant metadata with the tracer for attestation reports
  */
 function registerInvariant(metadata: InvariantMetadata) {
-  tracer.registerInvariant(metadata);
+  const name = metadata.name || expect.getState().currentTestName!;
+  tracer.registerInvariant({ ...metadata, name });
 }
 
 /**
@@ -44,14 +45,15 @@ export function verifyInvariant(
   metadata: InvariantMetadata,
   assertion: AssertionCallback
 ) {
+  const name = metadata.name || expect.getState().currentTestName!;
   // Register metadata for attestation report
-  registerInvariant(metadata);
+  registerInvariant({ ...metadata, name });
 
   fc.assert(
     fc.property(cartArb, userArb, (items, user) => {
       const result = PricingEngine.calculate(items, user);
       // Log every execution with invariant metadata
-      tracer.log(metadata.name, { items, user }, result);
+      tracer.log(name, { items, user }, result);
 
       try {
         assertion(items, user, result);
@@ -59,7 +61,7 @@ export function verifyInvariant(
         // Enhance error with business context
         const context = explainBusinessContext(items, user, result);
         throw new Error(
-          `Invariant Violation: ${metadata.name}\n` +
+          `Invariant Violation: ${name}\n` +
           `Business Rule: ${metadata.ruleReference} - ${metadata.rule}\n` +
           `Tags: ${metadata.tags.join(', ')}\n` +
           `Business Context:\n${context}\n\n` +
@@ -89,20 +91,21 @@ export function verifyShippingInvariant(
   metadata: InvariantMetadata,
   assertion: ShippingAssertionCallback
 ) {
+  const name = metadata.name || expect.getState().currentTestName!;
   // Register metadata for attestation report
-  registerInvariant(metadata);
+  registerInvariant({ ...metadata, name });
 
   fc.assert(
     fc.property(cartArb, userArb, shippingMethodArb, (items, user, method) => {
       const result = PricingEngine.calculate(items, user, method);
-      tracer.log(metadata.name, { items, user, method }, result);
+      tracer.log(name, { items, user, method }, result);
 
       try {
         assertion(items, user, method, result);
       } catch (error) {
         const context = explainBusinessContext(items, user, result, method);
         throw new Error(
-          `Invariant Violation: ${metadata.name}\n` +
+          `Invariant Violation: ${name}\n` +
           `Business Rule: ${metadata.ruleReference} - ${metadata.rule}\n` +
           `Tags: ${metadata.tags.join(', ')}\n` +
           `Business Context:\n${context}\n\n` +
@@ -127,8 +130,9 @@ export function verifyShippingInvariant(
  * @param metadata - Business rule documentation for attestation reports
  */
 export function registerPrecondition(metadata: PreconditionMetadata) {
+  const name = metadata.name || expect.getState().currentTestName!;
   tracer.registerInvariant({
-    name: metadata.name,
+    name,
     ruleReference: metadata.ruleReference,
     rule: metadata.scenario, // Reuse 'rule' field for scenario description
     tags: metadata.tags
@@ -140,12 +144,13 @@ export function registerPrecondition(metadata: PreconditionMetadata) {
  *
  * Should be called after calculating the result to record it in the attestation report.
  *
- * @param testName - Name of the precondition test
  * @param input - Input (cart, user, and optionally method)
  * @param output - Output (pricing result)
+ * @param testName - Optional name of the precondition test (defaults to current test)
  */
-export function logPrecondition(testName: string, input: any, output: any) {
-  tracer.log(testName, input, output);
+export function logPrecondition(input: any, output: any, testName?: string) {
+  const name = testName || expect.getState().currentTestName!;
+  tracer.log(name, input, output);
 }
 
 /**

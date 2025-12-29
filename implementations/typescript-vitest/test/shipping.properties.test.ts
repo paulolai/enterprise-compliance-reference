@@ -6,7 +6,6 @@ describe('Shipping: Mathematical Invariants', () => {
 
   it('Invariant: Standard shipping = $7 + (totalKg × $2) unless free', () => {
     verifyShippingInvariant({
-      name: 'Invariant: Standard shipping = $7 + (totalKg × $2) unless free',
       ruleReference: 'pricing-strategy.md §5.1 - Base Shipping & Weight',
       rule: 'Standard Shipping = $7.00 + (Total Weight × $2.00). Exception: Free shipping threshold overrides this.',
       tags: ['@shipping', '@base-rules', '@customer-experience']
@@ -25,7 +24,6 @@ describe('Shipping: Mathematical Invariants', () => {
 
   it('Invariant: Free shipping triggered exactly when discounted subtotal > $100', () => {
     verifyShippingInvariant({
-      name: 'Invariant: Free shipping triggered exactly when discounted subtotal > $100',
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       rule: 'If finalTotal > $100.00, then totalShipping = 0. Order: Checked AFTER all product discounts are applied. Edge Case: Exactly $100.00 does NOT qualify.',
       tags: ['@shipping', '@free-shipping', '@customer-experience', '@critical']
@@ -38,7 +36,6 @@ describe('Shipping: Mathematical Invariants', () => {
 
   it('Invariant: Express delivery always costs exactly $25', () => {
     verifyShippingInvariant({
-      name: 'Invariant: Express delivery always costs exactly $25',
       ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
       rule: 'Express Delivery always costs exactly $25.00. Interaction: NOT eligible for free shipping threshold, overrides all other shipping logic.',
       tags: ['@shipping', '@express', '@customer-experience']
@@ -51,7 +48,6 @@ describe('Shipping: Mathematical Invariants', () => {
 
   it('Invariant: Shipping costs are NEVER included in product discount cap', () => {
     verifyShippingInvariant({
-      name: 'Invariant: Shipping costs are NEVER included in product discount cap',
       ruleReference: 'pricing-strategy.md §5.5 - Shipping Discount Cap',
       rule: 'Shipping costs do NOT count toward the 30% product discount cap. Enforcement: totalDiscount (product only) ≤ 30% of originalTotal. Formula: grandTotal = finalTotal + totalShipping.',
       tags: ['@shipping', '@revenue-protection', '@critical']

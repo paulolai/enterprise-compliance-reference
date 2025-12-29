@@ -7,7 +7,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Empty cart results in zero totals', () => {
     registerPrecondition({
-      name: 'Precondition: Empty cart results in zero totals',
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       scenario: 'Edge case: Empty cart should not crash, should only charge shipping',
       tags: ["@precondition","@boundary","@input-validation"]
@@ -17,7 +16,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(emptyCart, user);
-    logPrecondition("Precondition: Empty cart results in zero totals", { items: emptyCart, user }, result);
+    logPrecondition({ items: emptyCart, user }, result);
 
     expect(result.originalTotal).toBe(0);
     expect(result.finalTotal).toBe(0);
@@ -31,7 +30,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Single item with qty 1 gets no bulk discount', () => {
     registerPrecondition({
-      name: 'Precondition: Single item with qty 1 gets no bulk discount',
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Boundary: quantity < 3 should NOT receive bulk discount',
       tags: ["@precondition","@pricing","@boundary","@bulk-discount"]
@@ -47,7 +45,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Single item with qty 1 gets no bulk discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.originalTotal).toBe(10000);
     expect(result.volumeDiscountTotal).toBe(0);
@@ -58,7 +56,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Exactly 2 items (boundary condition) gets no bulk discount', () => {
     registerPrecondition({
-      name: 'Precondition: Exactly 2 items (boundary condition) gets no bulk discount',
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Critical boundary: quantity = 2 (just below bulk threshold of 3)',
       tags: ["@precondition","@pricing","@boundary","@bulk-discount","@critical"]
@@ -74,7 +71,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Exactly 2 items (boundary condition) gets no bulk discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.originalTotal).toBe(10000); // 5000 * 2
     expect(result.volumeDiscountTotal).toBe(0);
@@ -84,7 +81,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Exactly 3 items (boundary condition) gets bulk discount', () => {
     registerPrecondition({
-      name: 'Precondition: Exactly 3 items (boundary condition) gets bulk discount',
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Critical boundary: quantity = 3 (exactly at bulk threshold, MUST get discount)',
       tags: ["@precondition","@pricing","@boundary","@bulk-discount","@critical"]
@@ -100,7 +96,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Exactly 3 items (boundary condition) gets bulk discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.originalTotal).toBe(15000); // 5000 * 3
     expect(result.volumeDiscountTotal).toBe(2250); // 15000 * 0.15
@@ -110,7 +106,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Exactly 2 years tenure (boundary) gets no VIP discount', () => {
     registerPrecondition({
-      name: 'Precondition: Exactly 2 years tenure (boundary) gets no VIP discount',
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Critical boundary: tenure = 2 years (just below > 2 requirement)',
       tags: ["@precondition","@pricing","@boundary","@vip","@critical"]
@@ -126,7 +121,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 2 }; // Exactly at boundary
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Exactly 2 years tenure (boundary) gets no VIP discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.vipDiscount).toBe(0);
     expect(result.finalTotal).toBe(result.originalTotal);
@@ -134,7 +129,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Exactly 3 years tenure (boundary) gets VIP discount', () => {
     registerPrecondition({
-      name: 'Precondition: Exactly 3 years tenure (boundary) gets VIP discount',
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Critical boundary: tenure = 3 years (just over > 2 requirement, MUST get discount)',
       tags: ["@precondition","@pricing","@boundary","@vip","@critical"]
@@ -150,7 +144,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 3 }; // Just over boundary
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Exactly 3 years tenure (boundary) gets VIP discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.vipDiscount).toBe(500); // 10000 * 0.05
     expect(result.finalTotal).toBe(9500); // 10000 - 500
@@ -158,7 +152,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Exactly $100 cart does NOT qualify for free shipping', () => {
     registerPrecondition({
-      name: 'Precondition: Exactly $100 cart does NOT qualify for free shipping',
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       scenario: 'Critical boundary: finalTotal = $100.00 (must be > $100)',
       tags: ["@precondition","@shipping","@boundary","@free-shipping","@critical"]
@@ -174,7 +167,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user, ShippingMethod.STANDARD);
-    logPrecondition("Precondition: Exactly $100 cart does NOT qualify for free shipping", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.finalTotal).toBe(10000);
     expect(result.shipment.isFreeShipping).toBe(false);
@@ -183,7 +176,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: $100.01 cart DOES qualify for free shipping', () => {
     registerPrecondition({
-      name: 'Precondition: $100.01 cart DOES qualify for free shipping',
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       scenario: 'Critical boundary: finalTotal = $100.01 (just over threshold, MUST get free shipping)',
       tags: ["@precondition","@shipping","@boundary","@free-shipping","@critical"]
@@ -199,7 +191,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user, ShippingMethod.STANDARD);
-    logPrecondition("Precondition: $100.01 cart DOES qualify for free shipping", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.finalTotal).toBeGreaterThan(10000);
     expect(result.shipment.isFreeShipping).toBe(true);
@@ -208,7 +200,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Zero price items are handled correctly', () => {
     registerPrecondition({
-      name: 'Precondition: Zero price items are handled correctly',
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       scenario: 'Edge case: Zero price items should not crash calculations',
       tags: ["@precondition","@boundary","@input-validation"]
@@ -233,7 +224,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Zero price items are handled correctly", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.originalTotal).toBe(10000); // Only the paid item
     expect(result.volumeDiscountTotal).toBe(0); // 0 × 15% = 0 for free items
@@ -243,7 +234,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Zero weight items work correctly', () => {
     registerPrecondition({
-      name: 'Precondition: Zero weight items work correctly',
       ruleReference: 'pricing-strategy.md §5.1 - Base Shipping & Weight',
       scenario: 'Edge case: Zero weight items should only pay base shipping',
       tags: ["@precondition","@shipping","@boundary"]
@@ -259,7 +249,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user, ShippingMethod.STANDARD);
-    logPrecondition("Precondition: Zero weight items work correctly", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     // Standard shipping: $7 base + (0 * $2)
     expect(result.shipment.totalShipping).toBe(700);
@@ -267,7 +257,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Maximum discount cap (30%) is enforced correctly', () => {
     registerPrecondition({
-      name: 'Precondition: Maximum discount cap (30%) is enforced correctly',
       ruleReference: 'pricing-strategy.md §4 - Safety Valve',
       scenario: 'Edge case: Large bulk + VIP order checks that 30% cap works',
       tags: ["@precondition","@pricing","@safety-valve","@critical"]
@@ -284,7 +273,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 10 }; // VIP
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Maximum discount cap (30%) is enforced correctly", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     const expectedBulk = Math.round(10000 * 10 * 0.15); // 15000
     const expectedSubtotalAfterBulk = 100000 - expectedBulk; // 85000
@@ -303,7 +292,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: High-value bulk + VIP triggers discount cap', () => {
     registerPrecondition({
-      name: 'Precondition: High-value bulk + VIP triggers discount cap',
       ruleReference: 'pricing-strategy.md §4 - Safety Valve',
       scenario: 'Edge case: Very high-value cart ensures discount cap activates',
       tags: ["@precondition","@pricing","@safety-valve","@boundary"]
@@ -319,7 +307,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 5 }; // VIP
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: High-value bulk + VIP triggers discount cap", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     const expectedBulk = Math.round(50000 * 20 * 0.15); // 150000
     const expectedSubtotalAfterBulk = 1000000 - expectedBulk; // 850000
@@ -336,7 +324,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Multiple items with mixed bulk eligibility', () => {
     registerPrecondition({
-      name: 'Precondition: Multiple items with mixed bulk eligibility',
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Edge case: Some items qualify for bulk, others do not',
       tags: ["@precondition","@pricing","@bulk-discount"]
@@ -361,7 +348,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Multiple items with mixed bulk eligibility", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.originalTotal).toBe(60000); // 10K * 5 + 10K * 1
     expect(result.volumeDiscountTotal).toBe(7500); // 50K * 0.15 (only on first item)
@@ -371,7 +358,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Express delivery always costs $25 regardless of discounts', () => {
     registerPrecondition({
-      name: 'Precondition: Express delivery always costs $25 regardless of discounts',
       ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
       scenario: 'Edge case: Express delivery ignores free shipping and caps',
       tags: ["@precondition","@shipping","@express"]
@@ -387,7 +373,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 5 }; // VIP
 
     const result = PricingEngine.calculate(cart, user, ShippingMethod.EXPRESS);
-    logPrecondition("Precondition: Express delivery always costs $25 regardless of discounts", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.shipment.totalShipping).toBe(2500);
     expect(result.shipment.isFreeShipping).toBe(false);
@@ -396,7 +382,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Expedited delivery adds 15% surcharge on original subtotal', () => {
     registerPrecondition({
-      name: 'Precondition: Expedited delivery adds 15% surcharge on original subtotal',
       ruleReference: 'pricing-strategy.md §5.3 - Expedited Shipping',
       scenario: 'Edge case: Expedited surcharge = 15% of ORIGINAL (not discounted) subtotal',
       tags: ["@precondition","@shipping","@expedited"]
@@ -413,7 +398,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
     // Expedited shipping
     const expeditedResult = PricingEngine.calculate(cart, user, ShippingMethod.EXPEDITED);
-    logPrecondition('Precondition: Expedited delivery adds 15% surcharge on original subtotal', { items: cart, user, method: ShippingMethod.EXPEDITED }, expeditedResult);
+    logPrecondition({ items: cart, user, method: ShippingMethod.EXPEDITED }, expeditedResult);
     const originalSubtotal = 5000; // price * quantity
 
     // Check expedited surcharge is 15% of original subtotal
@@ -428,7 +413,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: All monetary values are integers (no floating point)', () => {
     registerPrecondition({
-      name: 'Precondition: All monetary values are integers (no floating point)',
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       scenario: 'Edge case: Validates all calculations use integer cents, not floats',
       tags: ["@precondition","@pricing","@precision","@critical"]
@@ -444,7 +428,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 3 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: All monetary values are integers (no floating point)", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     const numericFields: (number | undefined)[] = [
       result.originalTotal,
@@ -474,7 +458,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Bulk discount applies to low-value items with high quantity', () => {
     registerPrecondition({
-      name: 'Precondition: Bulk discount applies to low-value items with high quantity',
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Edge case: Low price, high quantity triggers bulk discount correctly',
       tags: ["@precondition","@pricing","@bulk-discount"]
@@ -490,7 +473,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Bulk discount applies to low-value items with high quantity", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.originalTotal).toBe(10000); // $1 * 100
     expect(result.volumeDiscountTotal).toBe(1500); // 10000 * 0.15
@@ -500,7 +483,6 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
 
   it('Precondition: Zero tenure year gets no VIP discount', () => {
     registerPrecondition({
-      name: 'Precondition: Zero tenure year gets no VIP discount',
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Edge case: New user (tenure = 0) should not get VIP discount',
       tags: ["@precondition","@pricing","@boundary","@vip"]
@@ -516,14 +498,13 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 0 };
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Zero tenure year gets no VIP discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.vipDiscount).toBe(0);
   });
 
   it('Precondition: Very high tenure (100 years) gets standard 5% discount', () => {
     registerPrecondition({
-      name: 'Precondition: Very high tenure (100 years) gets standard 5% discount',
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Edge case: Very long tenure still only gets 5% (not escalating discount)',
       tags: ["@precondition","@pricing","@vip","@boundary"]
@@ -539,7 +520,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     const user: User = { tenureYears: 100 }; // Very long tenure
 
     const result = PricingEngine.calculate(cart, user);
-    logPrecondition("Precondition: Very high tenure (100 years) gets standard 5% discount", { items: cart, user }, result);
+    logPrecondition({ items: cart, user }, result);
 
     expect(result.vipDiscount).toBe(500); // Still just 5%
     expect(result.finalTotal).toBe(9500);

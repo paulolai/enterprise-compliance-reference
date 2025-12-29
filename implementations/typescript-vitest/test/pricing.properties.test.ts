@@ -6,7 +6,6 @@ describe('Pricing Engine: Mathematical Invariants', () => {
 
   it('Invariant: Final Total is always <= Original Total', () => {
     verifyInvariant({
-      name: 'Final Total <= Original Total',
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       rule: 'Final Total must never exceed Original Total (prices never increase)',
       tags: ['@pricing', '@base-rules', '@revenue-protection']
@@ -17,7 +16,6 @@ describe('Pricing Engine: Mathematical Invariants', () => {
 
   it('Invariant: Line items with qty >= 3 always have 15% discount', () => {
     verifyInvariant({
-      name: 'Bulk Discount Rule',
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       rule: 'Any line item with Quantity >= 3 MUST have a 15% discount applied',
       tags: ['@pricing', '@bulk-discount', '@customer-experience']
@@ -33,7 +31,6 @@ describe('Pricing Engine: Mathematical Invariants', () => {
 
   it('Invariant: VIP discount is exactly 5% of subtotal (after bulk) if eligible', () => {
     verifyInvariant({
-      name: 'VIP Discount Rule',
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       rule: 'If User Tenure > 2, a 5% discount is applied to the post-bulk subtotal. Applied AFTER bulk discounts.',
       tags: ['@pricing', '@vip', '@loyalty', '@customer-experience']
@@ -45,7 +42,6 @@ describe('Pricing Engine: Mathematical Invariants', () => {
 
   it('Invariant: Total Discount strictly NEVER exceeds 30% of Original Total', () => {
     verifyInvariant({
-      name: 'Safety Valve Cap',
       ruleReference: 'pricing-strategy.md §4 - Safety Valve',
       rule: 'Total Discount (Bulk + VIP) strictly NEVER exceeds 30% of Original Total. Enforcement: Discount is capped at exactly 30% if it would exceed.',
       tags: ['@pricing', '@safety-valve', '@revenue-protection', '@critical']
@@ -60,7 +56,6 @@ describe('Pricing Engine: Mathematical Invariants', () => {
 
   it('Invariant: All monetary values are integers (Cents)', () => {
     verifyInvariant({
-      name: 'Integer Precision',
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       rule: 'All monetary values use integer cents to eliminate floating-point precision. Final values are exact integer cents.',
       tags: ['@pricing', '@base-rules', '@boundary']
