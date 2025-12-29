@@ -1,0 +1,387 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Pricing Engine: Business Specifications > 1. Base Rules (Currency & Tax) > should calculate total correctly for a simple cart 1`] = `
+{
+  "finalTotal": 300,
+  "grandTotal": 1400,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 0,
+      "name": "Apple",
+      "originalPrice": 100,
+      "quantity": 1,
+      "sku": "APPLE",
+      "totalAfterBulk": 100,
+      "totalBeforeDiscount": 100,
+    },
+    {
+      "bulkDiscount": 0,
+      "name": "Banana",
+      "originalPrice": 200,
+      "quantity": 1,
+      "sku": "BANANA",
+      "totalAfterBulk": 200,
+      "totalBeforeDiscount": 200,
+    },
+  ],
+  "originalTotal": 300,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": false,
+    "method": "STANDARD",
+    "totalShipping": 1100,
+    "weightSurcharge": 400,
+  },
+  "subtotalAfterBulk": 300,
+  "totalDiscount": 0,
+  "vipDiscount": 0,
+  "volumeDiscountTotal": 0,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 2. Bulk Discounts (15% for 3+ items) > should apply 15% discount for 3+ of same SKU 1`] = `
+{
+  "finalTotal": 255000,
+  "grandTotal": 255000,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 45000,
+      "name": "iPad",
+      "originalPrice": 100000,
+      "quantity": 3,
+      "sku": "IPAD",
+      "totalAfterBulk": 255000,
+      "totalBeforeDiscount": 300000,
+    },
+  ],
+  "originalTotal": 300000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": true,
+    "method": "STANDARD",
+    "totalShipping": 0,
+    "weightSurcharge": 600,
+  },
+  "subtotalAfterBulk": 255000,
+  "totalDiscount": 45000,
+  "vipDiscount": 0,
+  "volumeDiscountTotal": 45000,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 2. Bulk Discounts (15% for 3+ items) > should apply bulk discount to some items but not others 1`] = `
+{
+  "finalTotal": 87500,
+  "grandTotal": 87500,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 7500,
+      "name": "StandardWidget",
+      "originalPrice": 10000,
+      "quantity": 5,
+      "sku": "STANDARDWIDGET",
+      "totalAfterBulk": 42500,
+      "totalBeforeDiscount": 50000,
+    },
+    {
+      "bulkDiscount": 0,
+      "name": "PremiumWidget",
+      "originalPrice": 20000,
+      "quantity": 2,
+      "sku": "PREMIUMWIDGET",
+      "totalAfterBulk": 40000,
+      "totalBeforeDiscount": 40000,
+    },
+    {
+      "bulkDiscount": 0,
+      "name": "SmallWidget",
+      "originalPrice": 5000,
+      "quantity": 1,
+      "sku": "SMALLWIDGET",
+      "totalAfterBulk": 5000,
+      "totalBeforeDiscount": 5000,
+    },
+  ],
+  "originalTotal": 95000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": true,
+    "method": "STANDARD",
+    "totalShipping": 0,
+    "weightSurcharge": 1600,
+  },
+  "subtotalAfterBulk": 87500,
+  "totalDiscount": 7500,
+  "vipDiscount": 0,
+  "volumeDiscountTotal": 7500,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 3. VIP Tier (5% for tenure > 2 years) > should apply 5% discount for tenure > 2 years 1`] = `
+{
+  "finalTotal": 9500,
+  "grandTotal": 10400,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 0,
+      "name": "Widget",
+      "originalPrice": 10000,
+      "quantity": 1,
+      "sku": "WIDGET",
+      "totalAfterBulk": 10000,
+      "totalBeforeDiscount": 10000,
+    },
+  ],
+  "originalTotal": 10000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": false,
+    "method": "STANDARD",
+    "totalShipping": 900,
+    "weightSurcharge": 200,
+  },
+  "subtotalAfterBulk": 10000,
+  "totalDiscount": 500,
+  "vipDiscount": 500,
+  "volumeDiscountTotal": 0,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 3. VIP Tier (5% for tenure > 2 years) > should not apply VIP discount for tenure <= 2 years 1`] = `
+{
+  "finalTotal": 10000,
+  "grandTotal": 10900,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 0,
+      "name": "Product",
+      "originalPrice": 10000,
+      "quantity": 1,
+      "sku": "PRODUCT",
+      "totalAfterBulk": 10000,
+      "totalBeforeDiscount": 10000,
+    },
+  ],
+  "originalTotal": 10000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": false,
+    "method": "STANDARD",
+    "totalShipping": 900,
+    "weightSurcharge": 200,
+  },
+  "subtotalAfterBulk": 10000,
+  "totalDiscount": 0,
+  "vipDiscount": 0,
+  "volumeDiscountTotal": 0,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 4. Safety Valve (30% Max Discount Cap) > should cap total discount at exactly 30% of original total 1`] = `
+{
+  "finalTotal": 40375000,
+  "grandTotal": 40375000,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 7500000,
+      "name": "EnterpriseServer",
+      "originalPrice": 5000000,
+      "quantity": 10,
+      "sku": "ENTERPRISESERVER",
+      "totalAfterBulk": 42500000,
+      "totalBeforeDiscount": 50000000,
+    },
+  ],
+  "originalTotal": 50000000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": true,
+    "method": "STANDARD",
+    "totalShipping": 0,
+    "weightSurcharge": 2000,
+  },
+  "subtotalAfterBulk": 42500000,
+  "totalDiscount": 9625000,
+  "vipDiscount": 2125000,
+  "volumeDiscountTotal": 7500000,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 4. Safety Valve (30% Max Discount Cap) > should stack discounts correctly without hitting cap 1`] = `
+{
+  "finalTotal": 242250,
+  "grandTotal": 242250,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 45000,
+      "name": "PremiumLaptop",
+      "originalPrice": 100000,
+      "quantity": 3,
+      "sku": "PREMIUMLAPTOP",
+      "totalAfterBulk": 255000,
+      "totalBeforeDiscount": 300000,
+    },
+  ],
+  "originalTotal": 300000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": true,
+    "method": "STANDARD",
+    "totalShipping": 0,
+    "weightSurcharge": 600,
+  },
+  "subtotalAfterBulk": 255000,
+  "totalDiscount": 57750,
+  "vipDiscount": 12750,
+  "volumeDiscountTotal": 45000,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 5. Edge Cases > should handle an empty cart 1`] = `
+{
+  "finalTotal": 0,
+  "grandTotal": 700,
+  "isCapped": false,
+  "lineItems": [],
+  "originalTotal": 0,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": false,
+    "method": "STANDARD",
+    "totalShipping": 700,
+    "weightSurcharge": 0,
+  },
+  "subtotalAfterBulk": 0,
+  "totalDiscount": 0,
+  "vipDiscount": 0,
+  "volumeDiscountTotal": 0,
+}
+`;
+
+exports[`Pricing Engine: Business Specifications > 5. Edge Cases > should handle large carts with many line items 1`] = `
+{
+  "finalTotal": 144600,
+  "grandTotal": 144600,
+  "isCapped": false,
+  "lineItems": [
+    {
+      "bulkDiscount": 0,
+      "name": "Product 1",
+      "originalPrice": 1000,
+      "quantity": 2,
+      "sku": "PRODUCT_1",
+      "totalAfterBulk": 2000,
+      "totalBeforeDiscount": 2000,
+    },
+    {
+      "bulkDiscount": 900,
+      "name": "Product 2",
+      "originalPrice": 2000,
+      "quantity": 3,
+      "sku": "PRODUCT_2",
+      "totalAfterBulk": 5100,
+      "totalBeforeDiscount": 6000,
+    },
+    {
+      "bulkDiscount": 1800,
+      "name": "Product 3",
+      "originalPrice": 3000,
+      "quantity": 4,
+      "sku": "PRODUCT_3",
+      "totalAfterBulk": 10200,
+      "totalBeforeDiscount": 12000,
+    },
+    {
+      "bulkDiscount": 3000,
+      "name": "Product 4",
+      "originalPrice": 4000,
+      "quantity": 5,
+      "sku": "PRODUCT_4",
+      "totalAfterBulk": 17000,
+      "totalBeforeDiscount": 20000,
+    },
+    {
+      "bulkDiscount": 0,
+      "name": "Product 5",
+      "originalPrice": 5000,
+      "quantity": 1,
+      "sku": "PRODUCT_5",
+      "totalAfterBulk": 5000,
+      "totalBeforeDiscount": 5000,
+    },
+    {
+      "bulkDiscount": 0,
+      "name": "Product 6",
+      "originalPrice": 6000,
+      "quantity": 2,
+      "sku": "PRODUCT_6",
+      "totalAfterBulk": 12000,
+      "totalBeforeDiscount": 12000,
+    },
+    {
+      "bulkDiscount": 3150,
+      "name": "Product 7",
+      "originalPrice": 7000,
+      "quantity": 3,
+      "sku": "PRODUCT_7",
+      "totalAfterBulk": 17850,
+      "totalBeforeDiscount": 21000,
+    },
+    {
+      "bulkDiscount": 4800,
+      "name": "Product 8",
+      "originalPrice": 8000,
+      "quantity": 4,
+      "sku": "PRODUCT_8",
+      "totalAfterBulk": 27200,
+      "totalBeforeDiscount": 32000,
+    },
+    {
+      "bulkDiscount": 6750,
+      "name": "Product 9",
+      "originalPrice": 9000,
+      "quantity": 5,
+      "sku": "PRODUCT_9",
+      "totalAfterBulk": 38250,
+      "totalBeforeDiscount": 45000,
+    },
+    {
+      "bulkDiscount": 0,
+      "name": "Product 10",
+      "originalPrice": 10000,
+      "quantity": 1,
+      "sku": "PRODUCT_10",
+      "totalAfterBulk": 10000,
+      "totalBeforeDiscount": 10000,
+    },
+  ],
+  "originalTotal": 165000,
+  "shipment": {
+    "baseShipping": 700,
+    "expeditedSurcharge": 0,
+    "isFreeShipping": true,
+    "method": "STANDARD",
+    "totalShipping": 0,
+    "weightSurcharge": 6000,
+  },
+  "subtotalAfterBulk": 144600,
+  "totalDiscount": 20400,
+  "vipDiscount": 0,
+  "volumeDiscountTotal": 20400,
+}
+`;

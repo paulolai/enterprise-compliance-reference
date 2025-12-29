@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Shipping: Business Specifications > 1. Standard Shipping ($7 base + $2/kg) > should calculate standard shipping correctly for a heavy item 1`] = `
+{
+  "baseShipping": 700,
+  "expeditedSurcharge": 0,
+  "isFreeShipping": false,
+  "method": "STANDARD",
+  "totalShipping": 2700,
+  "weightSurcharge": 2000,
+}
+`;
+
+exports[`Shipping: Business Specifications > 1. Standard Shipping ($7 base + $2/kg) > should calculate standard shipping correctly for a light item 1`] = `
+{
+  "baseShipping": 700,
+  "expeditedSurcharge": 0,
+  "isFreeShipping": false,
+  "method": "STANDARD",
+  "totalShipping": 800,
+  "weightSurcharge": 100,
+}
+`;
+
+exports[`Shipping: Business Specifications > 2. Free Shipping (Orders > $100) > should NOT grant free shipping for orders exactly $100 1`] = `
+{
+  "baseShipping": 700,
+  "expeditedSurcharge": 0,
+  "isFreeShipping": false,
+  "method": "STANDARD",
+  "totalShipping": 900,
+  "weightSurcharge": 200,
+}
+`;
+
+exports[`Shipping: Business Specifications > 2. Free Shipping (Orders > $100) > should grant free shipping for orders over $100 1`] = `
+{
+  "baseShipping": 700,
+  "expeditedSurcharge": 0,
+  "isFreeShipping": true,
+  "method": "STANDARD",
+  "totalShipping": 0,
+  "weightSurcharge": 200,
+}
+`;
+
+exports[`Shipping: Business Specifications > 3. Expedited Shipping (Standard + 15% Original Total) > should calculate expedited shipping correctly 1`] = `
+{
+  "baseShipping": 700,
+  "expeditedSurcharge": 750,
+  "isFreeShipping": false,
+  "method": "EXPEDITED",
+  "totalShipping": 1650,
+  "weightSurcharge": 200,
+}
+`;
+
+exports[`Shipping: Business Specifications > 4. Express Delivery (Fixed $25) > should always cost $25 regardless of weight or total 1`] = `
+{
+  "baseShipping": 0,
+  "expeditedSurcharge": 0,
+  "isFreeShipping": false,
+  "method": "EXPRESS",
+  "totalShipping": 2500,
+  "weightSurcharge": 0,
+}
+`;

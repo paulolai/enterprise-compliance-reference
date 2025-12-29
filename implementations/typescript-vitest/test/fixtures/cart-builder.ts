@@ -2,6 +2,14 @@ import { CartItem, User, PricingResult, ShippingMethod, Cents } from '../../src/
 import { PricingEngine } from '../../src/pricing-engine';
 import { tracer } from '../modules/tracer';
 
+export interface ItemBuilderParams {
+  name: string;
+  price: Cents;
+  quantity?: number;
+  sku?: string;
+  weightInKg?: number;
+}
+
 export class CartBuilder {
   private items: CartItem[] = [];
   private user: User = { tenureYears: 0 };
@@ -11,7 +19,8 @@ export class CartBuilder {
     return new CartBuilder();
   }
 
-  withItem(name: string, price: Cents, quantity: number, sku?: string, weightInKg: number = 1.0): CartBuilder {
+  withItem(params: ItemBuilderParams): CartBuilder {
+    const { name, price, quantity = 1, sku, weightInKg = 1.0 } = params;
     this.items.push({
       sku: sku || name.toUpperCase().replace(/\s+/g, '_'),
       name,
