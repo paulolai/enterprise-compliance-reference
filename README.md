@@ -116,6 +116,126 @@ npm test
 
 **Note**: This implementation exists purely for educational comparison. It demonstrates the maintenance burden and refactoring difficulties of the Gherkin approach.
 
+---
+
+## For Business Stakeholders
+
+### How to Review Test Coverage (No Engineering Knowledge Required)
+
+This project uses **Executable Specifications**, which means the tests ARE the documentation. You don't need to read code to understand what's being verified.
+
+### The Quick Way: View the Test Report
+
+Engineers will share a link to the latest test report (hosted on GitHub Actions or CI).
+
+**What to do:**
+1. Click the link engineers send you
+2. Switch to the "Business Health" tab (at the top of the page)
+3. Scroll through the business rules
+
+**What you'll see**:
+```
+Safety Valve (Revenue Protection @critical)
+Protects revenue by capping discounts at 30%
+
+Edge Cases Covered:
+• Large orders ($5K items, 20+ qty) - verified 89 times
+• VIP customers with bulk discounts - verified 142 times
+• Combined discounts (bulk + VIP) - verified 289 times
+
+Status: ✅ Confirmed protecting revenue in 520 test cases
+```
+
+### Filter by What Matters to You
+
+The report has clickable tags at the top:
+- **@critical** - Business rules that protect revenue
+- **@revenue-protection** - Rules preventing margin erosion
+- **@customer-experience** - Rules affecting delivery promises
+
+Click any tag to show only those rules.
+
+### Understanding What You're Looking At
+
+| Section | What It Means |
+|---------|---------------|
+| **Status** | ✅ = All tests passed, this rule works correctly |
+| **Edge Cases Covered** | How many real scenarios we tested. Higher = more confidence |
+| **Rule Reference** | Links to the strategy document (what the business decided) |
+| **Why This Matters** | Plain-English explanation of why this rule exists |
+
+---
+
+### How to Influence Business Rules
+
+When you want to change pricing, shipping, or discounts:
+
+1. **Create a GitHub issue** describing what you want
+   - Example: "Increase free shipping threshold from $100 to $150"
+
+2. **We'll open a PR on the strategy document** (`docs/pricing-strategy.md`)
+   - Review the PR to confirm it captures what you meant
+
+3. **We'll show you the impact** BEFORE implementing anything
+   - We'll share a test report link
+   - You'll see things like "12% of carts will now get free shipping"
+
+4. **You approve or adjust**
+   - If 12% is too expensive, we try $140 → share new report → you see impact: 8%
+
+5. **We implement, tests verify, report shows it works**
+
+**Total time**: Usually 2-3 business days
+**Number of meetings**: 0 (all happens via GitHub PRs and shared report links)
+
+---
+
+### Why This Is Better
+
+With this approach, you get:
+
+✅ **See the actual impact** of changes (not just the plan)
+✅ **Proof that rules are tested** (report shows which edge cases covered)
+✅ **Quick adjustments** (we can tweak and show you new impact in 5 minutes)
+✅ **Traceability** (strategy → test → report, all linked)
+✅ **No meetings needed** (happens via GitHub + shared links)
+
+---
+
+### Real Example: Discount Cap Change
+
+Our team recently changed the discount cap from 30% to 25%:
+
+| Step | What Happened |
+|------|---------------|
+| Business request | "Reduce discount cap - margin erosion" |
+| Strategy PR | Updated docs, finance approved |
+| Impact test | Ran tests, got report showing impact |
+| Shared | "4% of test cases hit cap earlier" |
+| Business | "Proceed" |
+| Implemented | Tests passed, report showed ✅ |
+| Total time | 2 days, 0 meetings |
+
+---
+
+### Glossary
+
+| Term | Plain English |
+|------|---------------|
+| **Invariant** | A business rule that must always be true |
+| **Edge Case** | A tricky real-world scenario |
+| **Coverage** | How many edge cases we tested |
+| **Tag** | Label like `@critical` that categorizes rules |
+
+---
+
+### Questions?
+
+Just comment on GitHub PRs or open issues. Engineers will:
+- Explain what tests are verifying (plain English)
+- Show impact analysis before building
+- Adjust based on your feedback
+
 ### Compare Both Approaches Side-by-Side
 
 Run both implementations to experience the difference:
