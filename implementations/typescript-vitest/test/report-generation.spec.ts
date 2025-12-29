@@ -23,7 +23,7 @@ describe('Report Generation Validation', () => {
   });
 
   it('Traces can be logged and retrieved', () => {
-    const testName = 'Test Trace';
+    const testName = expect.getState().currentTestName!;
     const input = { items: [], user: {} };
     const output = { originalTotal: 0, finalTotal: 0 };
 

@@ -15,7 +15,7 @@ describe('Shipping: Business Specifications', () => {
           weightInKg: 0.5 
         })
         .withStandardShipping()
-        .calculate('Standard Shipping - Light');
+        .calculate(expect.getState().currentTestName);
 
       expect(result.shipment).toMatchSnapshot();
     });
@@ -30,7 +30,7 @@ describe('Shipping: Business Specifications', () => {
           weightInKg: 10.0 
         })
         .withStandardShipping()
-        .calculate('Standard Shipping - Heavy');
+        .calculate(expect.getState().currentTestName);
 
       expect(result.shipment).toMatchSnapshot();
     });
@@ -47,7 +47,7 @@ describe('Shipping: Business Specifications', () => {
           weightInKg: 1.0 
         })
         .withStandardShipping()
-        .calculate('Free Shipping - Over Threshold');
+        .calculate(expect.getState().currentTestName);
 
       expect(result.shipment.isFreeShipping).toBe(true);
       expect(result.shipment.totalShipping).toBe(0);
@@ -64,7 +64,7 @@ describe('Shipping: Business Specifications', () => {
           weightInKg: 1.0 
         })
         .withStandardShipping()
-        .calculate('Free Shipping - At Threshold');
+        .calculate(expect.getState().currentTestName);
 
       expect(result.shipment.isFreeShipping).toBe(false);
       expect(result.shipment).toMatchSnapshot();
@@ -82,7 +82,7 @@ describe('Shipping: Business Specifications', () => {
           weightInKg: 1.0 
         })
         .withExpeditedShipping()
-        .calculate('Expedited Shipping - Normal');
+        .calculate(expect.getState().currentTestName);
 
       expect(result.shipment).toMatchSnapshot();
     });
@@ -99,7 +99,7 @@ describe('Shipping: Business Specifications', () => {
           weightInKg: 20.0 
         })
         .withExpressShipping()
-        .calculate('Express Delivery - Fixed Price');
+        .calculate(expect.getState().currentTestName);
 
       expect(result.shipment.totalShipping).toBe(2500);
       expect(result.shipment).toMatchSnapshot();

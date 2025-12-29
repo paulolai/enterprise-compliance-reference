@@ -18,7 +18,7 @@ describe('Pricing Engine: Business Specifications', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'Apple', price: 100, quantity: 1 })
         .withItem({ name: 'Banana', price: 200, quantity: 1 })
-        .calculate('Base Rules - Simple Cart');
+        .calculate(expect.getState().currentTestName);
       
       expect(result).toMatchSnapshot();
     });
@@ -32,7 +32,7 @@ describe('Pricing Engine: Business Specifications', () => {
     it('should apply 15% discount for 3+ of same SKU', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'iPad', price: 100000, quantity: 3 })
-        .calculate('Bulk Discount - iPad x3');
+        .calculate(expect.getState().currentTestName);
       
       expect(result).toMatchSnapshot();
     });
@@ -46,7 +46,7 @@ describe('Pricing Engine: Business Specifications', () => {
         .withItem({ name: 'StandardWidget', price: 10000, quantity: 5 })
         .withItem({ name: 'PremiumWidget', price: 20000, quantity: 2 })
         .withItem({ name: 'SmallWidget', price: 5000, quantity: 1 })
-        .calculate('Mixed Cart - Some Bulk');
+        .calculate(expect.getState().currentTestName);
 
       expect(result).toMatchSnapshot();
     });
@@ -57,7 +57,7 @@ describe('Pricing Engine: Business Specifications', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'Widget', price: 10000, quantity: 1 })
         .asVipUser()
-        .calculate('VIP Discount - Tenure > 2y');
+        .calculate(expect.getState().currentTestName);
       
       expect(result).toMatchSnapshot();
     });
@@ -66,7 +66,7 @@ describe('Pricing Engine: Business Specifications', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'Product', price: 10000, quantity: 1 })
         .withTenure(2)
-        .calculate('VIP Discount - Tenure exactly 2y');
+        .calculate(expect.getState().currentTestName);
 
       expect(result).toMatchSnapshot();
     });
@@ -77,7 +77,7 @@ describe('Pricing Engine: Business Specifications', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'PremiumLaptop', price: 100000, quantity: 3 })
         .asVipUser()
-        .calculate('Safety Valve - Below Cap');
+        .calculate(expect.getState().currentTestName);
       
       expect(result).toMatchSnapshot();
     });
@@ -86,7 +86,7 @@ describe('Pricing Engine: Business Specifications', () => {
       const result = CartBuilder.new()
         .withItem({ name: 'EnterpriseServer', price: 5000000, quantity: 10 })
         .asVipUser()
-        .calculate('Safety Valve - Large Order');
+        .calculate(expect.getState().currentTestName);
 
       expect(result).toMatchSnapshot();
     });
@@ -96,7 +96,7 @@ describe('Pricing Engine: Business Specifications', () => {
     it('should handle an empty cart', () => {
       const result = CartBuilder.new()
         .asVipUser()
-        .calculate('Edge Case - Empty Cart');
+        .calculate(expect.getState().currentTestName);
 
       expect(result).toMatchSnapshot();
     });
@@ -110,7 +110,7 @@ describe('Pricing Engine: Business Specifications', () => {
           quantity: i % 5 + 1 
         });
       }
-      const result = builder.calculate('Edge Case - Large Cart');
+      const result = builder.calculate(expect.getState().currentTestName);
 
       expect(result).toMatchSnapshot();
     });

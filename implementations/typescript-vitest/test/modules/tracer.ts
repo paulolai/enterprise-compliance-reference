@@ -147,10 +147,22 @@ class TestTracer {
     this.alwaysLogTests.add(testName);
   }
 
+  private logCounts: Map<string, number> = new Map();
+  private maxLogsPerTest: number = 5;
+
   log(testName: string, input: any, output: any) {
     // Check if we should log based on sampling (unless always logged)
-    const shouldLog = this.alwaysLogTests.has(testName) || Math.random() < this.sampleRate;
+    // For property based tests, we want to capture the first few examples to show variety
+    // rather than just one.
+    
+    let currentCount = this.logCounts.get(testName) || 0;
+    
+    // Always log if explicitly requested, or if we haven't hit the limit yet
+    const shouldLog = this.alwaysLogTests.has(testName) || currentCount < this.maxLogsPerTest;
+    
     if (!shouldLog) return;
+
+    this.logCounts.set(testName, currentCount + 1);
 
     const entry: LogEntry = {
       testName,

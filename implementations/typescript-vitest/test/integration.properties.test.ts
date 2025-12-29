@@ -8,7 +8,7 @@ import { tracer } from './modules/tracer';
 describe('Integration: Multi-Rule Interactions', () => {
 
   it('Integration: Bulk + VIP discounts combine correctly and respect cap', () => {
-    const testName = 'Integration: Bulk + VIP discounts combine correctly and respect cap';
+    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
@@ -50,7 +50,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Free shipping eligibility depends on POST-DISCOUNT total', () => {
-    const testName = 'Integration: Free shipping eligibility depends on POST-DISCOUNT total';
+    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
@@ -72,7 +72,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Express/Expedited shipping calculations are correct', () => {
-    const testName = 'Integration: Express/Expedited shipping calculations are correct';
+    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
@@ -115,7 +115,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Complex carts with bulk, VIP, and free shipping', () => {
-    const testName = 'Integration: Complex carts with bulk, VIP, and free shipping';
+    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
@@ -182,6 +182,14 @@ describe('Integration: Multi-Rule Interactions', () => {
 
     for (const test of boundaryTests) {
       const result = PricingEngine.calculate(test.items, test.user, test.method);
+      
+      // Log boundary cases
+      tracer.log(expect.getState().currentTestName!, { 
+        scenario: test.name,
+        items: test.items, 
+        user: test.user, 
+        method: test.method 
+      }, result);
 
       console.log(`\nBoundary Test: ${test.name}`);
       console.log(`  Original Total: $${(result.originalTotal / 100).toFixed(2)}`);
@@ -197,7 +205,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Integration: Line item math matches cart total math', () => {
-    const testName = 'Integration: Line item math matches cart total math';
+    const testName = expect.getState().currentTestName!;
     fc.assert(
       fc.property(
         cartArb,
