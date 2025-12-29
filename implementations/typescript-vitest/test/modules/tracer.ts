@@ -96,32 +96,33 @@ export class TestTracer<TInput = unknown, TOutput = unknown> {
    * Register invariant metadata for attestation reporting
    */
   registerInvariant(metadata: InvariantMetadata) {
-    this.invariantMetadatas.set(metadata.name, metadata);
+    const name = metadata.name || 'unnamed-invariant-' + Date.now();
+    this.invariantMetadatas.set(name, metadata);
 
     // Write to shared metadata file (all workers append to same file)
     const metadataEntry: MetadataEntry = {
       type: 'metadata',
-      name: metadata.name,
+      name,
       ruleReference: metadata.ruleReference,
       rule: metadata.rule,
       tags: metadata.tags,
       timestamp: Date.now()
     };
-    
+
     try {
       fs.appendFileSync(this.metadataFile, JSON.stringify(metadataEntry) + '\n');
     } catch (e) {
       const error = e as Error;
       console.error(`[Tracer] Failed to write metadata to ${this.metadataFile}:`, {
-        name: metadata.name,
+        name,
         error: error.message
       });
     }
 
     // Initialize summary if not exists
-    if (!this.invariantSummaries.has(metadata.name)) {
-      this.invariantSummaries.set(metadata.name, {
-        name: metadata.name,
+    if (!this.invariantSummaries.has(name)) {
+      this.invariantSummaries.set(name, {
+        name,
         ruleReference: metadata.ruleReference,
         rule: metadata.rule,
         tags: metadata.tags,

@@ -109,7 +109,7 @@ describe('Statistics: Coverage Analysis', () => {
       console.log(`  ✅ ${s.name} - verified ${s.totalRuns} times`);
     });
 
-    console.log(`\nCustomer Experience Invariants: ${shippingMethodArb.length > 0 ? 'Multiple' : 'Pending'}`);
+    console.log(`\nCustomer Experience Invariants: Pending`);
 
     // Report by Tag (Business Priorities)
     console.log('\n🏷️  Coverage by Business Priority Tags:\n');
@@ -163,11 +163,11 @@ describe('Statistics: Coverage Analysis', () => {
 
     console.log(`User Tenure Distribution:`);
     console.log(`  • VIP (Tenure > 2): ${vipScenarios} scenarios (${vipPercentage}%)`);
-    console.log(`  • Non-VIP: ${nonVipScenarios} scenarios (${(100 - parseFloat(vipPercentage)).toFixed(1)}%)`);
+    console.log(`  • Non-VIP: ${nonVipScenarios} scenarios (${(100 - parseFloat(String(vipPercentage))).toFixed(1)}%)`);
 
     console.log(`\nCart Composition Distribution:`);
     console.log(`  • Bulk Items (Qty >= 3): ${bulkScenarios} items (${bulkPercentage}%)`);
-    console.log(`  • Single/Low Quantity: ${nonBulkScenarios} items (${(100 - parseFloat(bulkPercentage)).toFixed(1)}%)`);
+    console.log(`  • Single/Low Quantity: ${nonBulkScenarios} items (${(100 - parseFloat(String(bulkPercentage))).toFixed(1)}%)`);
 
     console.log(`\nBusiness Rule Triggers:`);
     console.log(`  • Discount Cap (Safety Valve): ${discountCapHits} hits (${capHitPercentage} of all scenarios)`);

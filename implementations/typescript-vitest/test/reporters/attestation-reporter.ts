@@ -431,7 +431,7 @@ ${indent} ${task.name}
                  // Traces
                  if (includeTraces) {
                     let interactions = tracer.get(getFullTestName(subTask));
-                    if (interactions.length === 0 && metadata) interactions = tracer.get(metadata.name);
+                    if (interactions.length === 0 && metadata?.name) interactions = tracer.get(metadata.name);
                     
                     if (interactions.length > 0) {
                       interactions.forEach((interaction, idx) => {

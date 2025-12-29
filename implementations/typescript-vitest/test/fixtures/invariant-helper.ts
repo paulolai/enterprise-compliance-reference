@@ -1,4 +1,5 @@
 import * as fc from 'fast-check';
+import { expect } from 'vitest';
 import { PricingEngine } from '../../src/pricing-engine';
 import { cartArb, userArb, shippingMethodArb } from './arbitraries';
 import { tracer } from '../modules/tracer';

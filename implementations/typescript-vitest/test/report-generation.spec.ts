@@ -49,11 +49,15 @@ describe('Report Generation Validation', () => {
     reporter.onInit();
 
     // Create minimal mock file structure
-    const mockFiles: File[] = [{
+    const mockFiles: any[] = [{
       id: 'mock-id',
       name: 'mock.test.ts',
       filepath: '/mock/path/mock.test.ts',
       mode: 'run',
+      projectName: 'mock-project',
+      type: 'suite',
+      file: '/mock/path/mock.test.ts',
+      meta: {},
       tasks: []
     }];
 
