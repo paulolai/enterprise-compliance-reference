@@ -9,9 +9,12 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "vitest": "^2.0.0",
+    "fast-check": "^3.0.0",
     "ts-node": "^10.9.1",
-    "fast-check": "^3.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "zod": "^4.2.1"
   }
 }

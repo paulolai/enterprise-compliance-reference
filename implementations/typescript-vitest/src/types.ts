@@ -1,62 +1,78 @@
+import { z } from 'zod';
+
+// --- Domain Schemas (The Executable Specification) ---
+
 export enum ShippingMethod {
   STANDARD = 'STANDARD',
   EXPEDITED = 'EXPEDITED',
   EXPRESS = 'EXPRESS'
 }
 
+export const ShippingMethodSchema = z.nativeEnum(ShippingMethod);
+
 /**
  * Monetary value in integer cents (e.g., 100 = $1.00)
+ * Constraint: Must be an integer and non-negative.
  */
-export type Cents = number;
+export const CentsSchema = z.number().int().nonnegative().describe("Integer cents");
+export type Cents = z.infer<typeof CentsSchema>;
 
 /**
  * Monetary value in dollars (e.g., 1.00)
  */
 export type Dollars = number;
 
-export interface CartItem {
-  sku: string;
-  name: string;
-  price: Cents; // AUD, incl 10% GST
-  quantity: number;
-  weightInKg: number; // Item weight for shipping calculation
-}
+export const CartItemSchema = z.object({
+  sku: z.string().min(1),
+  name: z.string(),
+  price: CentsSchema,
+  quantity: z.number().int().positive(),
+  weightInKg: z.number().nonnegative()
+});
+export type CartItem = z.infer<typeof CartItemSchema>;
 
-export interface User {
-  tenureYears: number;
-}
+export const UserSchema = z.object({
+  tenureYears: z.number().nonnegative()
+});
+export type User = z.infer<typeof UserSchema>;
 
-export interface LineItemResult {
-  sku: string;
-  name: string;
-  originalPrice: Cents;
-  quantity: number;
-  totalBeforeDiscount: Cents;
-  bulkDiscount: Cents;
-  totalAfterBulk: Cents;
-}
+export const LineItemResultSchema = z.object({
+  sku: z.string(),
+  name: z.string(),
+  originalPrice: CentsSchema,
+  quantity: z.number().int(),
+  totalBeforeDiscount: CentsSchema,
+  bulkDiscount: CentsSchema,
+  totalAfterBulk: CentsSchema
+});
+export type LineItemResult = z.infer<typeof LineItemResultSchema>;
 
-export interface ShipmentInfo {
-  method: ShippingMethod;
-  baseShipping: Cents;
-  weightSurcharge: Cents;
-  expeditedSurcharge: Cents;
-  totalShipping: Cents;
-  isFreeShipping: boolean;
-}
+export const ShipmentInfoSchema = z.object({
+  method: ShippingMethodSchema,
+  baseShipping: CentsSchema,
+  weightSurcharge: CentsSchema,
+  expeditedSurcharge: CentsSchema,
+  totalShipping: CentsSchema,
+  isFreeShipping: z.boolean()
+});
+export type ShipmentInfo = z.infer<typeof ShipmentInfoSchema>;
 
-export interface PricingResult {
-  originalTotal: Cents;
-  volumeDiscountTotal: Cents;
-  subtotalAfterBulk: Cents;
-  vipDiscount: Cents;
-  totalDiscount: Cents;
-  isCapped: boolean;
-  finalTotal: Cents;
-  lineItems: LineItemResult[];
-  shipment: ShipmentInfo;
-  grandTotal: Cents;
-}
+export const PricingResultSchema = z.object({
+  originalTotal: CentsSchema,
+  volumeDiscountTotal: CentsSchema,
+  subtotalAfterBulk: CentsSchema,
+  vipDiscount: CentsSchema,
+  totalDiscount: CentsSchema,
+  isCapped: z.boolean(),
+  finalTotal: CentsSchema,
+  lineItems: z.array(LineItemResultSchema),
+  shipment: ShipmentInfoSchema,
+  grandTotal: CentsSchema
+});
+export type PricingResult = z.infer<typeof PricingResultSchema>;
+
+
+// --- Utilities ---
 
 /**
  * Utility to convert dollars to cents safely

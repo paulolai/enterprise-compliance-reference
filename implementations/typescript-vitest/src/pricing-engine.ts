@@ -1,11 +1,22 @@
-import { CartItem, User, PricingResult, LineItemResult, ShippingMethod, ShipmentInfo, Cents } from './types';
+import { z } from 'zod';
+import { 
+  CartItem, User, PricingResult, LineItemResult, ShippingMethod, ShipmentInfo, Cents,
+  CartItemSchema, UserSchema, ShippingMethodSchema 
+} from './types';
 
 export class PricingEngine {
   static calculate(items: CartItem[], user: User, shippingMethod: ShippingMethod = ShippingMethod.STANDARD): PricingResult {
+    // Runtime Schema Validation (The "Executable Spec")
+    // This ensures that the inputs conform to the business rules (e.g., non-negative prices, integer cents)
+    // before any logic is executed.
+    const validItems = z.array(CartItemSchema).parse(items);
+    const validUser = UserSchema.parse(user);
+    const validMethod = ShippingMethodSchema.parse(shippingMethod);
+
     let originalTotal: Cents = 0;
     let volumeDiscountTotal: Cents = 0;
     
-    const lineItemResults: LineItemResult[] = items.map(item => {
+    const lineItemResults: LineItemResult[] = validItems.map(item => {
       const lineOriginalTotal = item.price * item.quantity;
       originalTotal += lineOriginalTotal;
       
@@ -31,7 +42,7 @@ export class PricingEngine {
     
     // VIP Rule: 5% off subtotal if tenure > 2 years
     let vipDiscount: Cents = 0;
-    if (user.tenureYears > 2) {
+    if (validUser.tenureYears > 2) {
       vipDiscount = Math.round(subtotalAfterBulk * 0.05);
     }
 
@@ -49,10 +60,10 @@ export class PricingEngine {
 
     // === Step 2: Calculate Shipping ===
     const shipment = this.calculateShipping(
-      items,
+      validItems,
       originalTotal,
       finalTotal,
-      shippingMethod
+      validMethod
     );
 
     // === Step 3: Final Totals ===
