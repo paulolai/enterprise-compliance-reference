@@ -7,7 +7,7 @@ import { tracer } from './modules/tracer';
 
 describe('Integration: Multi-Rule Interactions', () => {
 
-  it('Integration: Bulk + VIP discounts combine correctly and respect cap', () => {
+  it('Bulk + VIP discounts combine correctly and respect cap', () => {
     fc.assert(
       fc.property(
         cartArb,
@@ -48,7 +48,7 @@ describe('Integration: Multi-Rule Interactions', () => {
     );
   });
 
-  it('Integration: Free shipping eligibility depends on POST-DISCOUNT total', () => {
+  it('Free shipping eligibility depends on POST-DISCOUNT total', () => {
     fc.assert(
       fc.property(
         cartArb,
@@ -69,7 +69,7 @@ describe('Integration: Multi-Rule Interactions', () => {
     );
   });
 
-  it('Integration: Express/Expedited shipping calculations are correct', () => {
+  it('Express/Expedited shipping calculations are correct', () => {
     fc.assert(
       fc.property(
         cartArb,
@@ -111,7 +111,7 @@ describe('Integration: Multi-Rule Interactions', () => {
     );
   });
 
-  it('Integration: Complex carts with bulk, VIP, and free shipping', () => {
+  it('Complex carts with bulk, VIP, and free shipping', () => {
     fc.assert(
       fc.property(
         cartArb,
@@ -142,7 +142,7 @@ describe('Integration: Multi-Rule Interactions', () => {
     );
   });
 
-  it('Integration: Boundary conditions are handled consistently', () => {
+  it('Boundary conditions are handled consistently', () => {
     const boundaryTests = [
       {
         name: 'Exactly 3 bulk items, exactly 2 years tenure (non-VIP), exactly $100',
@@ -200,7 +200,7 @@ describe('Integration: Multi-Rule Interactions', () => {
     }
   });
 
-  it('Integration: Line item math matches cart total math', () => {
+  it('Line item math matches cart total math', () => {
     fc.assert(
       fc.property(
         cartArb,

@@ -5,7 +5,7 @@ import { registerPrecondition, logPrecondition } from './fixtures/invariant-help
 
 describe('Preconditions: Input Validation & Edge Cases', () => {
 
-  it('Precondition: Empty cart results in zero totals', () => {
+  it('Empty cart results in zero totals', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       scenario: 'Edge case: Empty cart should not crash, should only charge shipping',
@@ -28,7 +28,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.grandTotal).toBeGreaterThan(0); // Shipping should still apply
   });
 
-  it('Precondition: Single item with qty 1 gets no bulk discount', () => {
+  it('Single item with qty 1 gets no bulk discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Boundary: quantity < 3 should NOT receive bulk discount',
@@ -54,7 +54,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.lineItems[0].totalAfterBulk).toBe(10000);
   });
 
-  it('Precondition: Exactly 2 items (boundary condition) gets no bulk discount', () => {
+  it('Exactly 2 items (boundary condition) gets no bulk discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Critical boundary: quantity = 2 (just below bulk threshold of 3)',
@@ -79,7 +79,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.lineItems[0].bulkDiscount).toBe(0);
   });
 
-  it('Precondition: Exactly 3 items (boundary condition) gets bulk discount', () => {
+  it('Exactly 3 items (boundary condition) gets bulk discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Critical boundary: quantity = 3 (exactly at bulk threshold, MUST get discount)',
@@ -104,7 +104,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.lineItems[0].totalAfterBulk).toBe(12750); // 15000 - 2250
   });
 
-  it('Precondition: Exactly 2 years tenure (boundary) gets no VIP discount', () => {
+  it('Exactly 2 years tenure (boundary) gets no VIP discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Critical boundary: tenure = 2 years (just below > 2 requirement)',
@@ -127,7 +127,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.finalTotal).toBe(result.originalTotal);
   });
 
-  it('Precondition: Exactly 3 years tenure (boundary) gets VIP discount', () => {
+  it('Exactly 3 years tenure (boundary) gets VIP discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Critical boundary: tenure = 3 years (just over > 2 requirement, MUST get discount)',
@@ -150,7 +150,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.finalTotal).toBe(9500); // 10000 - 500
   });
 
-  it('Precondition: Exactly $100 cart does NOT qualify for free shipping', () => {
+  it('Exactly $100 cart does NOT qualify for free shipping', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       scenario: 'Critical boundary: finalTotal = $100.00 (must be > $100)',
@@ -174,7 +174,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.shipment.totalShipping).toBe(900); // $7 + 1kg * $2
   });
 
-  it('Precondition: $100.01 cart DOES qualify for free shipping', () => {
+  it('$100.01 cart DOES qualify for free shipping', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       scenario: 'Critical boundary: finalTotal = $100.01 (just over threshold, MUST get free shipping)',
@@ -198,7 +198,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.shipment.totalShipping).toBe(0);
   });
 
-  it('Precondition: Zero price items are handled correctly', () => {
+  it('Zero price items are handled correctly', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       scenario: 'Edge case: Zero price items should not crash calculations',
@@ -232,7 +232,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.finalTotal).toBeLessThanOrEqual(result.originalTotal);
   });
 
-  it('Precondition: Zero weight items work correctly', () => {
+  it('Zero weight items work correctly', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §5.1 - Base Shipping & Weight',
       scenario: 'Edge case: Zero weight items should only pay base shipping',
@@ -255,7 +255,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.shipment.totalShipping).toBe(700);
   });
 
-  it('Precondition: Maximum discount cap (30%) is enforced correctly', () => {
+  it('Maximum discount cap (30%) is enforced correctly', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §4 - Safety Valve',
       scenario: 'Edge case: Large bulk + VIP order checks that 30% cap works',
@@ -290,7 +290,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.totalDiscount).toBe(expectedTotalDiscount);
   });
 
-  it('Precondition: High-value bulk + VIP triggers discount cap', () => {
+  it('High-value bulk + VIP triggers discount cap', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §4 - Safety Valve',
       scenario: 'Edge case: Very high-value cart ensures discount cap activates',
@@ -322,7 +322,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.isCapped).toBe(false);
   });
 
-  it('Precondition: Multiple items with mixed bulk eligibility', () => {
+  it('Multiple items with mixed bulk eligibility', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Edge case: Some items qualify for bulk, others do not',
@@ -356,7 +356,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.lineItems[1].bulkDiscount).toBe(0);
   });
 
-  it('Precondition: Express delivery always costs $25 regardless of discounts', () => {
+  it('Express delivery always costs $25 regardless of discounts', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
       scenario: 'Edge case: Express delivery ignores free shipping and caps',
@@ -380,7 +380,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.grandTotal).toBe(result.finalTotal + 2500);
   });
 
-  it('Precondition: Expedited delivery adds 15% surcharge on original subtotal', () => {
+  it('Expedited delivery adds 15% surcharge on original subtotal', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §5.3 - Expedited Shipping',
       scenario: 'Edge case: Expedited surcharge = 15% of ORIGINAL (not discounted) subtotal',
@@ -411,7 +411,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(expeditedResult.shipment.isFreeShipping).toBe(false);
   });
 
-  it('Precondition: All monetary values are integers (no floating point)', () => {
+  it('All monetary values are integers (no floating point)', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       scenario: 'Edge case: Validates all calculations use integer cents, not floats',
@@ -456,7 +456,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     });
   });
 
-  it('Precondition: Bulk discount applies to low-value items with high quantity', () => {
+  it('Bulk discount applies to low-value items with high quantity', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §2 - Bulk Discounts',
       scenario: 'Edge case: Low price, high quantity triggers bulk discount correctly',
@@ -481,7 +481,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.finalTotal).toBe(8500);
   });
 
-  it('Precondition: Zero tenure year gets no VIP discount', () => {
+  it('Zero tenure year gets no VIP discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Edge case: New user (tenure = 0) should not get VIP discount',
@@ -503,7 +503,7 @@ describe('Preconditions: Input Validation & Edge Cases', () => {
     expect(result.vipDiscount).toBe(0);
   });
 
-  it('Precondition: Very high tenure (100 years) gets standard 5% discount', () => {
+  it('Very high tenure (100 years) gets standard 5% discount', () => {
     registerPrecondition({
       ruleReference: 'pricing-strategy.md §3 - VIP Tier',
       scenario: 'Edge case: Very long tenure still only gets 5% (not escalating discount)',
