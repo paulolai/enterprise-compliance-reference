@@ -1,20 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import * as crypto from 'crypto';
 import { InvariantMetadata } from '../fixtures/invariant-helper';
 
-export interface Interaction {
-  input: any;
-  output: any;
+export interface Interaction<TInput = unknown, TOutput = unknown> {
+  input: TInput;
+  output: TOutput;
   timestamp: number;
 }
 
 // Log entry structure for append-only file
-interface LogEntry {
+interface LogEntry<TInput = unknown, TOutput = unknown> {
   testName: string;
   invariantMetadata?: InvariantMetadata;
-  interaction: Interaction;
+  interaction: Interaction<TInput, TOutput>;
 }
 
 // Separate file for metadata registry
@@ -57,7 +56,7 @@ export interface TagCoverage {
   passed: boolean;
 }
 
-class TestTracer {
+export class TestTracer<TInput = unknown, TOutput = unknown> {
   private tempFile: string;
   private metadataFile: string;
   private runDir: string;
@@ -65,6 +64,8 @@ class TestTracer {
   private invariantSummaries: Map<string, InvariantSummary> = new Map();
   private sampleRate: number = 1.0;
   private alwaysLogTests: Set<string> = new Set();
+  private logCounts: Map<string, number> = new Map();
+  private maxLogsPerTest: number = 5;
 
   constructor() {
     // Check if there's already a current run ID (from another worker)
@@ -106,7 +107,16 @@ class TestTracer {
       tags: metadata.tags,
       timestamp: Date.now()
     };
-    fs.appendFileSync(this.metadataFile, JSON.stringify(metadataEntry) + '\n');
+    
+    try {
+      fs.appendFileSync(this.metadataFile, JSON.stringify(metadataEntry) + '\n');
+    } catch (e) {
+      const error = e as Error;
+      console.error(`[Tracer] Failed to write metadata to ${this.metadataFile}:`, {
+        name: metadata.name,
+        error: error.message
+      });
+    }
 
     // Initialize summary if not exists
     if (!this.invariantSummaries.has(metadata.name)) {
@@ -147,14 +157,10 @@ class TestTracer {
     this.alwaysLogTests.add(testName);
   }
 
-  private logCounts: Map<string, number> = new Map();
-  private maxLogsPerTest: number = 5;
-
-  log(testName: string, input: any, output: any) {
-    // Check if we should log based on sampling (unless always logged)
-    // For property based tests, we want to capture the first few examples to show variety
-    // rather than just one.
-    
+  /**
+   * Log an interaction for a specific test
+   */
+  log(testName: string, input: TInput, output: TOutput): void {
     let currentCount = this.logCounts.get(testName) || 0;
     
     // Always log if explicitly requested, or if we haven't hit the limit yet
@@ -164,7 +170,7 @@ class TestTracer {
 
     this.logCounts.set(testName, currentCount + 1);
 
-    const entry: LogEntry = {
+    const entry: LogEntry<TInput, TOutput> = {
       testName,
       invariantMetadata: this.invariantMetadatas.get(testName),
       interaction: {
@@ -181,16 +187,27 @@ class TestTracer {
     try {
       fs.appendFileSync(this.tempFile, JSON.stringify(entry) + '\n');
     } catch (e) {
-      console.error('Failed to write trace:', e);
+      const error = e as Error;
+      console.error(`[Tracer] Failed to write trace to ${this.tempFile}:`, {
+        testName,
+        error: error.message,
+        stack: error.stack
+      });
     }
   }
 
-  get(testName: string): Interaction[] {
+  /**
+   * Get all interactions for a specific test
+   */
+  get(testName: string): Interaction<TInput, TOutput>[] {
     const allLogs = this.readAll();
     return allLogs[testName] || [];
   }
 
-  getAll(): Record<string, Interaction[]> {
+  /**
+   * Get all interactions indexed by test name
+   */
+  getAll(): Record<string, Interaction<TInput, TOutput>[]> {
     return this.readAll();
   }
 
@@ -238,17 +255,24 @@ class TestTracer {
   }
 
   clear() {
-    // Clear the files but keep the run directory for historical records
-    // Also keep the run ID file so workers can share it
     if (fs.existsSync(this.tempFile)) {
-      fs.unlinkSync(this.tempFile);
+      try {
+        fs.unlinkSync(this.tempFile);
+      } catch (e) {
+        console.warn(`[Tracer] Failed to clear temp file ${this.tempFile}:`, (e as Error).message);
+      }
     }
     if (fs.existsSync(this.metadataFile)) {
-      fs.unlinkSync(this.metadataFile);
+      try {
+        fs.unlinkSync(this.metadataFile);
+      } catch (e) {
+        console.warn(`[Tracer] Failed to clear metadata file ${this.metadataFile}:`, (e as Error).message);
+      }
     }
     this.invariantMetadatas.clear();
     this.invariantSummaries.clear();
     this.alwaysLogTests.clear();
+    this.logCounts.clear();
   }
 
   /**
@@ -281,7 +305,11 @@ class TestTracer {
         }
       }
     } catch (e) {
-      console.warn('Failed to load metadata:', e);
+      const error = e as Error;
+      console.warn(`[Tracer] Failed to load metadata from ${this.metadataFile}:`, {
+        error: error.message,
+        stack: error.stack
+      });
     }
   }
 
@@ -292,8 +320,8 @@ class TestTracer {
     return this.runDir;
   }
 
-  private readAll(): Record<string, Interaction[]> {
-    const data: Record<string, Interaction[]> = {};
+  private readAll(): Record<string, Interaction<TInput, TOutput>[]> {
+    const data: Record<string, Interaction<TInput, TOutput>[]> = {};
 
     try {
       if (fs.existsSync(this.tempFile)) {
@@ -304,7 +332,7 @@ class TestTracer {
           if (!line.trim()) continue;
 
           try {
-            const entry: LogEntry = JSON.parse(line);
+            const entry: LogEntry<TInput, TOutput> = JSON.parse(line);
             if (!data[entry.testName]) {
               data[entry.testName] = [];
             }
@@ -315,7 +343,8 @@ class TestTracer {
         }
       }
     } catch (e) {
-      // Ignore errors
+      const error = e as Error;
+      console.warn(`[Tracer] Failed to read traces from ${this.tempFile}:`, error.message);
     }
 
     return data;

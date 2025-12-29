@@ -5,6 +5,18 @@ import {
 } from './types';
 
 export class PricingEngine {
+  // Business Rules Constants
+  private static readonly BULK_DISCOUNT_THRESHOLD_QTY = 3;
+  private static readonly BULK_DISCOUNT_RATE = 0.15;
+  private static readonly VIP_TENURE_THRESHOLD_YEARS = 2;
+  private static readonly VIP_DISCOUNT_RATE = 0.05;
+  private static readonly MAX_DISCOUNT_PERCENT = 0.30;
+  private static readonly FREE_SHIPPING_THRESHOLD_CENTS = 10000;
+  private static readonly STANDARD_BASE_SHIPPING_CENTS = 700;
+  private static readonly EXPRESS_SHIPPING_CENTS = 2500;
+  private static readonly WEIGHT_SURCHARGE_RATE_CENTS_PER_KG = 200;
+  private static readonly EXPEDITED_SURCHARGE_RATE = 0.15;
+
   static calculate(items: CartItem[], user: User, shippingMethod: ShippingMethod = ShippingMethod.STANDARD): PricingResult {
     // Runtime Schema Validation (The "Executable Spec")
     // This ensures that the inputs conform to the business rules (e.g., non-negative prices, integer cents)
@@ -21,8 +33,8 @@ export class PricingEngine {
       originalTotal += lineOriginalTotal;
       
       let bulkDiscount: Cents = 0;
-      if (item.quantity >= 3) {
-        bulkDiscount = Math.round(lineOriginalTotal * 0.15);
+      if (item.quantity >= PricingEngine.BULK_DISCOUNT_THRESHOLD_QTY) {
+        bulkDiscount = Math.round(lineOriginalTotal * PricingEngine.BULK_DISCOUNT_RATE);
       }
       
       volumeDiscountTotal += bulkDiscount;
@@ -42,15 +54,15 @@ export class PricingEngine {
     
     // VIP Rule: 5% off subtotal if tenure > 2 years
     let vipDiscount: Cents = 0;
-    if (validUser.tenureYears > 2) {
-      vipDiscount = Math.round(subtotalAfterBulk * 0.05);
+    if (validUser.tenureYears > PricingEngine.VIP_TENURE_THRESHOLD_YEARS) {
+      vipDiscount = Math.round(subtotalAfterBulk * PricingEngine.VIP_DISCOUNT_RATE);
     }
 
     let totalDiscount = volumeDiscountTotal + vipDiscount;
     let isCapped = false;
 
     // Safety Valve: Max 30% discount
-    const maxDiscount = Math.round(originalTotal * 0.30);
+    const maxDiscount = Math.round(originalTotal * PricingEngine.MAX_DISCOUNT_PERCENT);
     if (totalDiscount > maxDiscount) {
       totalDiscount = maxDiscount;
       isCapped = true;
@@ -93,7 +105,7 @@ export class PricingEngine {
   ): ShipmentInfo {
     // Check free shipping threshold based on discounted total
     // > $100.00 = 10000 cents
-    const isFreeShipping = discountedSubtotal > 10000;
+    const isFreeShipping = discountedSubtotal > PricingEngine.FREE_SHIPPING_THRESHOLD_CENTS;
 
     if (isFreeShipping || method === ShippingMethod.EXPRESS) {
       // Free shipping or Express delivery
@@ -103,7 +115,7 @@ export class PricingEngine {
           baseShipping: 0,
           weightSurcharge: 0,
           expeditedSurcharge: 0,
-          totalShipping: 2500, // $25.00
+          totalShipping: PricingEngine.EXPRESS_SHIPPING_CENTS,
           isFreeShipping: false
         };
       }
@@ -111,7 +123,7 @@ export class PricingEngine {
       // Free shipping threshold met
       return {
         method,
-        baseShipping: 700, // $7.00
+        baseShipping: PricingEngine.STANDARD_BASE_SHIPPING_CENTS,
         weightSurcharge: this.calculateWeightSurcharge(items),
         expeditedSurcharge: 0,
         totalShipping: 0,
@@ -120,13 +132,13 @@ export class PricingEngine {
     }
 
     // Calculate base shipping details
-    const baseShipping = 700; // $7.00
+    const baseShipping = PricingEngine.STANDARD_BASE_SHIPPING_CENTS;
     const weightSurcharge = this.calculateWeightSurcharge(items);
     let expeditedSurcharge: Cents = 0;
 
     // Expedited: +15% on original subtotal (before discounts)
     if (method === ShippingMethod.EXPEDITED) {
-      expeditedSurcharge = Math.round(originalSubtotal * 0.15);
+      expeditedSurcharge = Math.round(originalSubtotal * PricingEngine.EXPEDITED_SURCHARGE_RATE);
     }
 
     const totalShipping = baseShipping + weightSurcharge + expeditedSurcharge;
@@ -144,6 +156,6 @@ export class PricingEngine {
   private static calculateWeightSurcharge(items: CartItem[]): Cents {
     const totalWeight = items.reduce((sum, item) => sum + (item.weightInKg * item.quantity), 0);
     // $2 per kg = 200 cents per kg
-    return Math.round(totalWeight * 200);
+    return Math.round(totalWeight * PricingEngine.WEIGHT_SURCHARGE_RATE_CENTS_PER_KG);
   }
 }

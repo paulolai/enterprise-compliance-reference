@@ -109,6 +109,15 @@ describe('Report Generation Validation', () => {
   });
 
   it('Run directory contains trace data', () => {
+    // Ensure we have some data registered to create the files
+    tracer.registerInvariant({
+      name: 'Run Directory Test Invariant',
+      ruleReference: 'internal',
+      rule: 'internal',
+      tags: []
+    });
+    tracer.log('Run Directory Test Invariant', { test: 1 }, { result: 2 });
+
     // Find the most recent run directory
     const runDir = tracer.getRunDir();
     const interactionsFile = path.join(runDir, 'interactions.jsonl');
