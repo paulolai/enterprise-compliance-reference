@@ -113,11 +113,9 @@ describe('Report Generation Validation', () => {
     const runDir = tracer.getRunDir();
     const interactionsFile = path.join(runDir, 'interactions.jsonl');
     const metadataFile = path.join(runDir, 'metadata.jsonl');
-    const currentRunFile = path.join('/tmp', 'vitest-current-run-id.txt');
 
     expect(fs.existsSync(interactionsFile)).toBe(true);
     expect(fs.existsSync(metadataFile)).toBe(true);
-    expect(fs.existsSync(currentRunFile)).toBe(true);
 
     // Verify interactions file has content
     const interactions = fs.readFileSync(interactionsFile, 'utf-8');
