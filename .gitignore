@@ -6,6 +6,7 @@ node_modules
 # Testing
 coverage/
 *.log
+allure-results/
 
 # Build outputs
 build/

@@ -1,105 +1,69 @@
-# Executable Specifications Pattern
+# Shift Left Reference Architecture: Developer-Native Compliance
 
-**Achieving shared understanding without the "Translation Layer".**
+**An up to date public recreation of the reference implementation built at Commonwealth Bank.**
 
-## 📖 The Philosophy
+> *How to enable developers to own Quality & Compliance without slowing them down.*
 
-For years, the industry has relied on Gherkin (Cucumber) to bridge the gap between Product requirements and Engineering code. While the intention was noble, the reality for many teams has been:
+## 🎯 The Mission
 
-- **The "Regex Tax":** Maintaining fragile mappings between plain English strings and code.
-- **Tooling Friction:** Limited refactoring support and clumsy debugging experiences.
-- **The "Green Illusion":** Tests that pass but don't actually reflect the complex state of the system.
+"Shift Left" initiatives usually fail because organizations ask developers to do "QA Work"—writing Gherkin scripts, taking manual screenshots, and filling out Word documents for ServiceNow.
 
-**This repository demonstrates an alternative strategy.**
+**This repository demonstrates the only way to make Shift Left work in regulated environments:**
+You must stop asking developers to be testers and start enabling them to do testing using their native tools.
 
-Instead of a translation layer, we treat **Code as the Specification** and **Reports as the Attestation**.
+This requires **Developer-Native Compliance**: tools that automate the bureaucracy so engineers can focus on code.
 
-## 🏗 The 4 Pillars of this Pattern
+## 🏛 Origin Story
 
-### 1. The Strategy Document (/docs)
+This project is a public recreation of the work I delivered as **Commonwealth Bank’s first Staff Quality Engineer**, synthesizing lessons from 20+ years including years at **Google** and high-growth startups.
 
-We replace disconnected Jira tickets or "Given/When/Then" feature files with a durable **Markdown Strategy** document. This lives in the repository, evolves with the code, and acts as the single source of truth for both Engineers and AI Agents.
+It solves a specific, painful problem found in enterprises:
+*   **The Pain:** Developers blocked by "Translation Layer Taxes" (Gherkin) and "Manual Attestation Taxes" (ServiceNow uploads).
+*   **The Solution:** A Reference Architecture that uses **Type Safety** and **Automated Reporting** to deliver Bank-grade compliance with Google-grade velocity.
 
-### 2. Native Testing Frameworks
+## 🔑 The Core Concept: Signals vs. Silos
 
-We use the tools engineers already love (Vitest for TypeScript, JUnit 5 for Java). No external plugins, no "Step Definitions," no context-switching.
+At **Google**, we didn't use Gherkin. We didn't build "Quality Silos." We leveraged **Signals** from the tools build by developers for devlopers to accelerate release velocity.
 
-### 3. Fluent Fixtures & Builders
+At **CBA**, I applied this philosophy to the regulated world:
 
-Instead of parsing English sentences, we use strongly-typed **Test Data Builders** (Helpers). This provides:
+| The "Wrong" Way to Shift Left | The Reference Architecture Way |
+| :--- | :--- |
+| **Tooling** | Forcing devs to use Gherkin/Cucumber | **Native Tooling:** TypeScript & Vitest |
+| **Compliance** | Manual Word Docs + Postman Screenshots | **Dual Artifacts:** Attestation (regulatory) + Allure (trends) |
+| **Verification** | "Green Build" (Pass/Fail) | **Deep Observability:** Execution traces + historical analytics |
+| **Result** | Developers rebel; Quality drops | Developers engage; Quality improves |
 
-- **Type Safety:** If the domain changes, the compiler tells you immediately.
-- **Readability:** Tests read like sentences (`cart.withItem(...).asVip()`).
-- **Refactorability:** Rename a method in the code, and your IDE updates every test instantly.
+## 🏗 The 3 Pillars of Enablement
 
-### 4. Attestation Reports
+### 1. Zero-Tax Verification (The Google Lesson)
+**We eliminate the Gherkin Tax.**
+Instead of fragile "Given/When/Then" strings that desync from code, we use **Type-Safe Test Data Builders**.
+*   **Impact:** Refactoring is fast. Developers write tests because it feels like coding, not data entry.
 
-The "Human Readable" part comes at the **end**, not the beginning. We generate rich, custom test reports that serve as an **Audit Log**.
+### 2. Continuous Attestation (The CBA Lesson)
+**We automate the Release Tax.**
+In banking, you can't ship without proof. Instead of manual screenshots, our architecture generates **two complementary artifacts** directly from the test run:
+- **Attestation Report**: Self-contained HTML with business rule traceability (for auditors)
+- **Allure Report**: Historical trends and dashboards (for teams)
+*   **Impact:** The "Release Evidence" is generated in seconds by the CI pipeline, not hours by a human.
 
-**New in v2:**
-- **Requirement Traceability Matrix:** Direct mapping from Business Rules (Strategy) to Tests (Code) to Results (Report).
-- **Smart Sampling:** Invariant tests capture and display diverse execution samples (not just one), proving the logic holds across edge cases.
-- **Deep Observability:** Inputs and outputs are captured for *every* test, creating a complete audit trail.
+### 3. Infinite Examples (The Scalability Lesson)
+**We scale coverage without scaling effort.**
+Using **Property-Based Testing**, we define the business rule once and let the machine generate thousands of edge cases.
+*   **Impact:** We catch bugs (negative values, empty carts) that humans forget to check, without writing thousands of lines of code.
 
 ---
 
-## 📚 Documentation & Guidelines
-
-This project follows strict engineering standards. Agents and Engineers should refer to:
-
-- [**AI Agent Protocol**](AGENTS.md): Operational rules for Gemini, Copilot, and other AI assistants.
-- [**Project Guidelines**](docs/TS_PROJECT_GUIDELINES.md): Core principles, code style, and architectural philosophy.
-- [**Testing Framework**](docs/TS_TESTING_FRAMEWORK.md): The mandatory standard for writing tests (templates, patterns, anti-patterns).
-- [**Test Strategy**](docs/TEST_STRATEGY.md): The specific "Code as Specification" methodology used for the Pricing Engine.
-- [**Deep Dive: Why This Beats Type-Safe Gherkin**](docs/BDD_COMPARISON.md): Detailed comparison showing why eliminating the translation layer > fixing it with types.
-
-## ⚔️ Comparison: The Gherkin Way vs. The Executable Spec Way
-
-| Feature | The Gherkin/Cucumber Way | The Executable Spec Pattern |
-| :--- | :--- | :--- |
-| **Source of Truth** | Feature Files (.feature) | Markdown Strategy + The Code itself |
-| **Logic Mapping** | Fragile Regex / String Matching | Strong Typing / Direct Method Calls |
-| **Refactoring** | Manual, error-prone (Ctrl+F) | Instant, safe (F2 / Rename Symbol) |
-| **Debugging** | Often requires complex IDE plugins | Standard Breakpoints |
-| **Stakeholder View** | They read the Input (The Feature file) | They read the Output (The Attestation Report) |
-| **Maintenance Cost** | High (The Translation Layer) | Low (Standard Code Maintenance) |
-
 ## 📂 Repository Structure
 
-This project demonstrates both the solution and the anti-pattern side-by-side.
-
-- [**Executable Specifications**](implementations/typescript-vitest/): The recommended approach using Vitest and PBT.
-- [**The Gherkin Anti-Pattern**](implementations/typescript-cucumber/): A standard Cucumber setup for comparison.
-- [**Detailed Comparison**](docs/GERHKIN_VS_EXECUTABLE.md): A technical deep dive into why eliminating the translation layer is superior.
-
-```text
-.
-├── docs/
-│   ├── pricing-strategy.md      # The SHARED Source of Truth.
-│   └── GERHKIN_VS_EXECUTABLE.md # The Technical Comparison.
-├── implementations/
-│   ├── typescript-vitest/       # The SOLUTION: Fast, safe, deep.
-│   └── typescript-cucumber/     # The ANTI-PATTERN: Slow, fragile, shallow.
-└── reports/                     # Generated attestations (HTML/Markdown)
-```
-
-## 🚀 The Scenario: Dynamic Pricing Engine
-
-To demonstrate this, we implement a pure-logic **Pricing Engine**. This is the classic "Gherkin Trap"—a domain heavy on rules and combinations that usually results in unmaintainable feature files.
-
-**The Strategy:**
-
-- **Base Rules:** AUD currency, integer cent precision (no floating point errors).
-- **Bulk Discounts:** Buy 3+ items, get 15% off.
-- **VIP Tier:** Tenure > 2 years gets 5% off subtotal (after bulk).
-- **Shipping:** Dynamic rates based on weight, with a free threshold ($100+) and premium overrides (Expedited/Express).
-- **Safety Valve:** Max product discount strictly capped at 30%.
+-   [**The Reference Implementation**](implementations/typescript-vitest/): The solution (Vitest, PBT, Custom Attestation).
+-   [**The Legacy Comparison**](implementations/typescript-cucumber/): The anti-pattern (Gherkin) to demonstrate the maintenance burden.
+-   [**The Shift Left Playbook**](docs/guides/shift-left-playbook.md): **Start Here for Leaders.** A guide on how to coach teams through this transition.
 
 ## 🛠 Getting Started
 
-### TypeScript / Vitest Implementation (Recommended ✅)
-
-Navigate to the implementation folder:
+Experience **Developer-Native Compliance** in action:
 
 ```bash
 cd implementations/typescript-vitest
@@ -107,146 +71,133 @@ npm install
 npm test
 ```
 
-*Check the console output or the generated `/reports` folder to see the Attestation Report.*
+*Open the generated `reports/` folder to see the Regulatory-Grade Attestation Report generated automatically.*
 
-### TypeScript / Cucumber Implementation (Anti-Pattern ❌)
+---
 
-See the "Translation Layer Tax" in action:
+## 📊 Complete Reporting Architecture
+
+At **Google**, we didn't have separate "QA tools" and "dev tools"—everything was an artifact of how engineers worked.
+
+At **CBA**, I applied the same principle: The reporting architecture is **not an afterthought**, but a core design decision that serves different stakeholders through different artifacts.
+
+### The Two-Artifact Strategy
+
+Rather than forcing one report type to satisfy all needs, this architecture generates **two complementary artifacts** from the same test run:
+
+| Artifact | Design Target | Primary Use Case |
+| :--- | :--- | :--- |
+| **Attestation Report** | Regulatory compliance, business rule traceability | Auditors, compliance officers, stakeholders needing proof |
+| **Allure Report** | Historical analysis, team collaboration, integration | Developers, QA leads, managers tracking trends |
+
+**This is deliberate architecture**, not a compromise. We don't force executives to parse test logs, and we don't force auditors to navigate interactive dashboards. Each persona gets the format that serves them.
+
+### Running Tests
 
 ```bash
-cd implementations/typescript-cucumber
+cd implementations/typescript-vitest
 npm install
+
+# Standard test run - generates both reports
 npm test
+
+# OR run with explicit Allure configuration (for advanced users)
+npm run test:allure
 ```
 
-**Note**: This implementation exists purely for educational comparison. It demonstrates the maintenance burden and refactoring difficulties of the Gherkin approach.
+Both commands generate:
+- **Attestation HTML**: `reports/{timestamp}/attestation-full.html`
+- **Allure Results**: `allure-results/` (JSON data)
 
----
+### Viewing Reports
 
-## For Business Stakeholders
+#### Attestation Report (Primary Compliance Artifact)
 
-### How to Review Test Coverage (No Engineering Knowledge Required)
+The attestation report requires no external tools—just open `attestation-full.html` in any browser.
 
-This project uses **Executable Specifications**, which means the tests ARE the documentation. You don't need to read code to understand what's being verified.
+**Features:**
+- Business rule traceability matrix (every rule → tests that verify it)
+- Embedded execution traces (exact inputs/outputs from test runs)
+- Pass/fail status per business invariant
+- Git metadata for audit trail
 
-### The Quick Way: View the Test Report
+#### Allure Report (Historical Analytics)
 
-Engineers will share a link to the latest test report (hosted on GitHub Actions or CI).
+Requires Java (v11+) for HTML generation:
 
-**What to do:**
-1. Click the link engineers send you
-2. Look for the **Requirement Traceability Matrix**
-   - This table maps every business rule to the exact tests that verify it.
-3. Click on any test name to drill down into the **Detailed Audit Log**.
+```bash
+# Generate a static HTML report
+npm run report:allure:generate
 
-**What you'll see in the Audit Log**:
-```
-Safety Valve (Revenue Protection @critical)
-Protects revenue by capping discounts at 30%
-
-Edge Cases Covered:
-• Large orders ($5K items, 20+ qty) - verified 89 times
-• VIP customers with bulk discounts - verified 142 times
-• Combined discounts (bulk + VIP) - verified 289 times
-
-Status: ✅ Confirmed protecting revenue in 520 test cases
+# OR serve interactive report locally
+npm run report:allure:serve
 ```
 
-### Filter by What Matters to You
+**Features:**
+- Test duration trends over time
+- Flakiness detection
+- Visual dashboards with charts/graphs
+- Integration with enterprise tools (Jira, Slack, Teams)
+- CI badge generation
 
-The report has clickable tags at the top:
-- **@critical** - Business rules that protect revenue
-- **@revenue-protection** - Rules preventing margin erosion
-- **@customer-experience** - Rules affecting delivery promises
+**If Java is not available locally**: The JSON results are captured and can be viewed in CI-generated reports.
 
-Click any tag to show only those rules.
+### CI/CD Integration
 
-### Understanding What You're Looking At
+The GitHub Actions workflow generates both artifacts automatically:
 
-| Section | What It Means |
-|---------|---------------|
-| **Status** | ✅ = All tests passed, this rule works correctly |
-| **Edge Cases Covered** | How many real scenarios we tested. Higher = more confidence |
-| **Rule Reference** | Links to the strategy document (what the business decided) |
-| **Why This Matters** | Plain-English explanation of why this rule exists |
+1. **Attestation Report** (`attestation-reports`) - 30-day retention
+2. **Allure Results** (`allure-results-{run_number}`) - 90-day retention
+3. **Allure HTML** (`allure-report-{run_number}`) - 90-day retention
 
----
+**To view CI reports:**
+1. Go to GitHub Actions run
+2. Scroll to "Artifacts" section
+3. Download and extract
+4. Open `index.html` in browser
 
-### How to Influence Business Rules
+### Enterprise Integration
 
-When you want to change pricing, shipping, or discounts:
+The Allure integration is architected for enterprise adoption:
 
-1. **Create a GitHub issue** describing what you want
-   - Example: "Increase free shipping threshold from $100 to $150"
+- **Jira/Xray/Zephyr**: Test-to-work-item linking via configuration templates
+- **Tag Mapping**: Existing `@critical` tags automatically map to Allure severity
+- **Custom Categories**: Group failures by error patterns for triage
+- **Team Notifications**: Slack/Teams integration for test status
 
-2. **We'll open a PR on the strategy document** (`docs/pricing-strategy.md`)
-   - Review the PR to confirm it captures what you meant
+**No Migration Required**: Your existing `registerInvariant()` metadata works with both systems simultaneously.
 
-3. **We'll show you the impact** BEFORE implementing anything
-   - We'll share a test report link
-   - You'll see things like "12% of carts will now get free shipping"
+### When to Use Which Report
 
-4. **You approve or adjust**
-   - If 12% is too expensive, we try $140 → share new report → you see impact: 8%
-
-5. **We implement, tests verify, report shows it works**
-
-**Total time**: Usually 2-3 business days
-**Number of meetings**: 0 (all happens via GitHub PRs and shared report links)
-
----
-
-### Why This Is Better
-
-With this approach, you get:
-
-✅ **See the actual impact** of changes (not just the plan)
-✅ **Proof that rules are tested** (report shows which edge cases covered)
-✅ **Quick adjustments** (we can tweak and show you new impact in 5 minutes)
-✅ **Traceability** (strategy → test → report, all linked)
-✅ **No meetings needed** (happens via GitHub + shared links)
+| Scenario | Use This Report | Why |
+| :--- | :--- | :--- |
+| **Audit / Regulatory Review** | Attestation | Self-contained HTML works offline, has business rule traceability |
+| **Show Executives Progress** | Allure | Visual dashboards with trend lines and metrics |
+| **Investigate Test Failure** | Either | Attestation has execution traces, Allure has failure history |
+| **Team Velocity Tracking** | Allure | Charts and flakiness detection across builds |
+| **Compliance Evidence** | Attestation | Designed for 7-year offline archival for regulated industries |
 
 ---
 
-### Real Example: Discount Cap Change
+## 📚 Essential Reading
 
-Our team recently changed the discount cap from 30% to 25%:
+### Implementation Guides (The "How")
 
-| Step | What Happened |
-|------|---------------|
-| Business request | "Reduce discount cap - margin erosion" |
-| Strategy PR | Updated docs, finance approved |
-| Impact test | Ran tests, got report showing impact |
-| Shared | "4% of test cases hit cap earlier" |
-| Business | "Proceed" |
-| Implemented | Tests passed, report showed ✅ |
-| Total time | 2 days, 0 meetings |
+*   **[The Shift Left Playbook](docs/guides/shift-left-playbook.md)** ⭐ *Start Here*
+    *   Real-world experience from CBA on how to coach teams
+    *   Practical techniques for enabling developer ownership of quality
 
----
+*   **[The Economic Case](docs/reference/benchmarks.md)**
+    *   Evidence-based metrics and ROI analysis
+    *   Measurement methodology from the Reference Implementation
 
-### Glossary
+### Technical Standards
 
-| Term | Plain English |
-|------|---------------|
-| **Invariant** | A business rule that must always be true |
-| **Edge Case** | A tricky real-world scenario |
-| **Coverage** | How many edge cases we tested |
-| **Tag** | Label like `@critical` that categorizes rules |
+*   **[Attestation Architecture](docs/reference/attestation-architecture.md)** - Automating compliance
+*   **[Infinite Examples](docs/reference/infinite-examples.md)** - Property-Based Testing
+*   **[Regression Safety](docs/reference/regression-safety.md)** - Golden Master pattern
+*   **[Semantic Integrity](docs/reference/semantic-integrity.md)** - Type safety architecture
 
 ---
 
-### Questions?
-
-Just comment on GitHub PRs or open issues. Engineers will:
-- Explain what tests are verifying (plain English)
-- Show impact analysis before building
-- Adjust based on your feedback
-
-### Compare Both Approaches Side-by-Side
-
-Run both implementations to experience the difference:
-
-1. **Executable Specs**: 65 tests generate 1000s of random cases, execute in ~0.7s
-2. **Gherkin/Cucumber**: 66 hand-written scenarios (with examples tables), 325 steps, execute in ~0.05s (after 3s compile)
-
-**See detailed comparison:** [`docs/GERHKIN_VS_EXECUTABLE.md`](docs/GERHKIN_VS_EXECUTABLE.md) - Includes code metrics, refactoring scenarios, and cost of ownership analysis.
+*This architecture is designed for Engineering Leaders who need to prove that "High Velocity" and "High Compliance" are not mutually exclusive.*

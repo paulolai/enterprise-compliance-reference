@@ -6,13 +6,19 @@
   "main": "src/pricing-engine.ts",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:allure": "vitest run --config vitest.config.allure.ts",
+    "report:allure:generate": "allure generate allure-results --clean -o reports/allure-report",
+    "report:allure:serve": "allure serve allure-results"
   },
   "devDependencies": {
+    "@vitest/runner": "^4.0.16",
+    "allure-commandline": "^2.36.0",
+    "allure-vitest": "^3.4.3",
     "fast-check": "^3.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "zod": "^4.2.1"

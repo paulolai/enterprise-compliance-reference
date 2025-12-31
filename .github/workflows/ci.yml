@@ -38,6 +38,42 @@ jobs:
           cd implementations/typescript-vitest
           npm test
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Run Tests with Allure
+        if: always()  # Run even if previous tests fail to capture failure evidence
+        run: |
+          cd implementations/typescript-vitest
+          npm run test:allure
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          cd implementations/typescript-vitest
+          npm run report:allure:generate
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ github.run_number }}
+          path: implementations/typescript-vitest/allure-results/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ github.run_number }}
+          path: implementations/typescript-vitest/reports/allure-report/
+          retention-days: 90
+          if-no-files-found: warn
+
       - name: Run Gherkin Anti-Pattern (Cucumber)
         continue-on-error: true # Don't fail the build if the anti-pattern fails (it's for demo)
         run: |
