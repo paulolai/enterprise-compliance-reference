@@ -10,6 +10,8 @@
 
 "Shift Left" initiatives usually fail because organizations ask developers to do "QA Work"—writing Gherkin scripts, taking manual screenshots, and filling out Word documents for ServiceNow.
 
+Engineers also struggle to write tests that verify **behaviour** rather than **implementation details**—they end up testing *how* the code works instead of *what* it achieves.
+
 **This repository demonstrates the only way to make Shift Left work in regulated environments:**
 You must stop asking developers to be testers and start enabling them to do testing using their native tools.
 
@@ -29,6 +31,8 @@ Every test run generates a self-contained **Attestation Report** designed for au
 
 ### 2. The Code: Gherkin vs. Executable Specs
 Stop writing fragile strings. Use Type-Safe Test Data Builders.
+
+The reality is that **non-engineers rarely read feature files**—the supposed "ubiquitous language" ends up being read only by the engineers who wrote it.
 
 | The "Gherkin Tax" (Legacy) | The "Executable Spec" (This Repo) |
 | :--- | :--- |
