@@ -32,10 +32,10 @@ Stop writing fragile strings. Use Type-Safe Test Data Builders.
 
 | The "Gherkin Tax" (Legacy) | The "Executable Spec" (This Repo) |
 | :--- | :--- |
-| **Fragile Strings:** `Given I have 5 items` | **Type-Safe Code:** `CartBuilder.new().withItems(5)` |
+| **Fragile Strings:** `Given I have 5 items` | **Type-Safe Code:** `CartBuilder.new().withItem({ name, price, quantity: 5 })` |
 | **Manual Math:** You calculate expected values | **Invariants:** The machine proves the rule holds |
 | **Zero IDE Support:** Rename requires find/replace | **Full IDE Support:** Refactor with confidence |
-| **Semantic Drift:** Feature files desync from code | **Semantic Integrity:** The code *is* the spec |
+| **Semantic Drift:** Feature files diverge from code | **Semantic Integrity:** The code *is* the spec |
 
 **Legacy Gherkin (Maintenance Burden):**
 ```gherkin
@@ -53,13 +53,26 @@ Scenario Outline: Bulk discount
 
 **Executable Spec (Developer Native):**
 ```typescript
-it('Invariant: Bulk discount (15% for 3+ items)', () => {
+export function verifyInvariant(metadata: InvariantMetadata, assertion: AssertionCallback) {
   fc.assert(
-    fc.property(fc.integer({ min: 3, max: 100 }), (qty) => {
-      const result = CartBuilder.new().withItems(qty).calculate();
-      return result.discount === result.subtotal * 0.15;
+    fc.property(cartArb, userArb, (items, user) => {
+      const result = PricingEngine.calculate(items, user);
+      tracer.log(testName, { items, user }, result);
+      assertion(items, user, result);
+      return true;
     })
   );
+});
+
+// Using the helper - the invariant is proven across 100 random cart/users
+it('Invariant: Final Total is always <= Original Total', () => {
+  verifyInvariant({
+    ruleReference: 'pricing-strategy.md §1',
+    rule: 'Final Total must never exceed Original Total (prices never increase)',
+    tags: ['@pricing', '@base-rules', '@revenue-protection']
+  }, (_items, _user, result) => {
+    expect(result.finalTotal).toBeLessThanOrEqual(result.originalTotal);
+  });
 });
 ```
 
@@ -71,12 +84,12 @@ it('Invariant: Bulk discount (15% for 3+ items)', () => {
 At **Google**, we didn't have "QA Tooling" teams—we had **Engineering Productivity (EngProd)**. Our mission was to be **Dev Accelerators**. We built tools that served the engineer, not the process. This architecture replaces the "Gherkin Burden" with **Type-Safe Test Data Builders**, ensuring testing is a high-speed feedback loop that feels like coding, not data entry.
 
 ### 2. Continuous Attestation (The CBA Lesson)
-In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](reporting-architecture.md) for details):
+In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](implementations/typescript-vitest/reporting-architecture.md) for details):
 - **Attestation Report**: Business-rule traceability for auditors.
 - **Allure Report**: Historical trends and flakiness detection for engineers.
 
 ### 3. Infinite Examples (The Scalability Lesson)
-Using **Property-Based Testing**, we define a business rule once and let the machine generate thousands of edge cases (negative values, empty carts, massive quantities) that humans forget to check.
+Using **Property-Based Testing**, we define a business rule once and let the machine generate hundreds of randomized test cases (negative values, empty carts, massive quantities) that humans forget to check.
 
 ---
 
@@ -108,10 +121,10 @@ npm test
 
 ## 📚 Essential Reading
 
-*   **[Reporting Architecture](reporting-architecture.md)** - Deep dive into our dual-artifact strategy.
+*   **[Reporting Architecture](implementations/typescript-vitest/reporting-architecture.md)** ⭐ **Viewing Allure reports requires HTTP server** - See this guide
 *   **[The Shift Left Playbook](docs/guides/shift-left-playbook.md)** - How to coach teams through this transition.
-*   **[The Economic Case](docs/reference/benchmarks.md)** - ROI analysis and metrics from the reference implementation.
 *   **[Attestation Architecture](docs/reference/attestation-architecture.md)** - How we automate compliance.
+*   **[Bug Discovery Evidence](docs/reference/bug-discovery-evidence.md)** - Real-world evidence that invariant tests catch bugs hand-written scenarios miss.
 
 ---
 

@@ -9,7 +9,8 @@
     "test:watch": "vitest",
     "test:allure": "vitest run --config vitest.config.allure.ts",
     "report:allure:generate": "allure generate allure-results --clean -o reports/allure-report",
-    "report:allure:serve": "allure serve allure-results"
+    "report:allure:serve": "allure serve allure-results",
+    "report:allure:view": "npx --yes http-server reports/allure-report -o -c-1"
   },
   "devDependencies": {
     "@vitest/runner": "^4.0.16",
