@@ -2,6 +2,31 @@
 
 This document defines the standards for writing tests within this project, focusing on the **Executable Specifications Pattern**.
 
+## Quick Start
+
+```bash
+cd implementations/typescript-vitest
+npm install
+npm test
+open reports/latest/attestation-full.html
+```
+
+## Test Types & When to Use Each
+
+| Situation | Test Type | File Location |
+|-----------|-----------|---------------|
+| Business Rules (Pricing, Domain) | Property-Based Test | `test/*.properties.test.ts` |
+| Multi-Rule Interactions | Integration Property Test | `test/integration.properties.test.ts` |
+| Edge Cases & Boundaries | Example Test with Builders | `test/preconditions.spec.ts` |
+| Infrastructure/Reporting | Unit Test | Direct module tests |
+
+## Writing Tests
+- Use `verifyInvariant()` for PBT - see `test/fixtures/invariant-helper.ts`
+- Use `CartBuilder` for test data - see `test/fixtures/cart-builder.ts`
+- Always log to `tracer` for attestation reports
+
+---
+
 ## 1. Core Philosophy
 
 - **Invariants over Examples**: While happy-path examples are useful for documentation, **Mathematical Invariants** (proven via Property-Based Testing) are the standard for logic verification.
@@ -79,3 +104,12 @@ Shared generators for property-based tests live in `test/fixtures/arbitraries.ts
 - **❌ Manual Rounding in Tests**: Our system uses integer `Cents`. Assertions should use exact equality (`toBe`).
 - **❌ Brittle Step Definitions**: We reject Gherkin. All "specifications" are written in type-safe TypeScript.
 - **❌ Hidden Logic**: Any rule mentioned in `docs/pricing-strategy.md` MUST have a corresponding "Invariant" test.
+
+---
+
+## 6. Deep Dive References
+
+- **[Invariants & Property-Based Testing](reference/infinite-examples.md)** - How PBT extends the BDD "Examples" pillar to machine scale
+- **[Regression Safety](reference/regression-safety.md)** - How invariant tests catch bugs that manual scenarios miss
+- **[Semantic Integrity](reference/semantic-integrity.md)** - Type safety as specification enforcement
+- **[Refactor Benchmark](reference/refactor-benchmark.md)** - Evidence that executable specs enable fearless refactoring

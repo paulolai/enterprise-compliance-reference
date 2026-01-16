@@ -123,6 +123,18 @@ npm test
 
 ---
 
+## 📚 Quick Reference
+
+| Topic | Document |
+|-------|----------|
+| **Writing Tests** | [docs/TS_TESTING_FRAMEWORK.md](docs/TS_TESTING_FRAMEWORK.md) |
+| **Invariants & PBT** | [docs/reference/infinite-examples.md](docs/reference/infinite-examples.md) |
+| **Type Safety** | [docs/reference/semantic-integrity.md](docs/reference/semantic-integrity.md) |
+| **Regression Safety** | [docs/reference/regression-safety.md](docs/reference/regression-safety.md) |
+| **Business Rules** | [docs/pricing-strategy.md](docs/pricing-strategy.md) |
+
+---
+
 ## 📚 Essential Reading
 
 *   **[Reporting Architecture](implementations/typescript-vitest/reporting-architecture.md)** ⭐ **Viewing Allure reports requires HTTP server** - See this guide
