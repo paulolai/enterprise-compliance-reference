@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { InvariantMetadata } from '../fixtures/invariant-helper';
+import type { InvariantMetadata } from '../fixtures/invariant-helper';
 
 export interface Interaction<TInput = unknown, TOutput = unknown> {
   input: TInput;
@@ -180,6 +180,22 @@ export class TestTracer<TInput = unknown, TOutput = unknown> {
         timestamp: Date.now()
       }
     };
+
+    // Attach to Allure (for Unified Reporting)
+    try {
+      // Dynamic import to avoid loading allure-vitest in the main process (reporter context)
+      import('allure-vitest/setup').then(({ allure }) => {
+        allure.attachment(
+          `Trace #${currentCount + 1}`,
+          JSON.stringify({ input, output }, null, 2),
+          'application/json'
+        );
+      }).catch(() => {
+        // Ignore if allure is not available
+      });
+    } catch (e) {
+      // Ignore if not running in Allure context
+    }
 
     // Update summary statistics
     this.updateSummary(testName, input, output);

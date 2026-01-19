@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CartBuilder } from './fixtures/cart-builder';
+import { CartBuilder } from '../../shared/fixtures';
 
 /**
  * Example-based tests for Pricing Engine

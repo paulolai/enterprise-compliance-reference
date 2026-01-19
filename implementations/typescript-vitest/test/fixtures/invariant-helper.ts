@@ -1,9 +1,10 @@
 import * as fc from 'fast-check';
 import { expect } from 'vitest';
-import { PricingEngine } from '../../src/pricing-engine';
-import { cartArb, userArb, shippingMethodArb } from './arbitraries';
+import { allure } from 'allure-vitest/setup';
+import { PricingEngine, CartItem, User, ShippingMethod, PricingResult } from '../../../shared/src';
+import { cartArb, userArb, shippingMethodArb } from '../../../shared/fixtures';
+import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
 import { tracer } from '../modules/tracer';
-import { CartItem, User, ShippingMethod, PricingResult } from '../../src/types';
 
 export interface InvariantMetadata {
   name?: string;
@@ -49,6 +50,7 @@ export function verifyInvariant(
   const name = metadata.name || expect.getState().currentTestName!;
   // Register metadata for attestation report
   registerInvariant({ ...metadata, name });
+  registerAllureMetadata(allure, metadata);
 
   fc.assert(
     fc.property(cartArb, userArb, (items, user) => {
@@ -95,6 +97,7 @@ export function verifyShippingInvariant(
   const name = metadata.name || expect.getState().currentTestName!;
   // Register metadata for attestation report
   registerInvariant({ ...metadata, name });
+  registerAllureMetadata(allure, metadata);
 
   fc.assert(
     fc.property(cartArb, userArb, shippingMethodArb, (items, user, method) => {
@@ -132,6 +135,14 @@ export function verifyShippingInvariant(
  */
 export function registerPrecondition(metadata: PreconditionMetadata) {
   const name = metadata.name || expect.getState().currentTestName!;
+  
+  // Register Allure metadata
+  registerAllureMetadata(allure, {
+    ruleReference: metadata.ruleReference,
+    rule: metadata.scenario,
+    tags: metadata.tags
+  });
+
   tracer.registerInvariant({
     name,
     ruleReference: metadata.ruleReference,

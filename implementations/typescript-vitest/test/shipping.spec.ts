@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { CartBuilder } from './fixtures/cart-builder';
-import { ShippingMethod } from '../src/types';
+import { CartBuilder } from '../../shared/fixtures';
+import { ShippingMethod } from '../../shared/src/types';
 
 describe('Shipping: Business Specifications', () => {
 

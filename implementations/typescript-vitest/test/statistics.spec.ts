@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { tracer } from './modules/tracer';
-import { PricingEngine } from '../src/pricing-engine';
-import { cartArb, userArb, shippingMethodArb } from './fixtures/arbitraries';
+import { PricingEngine, CartItem, User, ShippingMethod } from '../../shared/src';
+import { cartArb, userArb, shippingMethodArb } from '../../shared/fixtures';
 import { verifyInvariant, verifyShippingInvariant } from './fixtures/invariant-helper';
-import { CartItem, User, ShippingMethod} from '../src/types';
 
 describe('Statistics: Coverage Analysis', () => {
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ShippingMethod, CartItem, User, PricingResult } from '../src/types';
+import { ShippingMethod, CartItem, User, PricingResult } from '../../shared/src/types';
 import { verifyShippingInvariant } from './fixtures/invariant-helper';
 
 describe('Shipping: Mathematical Invariants', () => {
