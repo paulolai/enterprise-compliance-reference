@@ -59,7 +59,46 @@ AI Agents must ingest the following context before making changes:
   ```
   **Note:** Use `expect.getState().currentTestName!` to ensure the trace key matches the test name exactly.
 
+### Network Mocking Strategy (The Split Brain)
+
+Distinguish clearly between **Domain Logic** (internal) and **Integration Boundaries** (external).
+
+| Category | Definition | Strategy | Tool |
+| --- | --- | --- | --- |
+| **Internal (New)** | APIs *you* are building. | **Contract-First (ATDD).** Write the mock manually to define the spec before the backend exists. | **MSW** (Hand-coded) |
+| **External (3rd Party)** | APIs *others* control (Stripe, Auth0). | **Record & Replay.** Treat the API as a black box. Record the real dev environment once, then replay forever. | **Playwright HAR** |
+
+**For Component Tests (Vitest):**
+*   **Recommendation:** Push testing of external integrations *up* to Playwright (E2E).
+*   **Advanced:** If you *must* unit test a component hitting an external API, feed the Playwright HAR into MSW to ensure a single source of truth.
+
 ## 🚫 Forbidden Patterns
 *   **No Gherkin/Cucumber:** We explicitly reject the "Translation Layer" tax.
 *   **No `any` types:** Strict TypeScript is required to maintain the "Code as Specification" integrity.
 *   **No Console Logs for Verification:** Use the custom reporter and tracer for all audit trails.
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds

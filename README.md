@@ -109,12 +109,33 @@ It solves a specific, painful problem found in enterprises:
 
 ## 🛠 Getting Started
 
-Experience **Developer-Native Compliance** in action:
+### The "Clean Room" Teaching Stack
+We use a modern, zero-config stack designed for instant learning, prioritizing **Clone-and-Run** simplicity.
+
+| Layer | Technology | Rationale |
+| --- | --- | --- |
+| **Frontend** | **Vite + React** | Instant feedback loops. No "Server Component" confusion. |
+| **UI Lib** | **shadcn/ui** | Accessible code that lives in your repo (not `node_modules`). |
+| **Backend** | **Hono** | The "Feynman" of Backends. Ultra-light, standards-based replacement for Express. |
+| **Database** | **SQLite + Drizzle** | **Zero DevOps.** It's just a file. No Docker required. |
+| **Testing** | **Vitest + Playwright** | The "Double Loop" engines for ATDD. |
+
+#### Why this specific stack?
+*   **Hono:** Removes boilerplate. Lets you teach "API Concepts" without fighting the framework.
+*   **SQLite:** Removes the "DevOps Wall". Committable "seed" databases ensure every student starts with the same state.
+*   **Drizzle:** Enables **Systemic Type Safety**. Backend schema changes instantly break frontend mocks (a good thing).
+
+### Running the Project
 
 ```bash
-cd implementations/typescript-vitest
+# 1. Install dependencies
 npm install
+
+# 2. Run the full ATDD Loop (API + GUI)
 npm test
+
+# 3. Start the Dev Environment (App + Tests)
+npm run dev
 ```
 
 ### Viewing the Artifacts
@@ -128,9 +149,9 @@ npm test
 | Topic | Document |
 |-------|----------|
 | **Writing Tests** | [docs/TS_TESTING_FRAMEWORK.md](docs/TS_TESTING_FRAMEWORK.md) |
+| **GUI Automation** | [docs/GUI_TESTING_GUIDELINES.md](docs/GUI_TESTING_GUIDELINES.md) |
 | **Invariants & PBT** | [docs/reference/infinite-examples.md](docs/reference/infinite-examples.md) |
 | **Type Safety** | [docs/reference/semantic-integrity.md](docs/reference/semantic-integrity.md) |
-| **Regression Safety** | [docs/reference/regression-safety.md](docs/reference/regression-safety.md) |
 | **Business Rules** | [docs/pricing-strategy.md](docs/pricing-strategy.md) |
 
 ---
