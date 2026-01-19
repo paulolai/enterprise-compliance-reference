@@ -63,19 +63,20 @@ For banking and regulated industries (like CBA), this architecture supports **Co
 
 ## Alternatives & Comparison
 
-Why build a custom reporter instead of using off-the-shelf tools?
+We use a **Dual-Report Strategy**: Allure for Engineering, Custom Reporter for Compliance.
 
-| Approach | Pros | Cons | Why Reference Arch Wins |
-| :--- | :--- | :--- | :--- |
-| **Allure Framework** | Beautiful UI, industry standard, supports history. | Generic "Test Reporting," not "Regulatory Attestation." Lacks strict linkage to Markdown Strategy docs without heavy customization. | **Purpose-Built Compliance:** Our reporter enforces the link between `pricing-strategy.md` and the code. |
-| **Jira Plugins (Xray/Zephyr)** | Managers love Jira integration. Centralized. | **Developers hate it.** Forces dependency on external SaaS APIs. Slow feedback loop. Not a self-contained artifact. | **Developer Experience:** We generate the evidence *locally* in seconds. No Jira API keys required. |
-| **Docs-as-Code (Docusaurus)** | Great "Living Documentation" websites. | High maintenance complexity. Requires a separate build pipeline for the docs site. | **Simplicity:** We generate a single, portable HTML file. Zero infrastructure required. |
+| Approach | Role | Why We Need Both |
+| :--- | :--- | :--- |
+| **Allure Framework** | **Engineering Analytics** | Best-in-class for debugging, history, and trends. However, it requires a server to view and lacks strict business rule traceability. |
+| **Custom Reporter** | **Regulatory Compliance** | Generates a self-contained, offline HTML artifact that links code to `pricing-strategy.md`. Perfect for auditors. |
+| **Jira Plugins** | **Rejected** | Forces dependency on external SaaS. Slow feedback loop. Not a self-contained artifact. |
 
 ### The "Goldilocks" Solution
-The Reference Architecture uses a **Custom Reporter** because it offers the perfect balance:
-*   **Zero Dependencies:** Just `npm test` -> `report.html`.
-*   **Strict Traceability:** Enforces the link to business rules.
-*   **Self-Contained:** Logs and traces are embedded. You can email the file to an auditor, and it works offline for 7 years.
+We combine them:
+*   **Allure:** For the developer (debugging, flakiness).
+*   **Attestation Report:** For the auditor (traceability, signed evidence).
+
+Both are generated from the same test run with zero extra effort.
 
 ---
 

@@ -1,9 +1,10 @@
 # TypeScript Testing Framework Guide
 
-This document defines the standards for writing tests within this project, focusing on the **Executable Specifications Pattern**.
+This document defines the standards for writing tests within this project, focusing on the **Executable Specifications Pattern** across both API and GUI layers.
 
 ## Quick Start
 
+### API Tests (Logic & Rules)
 ```bash
 cd implementations/typescript-vitest
 npm install
@@ -11,44 +12,50 @@ npm test
 open reports/latest/attestation-full.html
 ```
 
+### GUI Tests (End-to-End)
+```bash
+cd implementations/react-playwright
+npm install
+npx playwright test
+npx playwright show-report
+```
+
 ## Test Types & When to Use Each
 
-| Situation | Test Type | File Location |
-|-----------|-----------|---------------|
-| Business Rules (Pricing, Domain) | Property-Based Test | `test/*.properties.test.ts` |
-| Multi-Rule Interactions | Integration Property Test | `test/integration.properties.test.ts` |
-| Edge Cases & Boundaries | Example Test with Builders | `test/preconditions.spec.ts` |
-| Infrastructure/Reporting | Unit Test | Direct module tests |
-
-## Writing Tests
-- Use `verifyInvariant()` for PBT - see `test/fixtures/invariant-helper.ts`
-- Use `CartBuilder` for test data - see `test/fixtures/cart-builder.ts`
-- Always log to `tracer` for attestation reports
+| Situation | Test Type | Tool | File Location |
+|-----------|-----------|------|---------------|
+| **Business Rules** (Pricing, Logic) | Property-Based Test | **Vitest** | `test/*.properties.test.ts` |
+| **User Experience** (Flows, Visuals) | GUI Invariant Test | **Playwright** | `src/test/e2e/*.ui.properties.test.ts` |
+| **Multi-Rule Interactions** | Integration Test | **Vitest** | `test/integration.properties.test.ts` |
+| **Specific Scenarios** | Example Test | **Vitest/PW** | `*.spec.ts` |
 
 ---
 
 ## 1. Core Philosophy
 
 - **Invariants over Examples**: While happy-path examples are useful for documentation, **Mathematical Invariants** (proven via Property-Based Testing) are the standard for logic verification.
-- **Deep Observability**: Every test must log its inputs and outputs to the `tracer` to ensure the generated **Attestation Report** provides a complete audit trail.
-- **Deterministic**: Tests must be free of side effects and produce consistent results across environments.
+- **Deep Observability**: Every test must log its inputs and outputs to the `tracer` (or Allure) to ensure the generated **Attestation Report** provides a complete audit trail.
+- **Shared Truth**: We use a **Shared Core** (`implementations/shared`) for builders, types, and arbitraries. Logic and Tests share the same language.
 
 ---
 
 ## 2. Testing Tools & Stack
 
-- **Runner**: [Vitest](https://vitest.dev/)
+- **Runners**: 
+  - **Vitest** (Node.js API Logic - Fast)
+  - **Playwright** (Browser GUI - Realistic)
 - **Property-Based Testing**: [fast-check](https://fast-check.dev/)
-- **Observability**: Custom `TestTracer` + `AttestationReporter`
+- **Observability**: Custom `TestTracer` + `Allure` (Unified Reporting)
 
 ---
 
 ## 3. Canonical Patterns
 
-### A. The "Invariant" Pattern (Property-Based Testing)
-Use this for all business logic defined in `docs/pricing-strategy.md`.
+### A. The "API Invariant" Pattern (Vitest)
+Use this for pure business logic defined in `docs/pricing-strategy.md`.
 
 ```typescript
+// implementations/typescript-vitest/test/pricing.properties.test.ts
 it('Invariant: [Business Rule Description]', () => {
   const testName = expect.getState().currentTestName!;
   fc.assert(
@@ -73,7 +80,25 @@ it('Invariant: [Business Rule Description]', () => {
 });
 ```
 
-### B. The "Example" Pattern (Documentation)
+### B. The "GUI Invariant" Pattern (Playwright)
+Use this to verify that the UI correctly projects the business state. See [**GUI Testing Guidelines**](GUI_TESTING_GUIDELINES.md) for details.
+
+```typescript
+// implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts
+test('Invariant: [UI Reflection of Rule]', async ({ page }) => {
+  // 1. Setup via Shared Builder
+  const cart = CartBuilder.new().withItem(...).build();
+  
+  // 2. Teleport (API Seam)
+  await seedCartSession(page, cart);
+  
+  // 3. Verify
+  await page.goto('/cart');
+  await expect(page.getByTestId('total')).toHaveText(...);
+});
+```
+
+### C. The "Example" Pattern (Documentation)
 Use this sparingly to illustrate specific "Happy Path" scenarios mentioned in the strategy document.
 
 ```typescript
@@ -89,27 +114,31 @@ it('Example: [Specific Scenario]', () => {
 
 ---
 
-## 4. Test Data Management
+## 4. Shared Test Data Management
 
-### Fluent Builders
-Never use "magic objects" in tests. Use the `CartBuilder` (`test/fixtures/cart-builder.ts`) to keep tests readable and refactorable.
+We strictly separate "Test Data Generation" from "Test Execution". All generators live in the **Shared Core**.
 
-### Arbitraries
-Shared generators for property-based tests live in `test/fixtures/arbitraries.ts`. These should cover edge cases (empty carts, high quantities, extreme price values).
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **CartBuilder** | `implementations/shared/fixtures/cart-builder.ts` | Fluent API for creating valid cart states. |
+| **Arbitraries** | `implementations/shared/fixtures/arbitraries.ts` | `fast-check` generators for PBT (covers edge cases). |
+| **Types** | `implementations/shared/src/types.ts` | Zod schemas shared by API, UI, and Tests. |
+
+**Rule:** Never use "magic objects" in tests. Always use the `CartBuilder`.
 
 ---
 
 ## 5. Anti-Patterns
 
-- **❌ Manual Rounding in Tests**: Our system uses integer `Cents`. Assertions should use exact equality (`toBe`).
+- **❌ Manual Rounding**: Our system uses integer `Cents`. Assertions should use exact equality (`toBe`).
 - **❌ Brittle Step Definitions**: We reject Gherkin. All "specifications" are written in type-safe TypeScript.
 - **❌ Hidden Logic**: Any rule mentioned in `docs/pricing-strategy.md` MUST have a corresponding "Invariant" test.
+- **❌ Testing Implementation Details**: Don't test *how* the code works (e.g., internal class methods). Test *what* it achieves (invariants).
 
 ---
 
 ## 6. Deep Dive References
 
-- **[Invariants & Property-Based Testing](reference/infinite-examples.md)** - How PBT extends the BDD "Examples" pillar to machine scale
-- **[Regression Safety](reference/regression-safety.md)** - How invariant tests catch bugs that manual scenarios miss
-- **[Semantic Integrity](reference/semantic-integrity.md)** - Type safety as specification enforcement
-- **[Refactor Benchmark](reference/refactor-benchmark.md)** - Evidence that executable specs enable fearless refactoring
+- **[GUI Testing Guidelines](GUI_TESTING_GUIDELINES.md)** - Specific patterns for Playwright
+- **[Invariants & Property-Based Testing](reference/infinite-examples.md)** - How PBT extends the BDD "Examples" pillar
+- **[Regression Safety](reference/regression-safety.md)** - How invariant tests catch bugs manual scenarios miss

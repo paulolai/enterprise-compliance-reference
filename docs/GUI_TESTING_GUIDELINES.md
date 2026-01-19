@@ -116,6 +116,23 @@ We verify **Business Capabilities**, not DOM structures.
 
 To keep tests fast and non-flaky, we "cheat" during setup. We use **Backend Seams** to establish preconditions instantly.
 
+### Security Warning: Production Safety 🛡️
+These "Cheats" are backdoor routes. You **MUST** ensure they never ship to production.
+
+```typescript
+// src/server/routes/debug.ts
+// ✅ GOOD: Wrapped in Env Check
+export const debugRouter = new Hono();
+
+if (import.meta.env.DEV) { 
+  debugRouter.post('/seed-cart', async (c) => { ... });
+  debugRouter.post('/reset-db', async (c) => { ... });
+} else {
+  // ⛔️ PROD: 404 Not Found
+  debugRouter.all('*', (c) => c.notFound());
+}
+```
+
 ### The "Teleport" Method
 If you are testing the **Checkout Logic**:
 1. **Don't** visit the home page, search, add to cart, then go to cart.
