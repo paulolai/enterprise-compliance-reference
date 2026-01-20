@@ -91,3 +91,21 @@ We use **API Seams** (Backdoor Routes) to "Teleport" the application into the de
 await api.post('/seed/cart', complexCartData); // 50ms
 await page.goto('/checkout'); // Instant test
 ```
+
+---
+
+## 6. Testing Scope: Sociable over Solitary (No "Mock Drift")
+
+### The Decision
+We prioritize **Sociable Tests** (Integration/Component) over **Solitary Unit Tests**.
+-   **Pure Logic (Solitary):** Tested extensively (e.g., `PricingEngine`). Zero mocks allowed.
+-   **Components/Services (Sociable):** Tested with real collaborators. We do *not* mock internal classes or functions.
+
+### Why?
+*   **The "Mock Drift" Danger:** A mock represents your *assumption* of how a dependency works. When the real dependency changes but the mock doesn't, tests pass but production crashes (The "Lying Test").
+*   **Refactoring Resistance:** Mocks often couple tests to implementation details (e.g., `expect(repo).toHaveBeenCalledWith(...)`). Refactoring the internal flow breaks the test even if the behavior is correct.
+*   **Maintenance Tax:** Keeping mocks synchronized with their real counterparts is low-value toil.
+
+### Rule
+*   **Mock only at the Boundaries:** Network (External APIs), Time, and Randomness.
+*   **Never Mock Internals:** If Class A calls Class B, the test for Class A should run real Class B code.
