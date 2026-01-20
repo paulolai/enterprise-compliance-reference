@@ -3,8 +3,6 @@ import { allure } from 'allure-playwright';
 import { invariant } from './fixtures/invariant-helper';
 
 test.beforeEach(async () => {
-  allure.label('tag', 'ui');
-  allure.label('tag', 'checkout');
 });
 
 invariant('Invariant: Grand total equals product total plus shipping', {

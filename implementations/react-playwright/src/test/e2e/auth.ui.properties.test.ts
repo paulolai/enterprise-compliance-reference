@@ -3,8 +3,6 @@ import { allure } from 'allure-playwright';
 import { invariant } from './fixtures/invariant-helper';
 
 test.beforeEach(async () => {
-  allure.label('tag', 'ui');
-  allure.label('tag', 'auth');
 });
 
 invariant('Invariant: Login page renders correctly', {

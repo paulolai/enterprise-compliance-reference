@@ -10,8 +10,6 @@ import {
 import { productCatalog } from '../../store/cartStore';
 
 test.beforeEach(async () => {
-  allure.label('tag', 'ui');
-  allure.label('tag', 'cart');
 });
 
 invariant('Invariant: Cart total matches calculation result', {
