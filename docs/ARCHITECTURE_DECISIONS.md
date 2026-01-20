@@ -59,8 +59,13 @@ We use **Attestation Reporting** to generate the "English" view from the code me
 We strictly distinguish between **Internal APIs** (mocked via Contract-First logic) and **External APIs** (mocked via Record/Replay).
 
 ### Why?
-*   **Internal APIs:** We control them. We use MSW to *simulate* the logic (e.g., "If cart > $100, return free shipping"). This allows testing business rules before the backend exists (ATDD).
-*   **External APIs:** We do *not* control Stripe/Auth0. Hand-writing mocks for them is dangerous because their API might change. We use **Playwright HAR** (Record/Replay) to capture real traffic and replay it, ensuring we test against reality.
+*   **Internal APIs (ATDD):** We control these. We use MSW to *simulate* the logic (e.g., "If cart > $100, return free shipping"). This allows testing business rules before the backend exists.
+*   **External APIs (Self-Updating Mocks):** We do *not* control Stripe/Auth0. Hand-writing mocks (`mock-data.json`) is an anti-pattern because it captures a static, potentially incorrect assumption of the 3rd party API.
+    *   **Record/Replay:** We use **Playwright HAR** to capture real traffic.
+    *   **Auto-Update:** To refresh test data, we simply delete the HAR file and run against the real sandbox. This guarantees our test data perfectly matches the real API schema.
+
+### The Benefit
+We eliminate **Hard-Crafted Test Data**. Developers never waste time guessing the shape of a JSON response. The "Mock" is just a cached reality.
 
 ---
 
