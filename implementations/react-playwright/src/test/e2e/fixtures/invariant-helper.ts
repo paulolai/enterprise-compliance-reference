@@ -17,6 +17,23 @@ export interface InvariantMetadata {
   tags: string[];
 }
 
+function deriveTagsFromPath(filePath: string): string[] {
+  const tags: string[] = [];
+  const fileName = filePath.split('/').pop() || '';
+  
+  // Domain tag from filename (e.g. "cart" from "cart.ui.properties.test.ts")
+  const parts = fileName.split('.');
+  if (parts.length > 0 && parts[0]) {
+    tags.push(`@${parts[0]}`);
+  }
+
+  // Type tags
+  if (fileName.includes('.ui.')) tags.push('@ui');
+  if (fileName.includes('.properties.')) tags.push('@properties');
+  
+  return tags;
+}
+
 /**
  * Wrapper for Playwright test that handles Attestation Metadata automatically.
  */
@@ -26,8 +43,13 @@ export function invariant(
   testFunction: (args: { page: Page, request: APIRequestContext }, testInfo: any) => Promise<void>
 ) {
   test(title, async ({ page, request }, testInfo) => {
+    // 0. Auto-derive tags from file path
+    const autoTags = deriveTagsFromPath(testInfo.file);
+    const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
+    const finalMetadata = { ...metadata, tags: combinedTags };
+
     // 1. Register Metadata for Attestation Report
-    registerAllureMetadata(allure, metadata);
+    registerAllureMetadata(allure, finalMetadata);
     
     // 2. Add Native Playwright Annotations (for standard HTML report)
     testInfo.annotations.push({ type: 'rule', description: metadata.rule });

@@ -24,6 +24,26 @@ export interface PreconditionMetadata {
 type AssertionCallback = (items: CartItem[], user: User, result: PricingResult) => void;
 type ShippingAssertionCallback = (items: CartItem[], user: User, method: ShippingMethod, result: PricingResult) => void;
 
+function deriveTagsFromTestPath(): string[] {
+  const testPath = expect.getState().testPath;
+  if (!testPath) return [];
+  
+  const tags: string[] = [];
+  const fileName = testPath.split('/').pop() || '';
+  
+  // Domain tag (e.g., 'pricing' from 'pricing.properties.test.ts')
+  const parts = fileName.split('.');
+  if (parts.length > 0 && parts[0]) {
+    tags.push(`@${parts[0]}`);
+  }
+  
+  if (fileName.includes('.properties.')) {
+    tags.push('@properties');
+  }
+  
+  return tags;
+}
+
 /**
  * Register invariant metadata with the tracer for attestation reports
  */
@@ -48,9 +68,15 @@ export function verifyInvariant(
   assertion: AssertionCallback
 ) {
   const name = metadata.name || expect.getState().currentTestName!;
+  
+  // Auto-tagging
+  const autoTags = deriveTagsFromTestPath();
+  const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
+  const finalMetadata = { ...metadata, tags: combinedTags };
+
   // Register metadata for attestation report
-  registerInvariant({ ...metadata, name });
-  registerAllureMetadata(allure, metadata);
+  registerInvariant({ ...finalMetadata, name });
+  registerAllureMetadata(allure, finalMetadata);
 
   fc.assert(
     fc.property(cartArb, userArb, (items, user) => {
@@ -95,9 +121,15 @@ export function verifyShippingInvariant(
   assertion: ShippingAssertionCallback
 ) {
   const name = metadata.name || expect.getState().currentTestName!;
+  
+  // Auto-tagging
+  const autoTags = deriveTagsFromTestPath();
+  const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
+  const finalMetadata = { ...metadata, tags: combinedTags };
+
   // Register metadata for attestation report
-  registerInvariant({ ...metadata, name });
-  registerAllureMetadata(allure, metadata);
+  registerInvariant({ ...finalMetadata, name });
+  registerAllureMetadata(allure, finalMetadata);
 
   fc.assert(
     fc.property(cartArb, userArb, shippingMethodArb, (items, user, method) => {
