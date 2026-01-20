@@ -9,9 +9,6 @@ import {
 } from './fixtures/invariant-helper';
 import { productCatalog } from '../../store/cartStore';
 
-test.beforeEach(async () => {
-});
-
 invariant('Invariant: Cart total matches calculation result', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'UI must accurately reflect the calculated cart total',

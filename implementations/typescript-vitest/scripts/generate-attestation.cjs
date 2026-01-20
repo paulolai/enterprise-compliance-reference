@@ -154,6 +154,37 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
     suites[task.suite].push(task);
   });
 
+  // Calculate Tag Statistics
+  const tagStats = {};
+  tasks.forEach(task => {
+    (task.metadata.tags || []).forEach(tag => {
+      if (!tagStats[tag]) tagStats[tag] = { total: 0, passed: 0, failed: 0 };
+      tagStats[tag].total++;
+      if (task.status === 'pass') tagStats[tag].passed++;
+      else tagStats[tag].failed++;
+    });
+  });
+
+  const tagRows = Object.keys(tagStats).sort().map(tag => {
+    const stats = tagStats[tag];
+    const passRate = Math.round((stats.passed / stats.total) * 100);
+    const barColor = passRate === 100 ? '#22863a' : (passRate >= 80 ? '#dbab09' : '#cb2431');
+    return `<tr>
+      <td><span class="tag">${tag}</span></td>
+      <td>${stats.total}</td>
+      <td style="color:#22863a">${stats.passed}</td>
+      <td style="color:#cb2431">${stats.failed}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:100px; height:6px; background:#eee; border-radius:3px; overflow:hidden;">
+            <div style="width:${passRate}%; height:100%; background:${barColor};"></div>
+          </div>
+          <span style="font-size:0.85em; font-weight:bold; color:${barColor}">${passRate}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
   const matrix = generateTraceabilityMatrix(tasks);
 
   let html = `<!DOCTYPE html>
@@ -216,13 +247,19 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
     }).join('')}
   </table>
 
-  <h2>2. Requirement Traceability Matrix</h2>
+  <h2>2. Tag Statistics</h2>
+  <table>
+    <tr><th>Tag</th><th>Total</th><th>Pass</th><th>Fail</th><th>Pass %</th></tr>
+    ${tagRows}
+  </table>
+
+  <h2>3. Requirement Traceability Matrix</h2>
   <table>
     <tr><th>Business Rule</th><th>Verified By</th></tr>
     ${matrix}
   </table>
 
-  <h2>3. Detailed Audit Log</h2>
+  <h2>4. Detailed Audit Log</h2>
   ${Object.keys(suites).map(suiteName => {
     const suiteTasks = suites[suiteName];
     let html = `<div class="suite-section"><h3 class="suite-header">${suiteName}</h3>`;

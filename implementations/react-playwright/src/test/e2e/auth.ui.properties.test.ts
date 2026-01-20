@@ -2,9 +2,6 @@ import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { invariant } from './fixtures/invariant-helper';
 
-test.beforeEach(async () => {
-});
-
 invariant('Invariant: Login page renders correctly', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Login page structure verification',
