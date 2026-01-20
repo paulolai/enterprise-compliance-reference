@@ -29,13 +29,27 @@ AI Agents must ingest the following context before making changes:
 
 ## 🧪 Testing Guidelines
 
-### File Naming Convention (Auto-Tagging)
-To ensure zero-toil reporting, test files MUST follow the `domain.layer.type.test.ts` convention.
-The system automatically derives Allure tags from the filename:
-*   `cart.ui.properties.test.ts` -> `['@cart', '@ui', '@properties']`
-*   `pricing.api.spec.ts` -> `['@pricing', '@api']`
+### Hierarchical Metadata Strategy
+To enable multi-dimensional reporting (Technical Slicing vs. Business Slicing), we populate both xUnit and BDD hierarchies automatically.
 
-**Do not manually add tags** that duplicate these structural concepts. Only add semantic tags like `@critical` or `@compliance`.
+**1. Technical Hierarchy (System Structure):**
+*   **Parent Suite:** **Layer** (e.g., `API Verification`, `GUI Verification`). Derived from the test runner.
+*   **Suite:** **Domain** (e.g., `Pricing`, `Cart`). Derived from filename (`cart.ui.test.ts` -> `Cart`).
+*   **Sub Suite:** **Context**. Derived from the test group or `describe` block.
+
+**2. Business Hierarchy (Behavior):**
+*   **Epic:** **Business Goal** (e.g., `Revenue Protection`). Optional, passed via metadata.
+*   **Feature:** **Domain** (Same as Suite).
+*   **Story:** **Business Rule**. Derived from `ruleReference` (e.g., `pricing-strategy.md §2`).
+
+**Tagging Policy:**
+*   **Tags (`@`)** are reserved exclusively for **Cross-Cutting Concerns** (e.g., `@critical`, `@slow`, `@compliance`).
+*   **Do not** manually add tags for Layer or Domain.
+
+### File Naming Convention
+Test files MUST follow the `domain.layer.type.test.ts` convention to enable this automation.
+*   `cart.ui.properties.test.ts` -> Domain: **Cart**, Layer: **UI**
+*   `pricing.api.spec.ts` -> Domain: **Pricing**, Layer: **API**
 
 ### Property-Based Testing
 - **Invariants over Examples:** Prefer `fast-check` properties that prove business rules hold for *all* valid inputs.

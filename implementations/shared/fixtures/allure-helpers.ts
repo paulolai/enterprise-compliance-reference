@@ -11,6 +11,16 @@ export interface RuleMetadata {
   ruleReference: string;
   rule: string;
   tags?: string[];
+  
+  // Hierarchical Metadata
+  epic?: string;        // Business Goal (e.g., "Revenue Protection")
+  feature?: string;     // Domain (e.g., "Pricing", "Cart")
+  story?: string;       // Rule/Story (e.g., "Bulk Discounts apply > 3")
+  
+  // Technical Hierarchy
+  parentSuite?: string; // Layer (e.g., "API Verification")
+  suite?: string;       // Domain (e.g., "Pricing")
+  subSuite?: string;    // Context (e.g., "Bulk Discounts")
 }
 
 const SECTION_MAP: Record<string, string> = {
@@ -24,27 +34,43 @@ const SECTION_MAP: Record<string, string> = {
 export function registerAllureMetadata(allure: AllureAdapter, metadata: RuleMetadata) {
   if (!allure) return;
   
-  // Set consistent Epic
-  allure.epic('Pricing Engine');
-
-  // Parse Reference for Feature
-  // Expect format like: "pricing-strategy.md §2" or "pricing-strategy.md §3.1"
-  const match = metadata.ruleReference.match(/§(\d+)/);
-  if (match && match[1]) {
-    const sectionNum = match[1];
-    const sectionName = SECTION_MAP[sectionNum] || `Section ${sectionNum}`;
-    allure.feature(`${sectionNum}. ${sectionName}`);
+  // 1. Business Hierarchy (BDD)
+  if (metadata.epic) {
+    allure.epic(metadata.epic);
   } else {
-    allure.feature('General Logic');
+    // Fallback: If no Epic provided, group by Section Name if available
+    const match = metadata.ruleReference.match(/§(\d+)/);
+    if (match && match[1]) {
+      const sectionNum = match[1];
+      const sectionName = SECTION_MAP[sectionNum] || `Section ${sectionNum}`;
+      allure.epic(`${sectionNum}. ${sectionName}`);
+    } else {
+      allure.epic('General Logic');
+    }
   }
 
-  // Set Story
-  allure.story(metadata.ruleReference);
+  // Feature defaults to provided feature, or derived from Suite if missing
+  if (metadata.feature) {
+    allure.feature(metadata.feature);
+  } else if (metadata.suite) {
+    allure.feature(metadata.suite);
+  }
 
-  // Set Description
+  // Story defaults to provided story, or Rule Reference
+  if (metadata.story) {
+    allure.story(metadata.story);
+  } else {
+    allure.story(metadata.ruleReference);
+  }
+
+  // 2. Technical Hierarchy (xUnit)
+  if (metadata.parentSuite) allure.label('parentSuite', metadata.parentSuite);
+  if (metadata.suite) allure.label('suite', metadata.suite);
+  if (metadata.subSuite) allure.label('subSuite', metadata.subSuite);
+
+  // 3. Description & Tags
   allure.description(`**Business Rule:** ${metadata.rule}\n\n**Reference:** ${metadata.ruleReference}`);
 
-  // Set Tags
   if (metadata.tags) {
     metadata.tags.forEach(tag => allure.label('tag', tag));
   }

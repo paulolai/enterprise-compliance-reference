@@ -17,21 +17,21 @@ export interface InvariantMetadata {
   tags: string[];
 }
 
-function deriveTagsFromPath(filePath: string): string[] {
-  const tags: string[] = [];
+function deriveHierarchyFromPath(filePath: string): { parentSuite: string, suite: string, feature: string } {
   const fileName = filePath.split('/').pop() || '';
   
   // Domain tag from filename (e.g. "cart" from "cart.ui.properties.test.ts")
   const parts = fileName.split('.');
+  let domain = 'General';
   if (parts.length > 0 && parts[0]) {
-    tags.push(`@${parts[0]}`);
+    domain = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
   }
 
-  // Type tags
-  if (fileName.includes('.ui.')) tags.push('@ui');
-  if (fileName.includes('.properties.')) tags.push('@properties');
-  
-  return tags;
+  return {
+    parentSuite: 'GUI Verification',
+    suite: domain,
+    feature: domain
+  };
 }
 
 /**
@@ -43,12 +43,16 @@ export function invariant(
   testFunction: (args: { page: Page, request: APIRequestContext }, testInfo: any) => Promise<void>
 ) {
   test(title, async ({ page, request }, testInfo) => {
-    // 0. Auto-derive tags from file path
-    // testInfo.file points to this helper file, so we use titlePath[0] which is the spec file path
+    // 0. Auto-derive Hierarchy
     const specPath = testInfo.titlePath[0] || ''; 
-    const autoTags = deriveTagsFromPath(specPath);
-    const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
-    const finalMetadata = { ...metadata, tags: combinedTags };
+    const hierarchy = deriveHierarchyFromPath(specPath);
+    const combinedTags = metadata.tags || [];
+
+    const finalMetadata = { 
+      ...metadata, 
+      ...hierarchy,
+      tags: combinedTags 
+    };
 
     // 1. Register Metadata for Attestation Report
     registerAllureMetadata(allure, finalMetadata);

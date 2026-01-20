@@ -23,24 +23,24 @@ export interface PreconditionMetadata {
 type AssertionCallback = (items: CartItem[], user: User, result: PricingResult) => void;
 type ShippingAssertionCallback = (items: CartItem[], user: User, method: ShippingMethod, result: PricingResult) => void;
 
-function deriveTagsFromTestPath(): string[] {
+function deriveHierarchyFromTestPath(): { parentSuite: string, suite: string, feature: string } {
   const testPath = expect.getState().testPath;
-  if (!testPath) return [];
+  if (!testPath) return { parentSuite: 'API Verification', suite: 'Unknown', feature: 'Unknown' };
   
-  const tags: string[] = [];
   const fileName = testPath.split('/').pop() || '';
   
   // Domain tag (e.g., 'pricing' from 'pricing.properties.test.ts')
   const parts = fileName.split('.');
+  let domain = 'General';
   if (parts.length > 0 && parts[0]) {
-    tags.push(`@${parts[0]}`);
+    domain = parts[0].charAt(0).toUpperCase() + parts[0].slice(1); // Capitalize
   }
-  
-  if (fileName.includes('.properties.')) {
-    tags.push('@properties');
-  }
-  
-  return tags;
+
+  return {
+    parentSuite: 'API Verification',
+    suite: domain,
+    feature: domain
+  };
 }
 
 /**
@@ -69,10 +69,15 @@ export function verifyInvariant(
   const name = metadata.name || expect.getState().currentTestName!;
   const allure = (globalThis as any).allure;
   
-  // Auto-tagging
-  const autoTags = deriveTagsFromTestPath();
-  const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
-  const finalMetadata = { ...metadata, tags: combinedTags };
+  // Auto-derive Hierarchy
+  const hierarchy = deriveHierarchyFromTestPath();
+  const combinedTags = metadata.tags || [];
+
+  const finalMetadata = { 
+    ...metadata, 
+    ...hierarchy,
+    tags: combinedTags 
+  };
 
   // Register metadata for attestation report
   registerInvariant({ ...finalMetadata, name });
@@ -123,10 +128,15 @@ export function verifyShippingInvariant(
   const name = metadata.name || expect.getState().currentTestName!;
   const allure = (globalThis as any).allure;
   
-  // Auto-tagging
-  const autoTags = deriveTagsFromTestPath();
-  const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
-  const finalMetadata = { ...metadata, tags: combinedTags };
+  // Auto-derive Hierarchy
+  const hierarchy = deriveHierarchyFromTestPath();
+  const combinedTags = metadata.tags || [];
+
+  const finalMetadata = { 
+    ...metadata, 
+    ...hierarchy,
+    tags: combinedTags 
+  };
 
   // Register metadata for attestation report
   registerInvariant({ ...finalMetadata, name });

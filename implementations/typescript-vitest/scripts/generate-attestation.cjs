@@ -51,26 +51,31 @@ function loadAllureData() {
       try {
         const content = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf-8'));
         
-        // Extract metadata
+        // Extract metadata from labels
         const labels = content.labels || [];
         const getLabel = (name) => labels.find(l => l.name === name)?.value;
         
-        const suite = getLabel('feature') || getLabel('parentSuite') || 'General';
-        const subSuite = getLabel('story') || getLabel('suite') || 'Other';
+        // Technical Hierarchy
+        const parentSuite = getLabel('parentSuite') || 'Uncategorized';
+        const suite = getLabel('suite') || 'General';
+        const subSuite = getLabel('subSuite') || '';
+
+        // Business Hierarchy
+        const epic = getLabel('epic') || 'General Logic';
+        const feature = getLabel('feature') || suite; // Fallback to Suite
+        const story = getLabel('story') || getLabel('subSuite') || 'Other';
+
         const tags = labels.filter(l => l.name === 'tag').map(l => l.value);
         
-        // Extract Rule Info from Description or Labels
-        // In helper we set description like "**Business Rule:** ... 
-
-        // **Reference:** ..."
+        // Extract Rule Info
         const description = content.description || '';
         const ruleMatch = description.match(/\*\*Business Rule:\*\* (.*?)\n/);
         const refMatch = description.match(/\*\*Reference:\*\* (.*?)$/m) || description.match(/\*\*Reference:\*\* (.*)/);
         
-        const rule = ruleMatch ? ruleMatch[1].trim() : 'See details';
-        const ruleReference = refMatch ? refMatch[1].trim() : (getLabel('story') || 'Unknown Reference');
+        const rule = ruleMatch ? ruleMatch[1].trim() : (content.name || 'See details');
+        const ruleReference = refMatch ? refMatch[1].trim() : (story || 'Unknown Reference');
 
-        // Extract Traces from Attachments (recursively through steps)
+        // Extract Traces
         const traces = [];
         const processAttachments = (attachments) => {
           if (!attachments) return;
@@ -82,9 +87,7 @@ function loadAllureData() {
                   const attContent = fs.readFileSync(attPath, 'utf-8');
                   traces.push(JSON.parse(attContent));
                 }
-              } catch (e) {
-                // ignore
-              }
+              } catch (e) { /* ignore */ }
             } else if (att.type.startsWith('image/')) {
                traces.push({ type: 'image', name: att.name, source: path.join(dir, att.source) });
             }
@@ -102,20 +105,20 @@ function loadAllureData() {
         processAttachments(content.attachments);
         processSteps(content.steps);
 
-      // Sanitize name for ID
       const safeId = content.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
 
       allTasks.push({
         id: safeId,
         name: content.name,
-        suite,
-        subSuite,
         status: content.status === 'passed' ? 'pass' : 'fail',
         duration: content.stop - content.start,
         metadata: {
           rule,
           ruleReference,
-          tags
+          tags,
+          // Hierarchies
+          technical: { parentSuite, suite, subSuite },
+          business: { epic, feature, story }
         },
         traces
       });
@@ -144,17 +147,208 @@ function calculateDuration(tasks) {
   return (total / 1000).toFixed(2);
 }
 
-// --- HTML Generation (Simplified Port) ---
-
 function generateHtml(tasks, gitInfo, duration, includeTraces) {
-  // Group tasks by Suite -> SubSuite
-  const suites = {};
+  // Build Hierarchies
+  const technicalTree = {};
+  const businessTree = {};
+
   tasks.forEach(task => {
-    if (!suites[task.suite]) suites[task.suite] = [];
-    suites[task.suite].push(task);
+    // Technical Tree: ParentSuite -> Suite -> Tests
+    const tLayer = task.metadata.technical.parentSuite;
+    const tDomain = task.metadata.technical.suite;
+    if (!technicalTree[tLayer]) technicalTree[tLayer] = {};
+    if (!technicalTree[tLayer][tDomain]) technicalTree[tLayer][tDomain] = [];
+    technicalTree[tLayer][tDomain].push(task);
+
+    // Business Tree: Epic -> Feature -> Tests
+    const bGoal = task.metadata.business.epic;
+    const bDomain = task.metadata.business.feature;
+    if (!businessTree[bGoal]) businessTree[bGoal] = {};
+    if (!businessTree[bGoal][bDomain]) businessTree[bGoal][bDomain] = [];
+    businessTree[bGoal][bDomain].push(task);
   });
 
-  // Calculate Tag Statistics
+  const matrix = generateTraceabilityMatrix(tasks);
+  const tagStats = calculateTagStats(tasks);
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>QA Attestation Report</title>
+<style>
+  :root { --primary: #0366d6; --bg: #fff; --text: #24292e; --border: #e1e4e8; --pass: #22863a; --fail: #cb2431; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1280px; margin: 0 auto; padding: 20px; color: var(--text); background-color: var(--bg); }
+  h1 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-bottom: 20px; }
+  
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab-btn { padding: 10px 20px; cursor: pointer; border: 1px solid transparent; border-bottom: none; background: none; font-weight: 500; color: #586069; }
+  .tab-btn.active { border-color: var(--border); border-radius: 6px 6px 0 0; background: #fff; color: var(--primary); border-bottom: 1px solid #fff; margin-bottom: -1px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Metadata */
+  .metadata { background: #f6f8fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); display: flex; gap: 30px; }
+  .metadata-item { display: flex; flex-direction: column; }
+  .metadata-label { font-size: 0.8em; color: #586069; font-weight: 600; text-transform: uppercase; }
+  .metadata-value { font-size: 1.1em; font-weight: 500; }
+
+  /* Tables */
+  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eaeaea; vertical-align: top; }
+  th { background-color: #f6f8fa; font-weight: 600; }
+  
+  /* Sections */
+  .section-header { margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid var(--primary); color: var(--primary); font-size: 1.4em; }
+  .group-header { background: #f1f8ff; padding: 10px 15px; border: 1px solid var(--border); font-weight: 600; margin-top: 20px; border-radius: 6px 6px 0 0; border-bottom: none; display: flex; justify-content: space-between; }
+  .test-table { margin-top: 0; border-radius: 0 0 6px 6px; border-top: 1px solid var(--border); }
+
+  /* Status & Tags */
+  .status-pass { color: var(--pass); font-weight: bold; }
+  .status-fail { color: var(--fail); font-weight: bold; }
+  .tag { display: inline-block; background: #e1f5ff; color: var(--primary); padding: 2px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 4px; border: 1px solid #b4d9fa; }
+  .tag-critical { background: #ffeef0; color: var(--fail); border-color: #f9c0c7; }
+  
+  /* Details */
+  details { margin-top: 5px; }
+  summary { cursor: pointer; color: var(--primary); font-size: 0.9em; outline: none; }
+  .test-details { padding: 15px; background: #f8f9fa; border: 1px solid var(--border); border-radius: 4px; margin-top: 5px; }
+  .io-block { display: flex; gap: 20px; margin-top: 10px; }
+  .io-section { flex: 1; min-width: 0; }
+  pre { background: #fff; padding: 10px; border: 1px solid var(--border); border-radius: 4px; overflow-x: auto; font-size: 0.85em; }
+</style>
+<script>
+function openTab(evt, tabName) {
+  var i, content, links;
+  content = document.getElementsByClassName("tab-content");
+  for (i = 0; i < content.length; i++) { content[i].className = content[i].className.replace(" active", ""); }
+  links = document.getElementsByClassName("tab-btn");
+  for (i = 0; i < links.length; i++) { links[i].className = links[i].className.replace(" active", ""); }
+  document.getElementById(tabName).className += " active";
+  evt.currentTarget.className += " active";
+}
+</script>
+</head>
+<body>
+  <h1>QA Attestation Report</h1>
+  
+  <div class="metadata">
+    <div class="metadata-item"><span class="metadata-label">Generated</span><span class="metadata-value">${new Date().toLocaleString()}</span></div>
+    <div class="metadata-item"><span class="metadata-label">Git Commit</span><span class="metadata-value"><code>${gitInfo.hash}</code></span></div>
+    <div class="metadata-item"><span class="metadata-label">Tests</span><span class="metadata-value">${tasks.length}</span></div>
+    ${gitInfo.dirtyFiles ? `<div class="metadata-item"><span class="metadata-label" style="color:red">⚠️ Warning</span><span class="metadata-value" style="color:red">Uncommitted Changes</span></div>` : ''}
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event, 'view-technical')">Technical View (Architecture)</button>
+    <button class="tab-btn" onclick="openTab(event, 'view-business')">Business View (Goals)</button>
+    <button class="tab-btn" onclick="openTab(event, 'view-matrix')">Traceability Matrix</button>
+  </div>
+
+  <!-- VIEW 1: TECHNICAL -->
+  <div id="view-technical" class="tab-content active">
+    ${renderTree(technicalTree, includeTraces, 'Layer', 'Domain')}
+  </div>
+
+  <!-- VIEW 2: BUSINESS -->
+  <div id="view-business" class="tab-content">
+    ${renderTree(businessTree, includeTraces, 'Business Goal', 'Feature')}
+  </div>
+
+  <!-- VIEW 3: MATRIX -->
+  <div id="view-matrix" class="tab-content">
+    <table>
+      <tr><th>Business Rule (Story)</th><th>Verified By</th></tr>
+      ${matrix}
+    </table>
+    <h3>Tag Statistics</h3>
+    <table>
+      <tr><th>Tag</th><th>Total</th><th>Pass</th><th>Fail</th><th>Pass %</th></tr>
+      ${tagStats}
+    </table>
+  </div>
+
+</body></html>`;
+}
+
+function renderTree(tree, includeTraces, groupLabel, subGroupLabel) {
+  if (Object.keys(tree).length === 0) return '<p>No data available.</p>';
+  
+  return Object.keys(tree).sort().map(group => {
+    const subGroups = tree[group];
+    const groupHtml = Object.keys(subGroups).sort().map(subGroup => {
+      const tasks = subGroups[subGroup];
+      const passCount = tasks.filter(t => t.status === 'pass').length;
+      const failCount = tasks.filter(t => t.status === 'fail').length;
+      
+      let html = `<div class="group-header">
+        <span>${group} <span style="color:#999">/</span> ${subGroup}</span>
+        <span>
+          <span style="color:${passCount > 0 ? '#22863a' : '#ccc'}">✔ ${passCount}</span>
+          <span style="color:${failCount > 0 ? '#cb2431' : '#ccc'}; margin-left:10px">✖ ${failCount}</span>
+        </span>
+      </div>`;
+      
+      html += `<table class="test-table">
+        ${tasks.map(task => renderTaskRow(task, includeTraces)).join('')}
+      </table>`;
+      return html;
+    }).join('');
+    
+    return `<div style="margin-bottom: 30px">${groupHtml}</div>`;
+  }).join('');
+}
+
+function renderTaskRow(task, includeTraces) {
+  const statusClass = task.status === 'pass' ? 'status-pass' : 'status-fail';
+  const icon = task.status === 'pass' ? '✅' : '❌';
+  const tagsHtml = (task.metadata.tags || []).map(t => {
+    const isCrit = t.includes('critical');
+    return `<span class="tag ${isCrit ? 'tag-critical' : ''}">${t}</span>`;
+  }).join('');
+
+  // Traceability Link
+  const ruleRef = task.metadata.ruleReference;
+  const fileRef = ruleRef.split(' ')[0]; // Take first part "pricing-strategy.md"
+  const link = fileRef.endsWith('.md') 
+    ? `<a href="https://github.com/paulolai/executable-specs-demo/blob/main/docs/${fileRef}" target="_blank" style="font-size:0.85em; color:#0366d6; margin-left:10px;">📄 ${ruleRef}</a>`
+    : `<span style="font-size:0.85em; color:#666; margin-left:10px;">${ruleRef}</span>`;
+
+  let details = '';
+  if (includeTraces && task.traces.length > 0) {
+    task.traces.forEach((trace, idx) => {
+      if (trace.type === 'image') {
+          details += `<div>[Image Attachment: ${trace.name}]</div>`;
+      } else {
+         details += `<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+          <div style="font-size: 0.8em; color: #999;">Trace #${idx + 1}</div>
+          <div class="io-block">
+            <div class="io-section"><div class="io-label">Input</div><pre>${JSON.stringify(trace.input || trace.items || '?', null, 2)}</pre></div>
+            <div class="io-section"><div class="io-label">Output</div><pre>${JSON.stringify(trace.output || trace.result || '?', null, 2)}</pre></div>
+          </div></div>`;
+      }
+    });
+  }
+  
+  const detailsHtml = details ? `<details><summary>View Execution Trace</summary><div class="test-details">${details}</div></details>` : '';
+
+  return `<tr>
+    <td style="width: 70%">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-weight:500">${task.name}</span>
+        <div>${tagsHtml}</div>
+      </div>
+      <div style="margin-top:4px; font-size:0.9em; color:#586069;">
+        ${task.metadata.rule} ${link}
+      </div>
+      ${detailsHtml}
+    </td>
+    <td style="width: 15%" class="${statusClass}">${icon} ${task.status.toUpperCase()}</td>
+  </tr>`;
+}
+
+function calculateTagStats(tasks) {
   const tagStats = {};
   tasks.forEach(task => {
     (task.metadata.tags || []).forEach(tag => {
@@ -165,7 +359,7 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
     });
   });
 
-  const tagRows = Object.keys(tagStats).sort().map(tag => {
+  return Object.keys(tagStats).sort().map(tag => {
     const stats = tagStats[tag];
     const passRate = Math.round((stats.passed / stats.total) * 100);
     const barColor = passRate === 100 ? '#22863a' : (passRate >= 80 ? '#dbab09' : '#cb2431');
@@ -184,139 +378,6 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
       </td>
     </tr>`;
   }).join('');
-
-  const matrix = generateTraceabilityMatrix(tasks);
-
-  let html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>QA Attestation Report</title>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; }
-  h1 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-bottom: 30px; }
-  h2 { margin-top: 40px; margin-bottom: 20px; color: #24292e; border-bottom: 1px solid #eaeaea; padding-bottom: 5px; }
-  h3 { margin-top: 25px; margin-bottom: 15px; color: #24292e; font-size: 1.1em; }
-  .metadata { background: #f6f8fa; padding: 20px; border-radius: 6px; margin-bottom: 30px; border: 1px solid #e1e4e8; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
-  .metadata-item { display: flex; flex-direction: column; }
-  .metadata-label { font-size: 0.85em; color: #586069; font-weight: 600; margin-bottom: 4px; }
-  .metadata-value { font-size: 1.1em; font-weight: 500; }
-  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e1e4e8; border-radius: 6px; overflow: hidden; }
-  th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eaeaea; vertical-align: top; }
-  th { background-color: #f6f8fa; font-weight: 600; color: #24292e; border-bottom: 2px solid #eaeaea; }
-  .status-pass { color: #22863a; font-weight: bold; }
-  .status-fail { color: #cb2431; font-weight: bold; }
-  .tag { display: inline-block; background: #e1f5ff; color: #0366d6; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 4px; border: 1px solid #b4d9fa; }
-  .tag-critical { background: #ffeef0; color: #cb2431; border-color: #f9c0c7; }
-  .suite-section { border: 1px solid #e1e4e8; border-radius: 6px; margin-bottom: 20px; padding: 0 20px 20px 20px; }
-  .suite-header { background-color: #f6f8fa; padding: 12px 20px; margin: 0 -20px 20px -20px; border-bottom: 1px solid #e1e4e8; }
-  details { margin-top: 8px; }
-  summary { cursor: pointer; color: #0366d6; font-size: 0.9em; outline: none; }
-  .test-details { padding: 15px; background: #f8f9fa; border-radius: 4px; border: 1px solid #e1e4e8; margin-top: 10px; }
-  .business-rule-box { background: #fff; padding: 10px; border-left: 3px solid #0366d6; margin-bottom: 10px; }
-  .io-block { display: flex; gap: 20px; margin-top: 10px; }
-  .io-section { flex: 1; min-width: 0; }
-  pre { background: #f6f8fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; border: 1px solid #e1e4e8; margin: 0; }
-</style>
-</head>
-<body>
-  <h1>Pricing Engine: QA Attestation</h1>
-  
-  <div class="metadata">
-    <div class="metadata-item"><span class="metadata-label">Generated</span><span class="metadata-value">${new Date().toLocaleString()}</span></div>
-    <div class="metadata-item"><span class="metadata-label">Git Hash</span><span class="metadata-value"><code>${gitInfo.hash}</code></span></div>
-    ${gitInfo.dirtyFiles ? `
-    <div class="metadata-item">
-      <span class="metadata-label" style="color:red">⚠️ Uncommitted Changes</span>
-      <div style="font-size: 0.8em; color: #666; max-height: 100px; overflow-y: auto; border: 1px solid #fee; padding: 5px; background: #fffcfc;">
-        ${gitInfo.dirtyFiles.split('\n').map(f => `<div>${f}</div>`).join('')}
-      </div>
-    </div>` : ''}
-  </div>
-
-  <h2>1. Executive Summary</h2>
-  <table>
-    <tr><th>Test Suite</th><th>Passed</th><th>Failed</th><th>Status</th></tr>
-    ${Object.keys(suites).map(suiteName => {
-      const suiteTasks = suites[suiteName];
-      const passed = suiteTasks.filter(t => t.status === 'pass').length;
-      const failed = suiteTasks.filter(t => t.status === 'fail').length;
-      const statusClass = failed === 0 ? 'status-pass' : 'status-fail';
-      const statusText = failed === 0 ? '✅ PASS' : '❌ FAIL';
-      return `<tr><td>${suiteName}</td><td>${passed}</td><td>${failed}</td><td class="${statusClass}">${statusText}</td></tr>`;
-    }).join('')}
-  </table>
-
-  <h2>2. Tag Statistics</h2>
-  <table>
-    <tr><th>Tag</th><th>Total</th><th>Pass</th><th>Fail</th><th>Pass %</th></tr>
-    ${tagRows}
-  </table>
-
-  <h2>3. Requirement Traceability Matrix</h2>
-  <table>
-    <tr><th>Business Rule</th><th>Verified By</th></tr>
-    ${matrix}
-  </table>
-
-  <h2>4. Detailed Audit Log</h2>
-  ${Object.keys(suites).map(suiteName => {
-    const suiteTasks = suites[suiteName];
-    let html = `<div class="suite-section"><h3 class="suite-header">${suiteName}</h3>`;
-    html += `<table><tr><th style="width: 70%">Scenario</th><th style="width: 15%">Status</th>${includeTraces ? '<th>Duration</th>' : ''}</tr>`;
-    
-    suiteTasks.forEach(task => {
-      const statusClass = task.status === 'pass' ? 'status-pass' : 'status-fail';
-      const icon = task.status === 'pass' ? '✅' : '❌';
-      const tagsHtml = task.metadata.tags.map(t => {
-        const isCrit = t.includes('critical');
-        return `<span class="tag ${isCrit ? 'tag-critical' : ''}">${t}</span>`;
-      }).join('');
-      
-      let details = '';
-      if (task.metadata.rule) {
-        details += `<div class="business-rule-box"><strong>${task.metadata.ruleReference}</strong><br>${task.metadata.rule}</div>`;
-      }
-      
-      if (includeTraces && task.traces.length > 0) {
-        task.traces.forEach((trace, idx) => {
-          if (trace.type === 'image') {
-              // Copy image to relative path if needed, but for now assuming browser can reach it or we embed base64?
-              // Browsers can't read local files usually. 
-              // TODO: Copy images to report dir.
-              // For simplicity, we'll just link it.
-              details += `<div>[Image Attachment: ${trace.name}]</div>`;
-          } else {
-             details += `<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-              <div style="font-size: 0.8em; color: #999;">Trace #${idx + 1}</div>
-              <div class="io-block">
-                <div class="io-section"><div class="io-label">Input</div><pre>${JSON.stringify(trace.input || trace.items || '?', null, 2)}</pre></div>
-                <div class="io-section"><div class="io-label">Output</div><pre>${JSON.stringify(trace.output || trace.result || '?', null, 2)}</pre></div>
-              </div></div>`;
-          }
-        });
-      }
-
-      const detailsHtml = details ? `<details><summary>View Details</summary><div class="test-details">${details}</div></details>` : '';
-
-      html += `<tr id="${task.id}">
-        <td>
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <strong>${task.name}</strong>
-            <div>${tagsHtml}</div>
-          </div>
-          ${detailsHtml}
-        </td>
-        <td class="${statusClass}">${icon} ${task.status.toUpperCase()}</td>
-        ${includeTraces ? `<td>${task.duration}ms</td>` : ''}
-      </tr>`;
-    });
-    html += `</table></div>`;
-    return html;
-  }).join('')}
-
-</body></html>`;
-  return html;
 }
 
 function generateTraceabilityMatrix(tasks) {
@@ -332,9 +393,9 @@ function generateTraceabilityMatrix(tasks) {
   return Array.from(ruleMap.keys()).sort().map(ref => {
     const relevantTasks = ruleMap.get(ref);
     const testsHtml = relevantTasks.map(t => 
-      `<li><a href="#${t.id}" style="text-decoration:none; color:#0366d6;">${t.name}</a> <span style="font-size:0.8em">${t.status === 'pass' ? '✅' : '❌'}</span></li>`
+      `<li><span style="font-size:0.9em">${t.name}</span> <span style="font-size:0.8em">${t.status === 'pass' ? '✅' : '❌'}</span></li>`
     ).join('');
-    return `<tr><td class="matrix-rule">${ref}</td><td><ul class="matrix-tests" style="list-style:none;padding:0;margin:0">${testsHtml}</ul></td></tr>`;
+    return `<tr><td style="width:30%; font-weight:500">${ref}</td><td><ul style="list-style:none;padding:0;margin:0">${testsHtml}</ul></td></tr>`;
   }).join('');
 }
 
@@ -345,7 +406,6 @@ Generated: ${new Date().toLocaleString()}
 Git: ${gitInfo.hash}
 
 ## Results
-
 Total Tests: ${tasks.length}`;
 }
 
