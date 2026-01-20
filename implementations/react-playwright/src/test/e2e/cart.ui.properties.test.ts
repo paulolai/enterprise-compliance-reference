@@ -16,10 +16,12 @@ invariant('Cart total matches calculation result', {
 }, async ({ page }) => {
   const product = productCatalog[0];
 
-  await page.goto('/products');
+  await page.goto(`/products/${product.sku}`);
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to cart
   await page.goto('/cart');
@@ -38,7 +40,7 @@ invariant('Cart badge shows correct item count', {
   rule: 'Cart badge count matches total items in cart',
   tags: ['@ux']
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto(`/products/${productCatalog[0].sku}`);
 
   // Add items to cart
   await page.getByTestId('add-to-cart').click();
@@ -50,6 +52,8 @@ invariant('Cart badge shows correct item count', {
   // Add another item
   await page.goto('/products/WIRELESS-EARBUDS');
   await page.getByTestId('add-to-cart').click();
+  // Wait for badge to reflect the updated count
+  await page.waitForTimeout(100);
 
   badgeText = await page.getByTestId('cart-badge').textContent();
   expect(badgeText).toBe('2');
@@ -73,7 +77,7 @@ invariant('VIP badge shown for VIP users', {
   await page.getByTestId('login-button').click();
 
   // Navigate to products and add item
-  await page.goto('/products');
+  await page.goto(`/products/${productCatalog[0].sku}`);
   await page.getByTestId('add-to-cart').click();
 
   // Navigate to cart
@@ -100,7 +104,7 @@ invariant('VIP badge NOT shown for non-VIP users', {
   await page.getByTestId('login-button').click();
 
   // Navigate to products and add item
-  await page.goto('/products');
+  await page.goto(`/products/${productCatalog[0].sku}`);
   await page.getByTestId('add-to-cart').click();
 
   // Navigate to cart
@@ -116,10 +120,12 @@ invariant('Cart allows removing items', {
   rule: 'User can remove items from cart',
   tags: ['@interaction']
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto(`/products/${productCatalog[0].sku}`);
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to cart
   await page.goto('/cart');
@@ -141,10 +147,12 @@ invariant('Cart allows quantity updates', {
   rule: 'User can update item quantity in cart',
   tags: ['@interaction']
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto(`/products/${productCatalog[0].sku}`);
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to cart
   await page.goto('/cart');

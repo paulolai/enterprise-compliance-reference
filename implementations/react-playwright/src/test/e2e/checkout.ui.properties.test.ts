@@ -7,10 +7,12 @@ invariant('Grand total equals product total plus shipping', {
   rule: 'Grand Total = Final Product Total + Shipping Cost',
   tags: ['@pricing']
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto('/products/WIRELESS-EARBUDS');
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to checkout
   await page.goto('/checkout');
@@ -38,10 +40,12 @@ invariant('Express shipping costs exactly $25', {
   rule: 'Express shipping is fixed at $25.00 in UI',
   tags: ['@shipping', '@express']
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto('/products/WIRELESS-EARBUDS');
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to checkout
   await page.goto('/checkout');
@@ -69,6 +73,8 @@ invariant('Free shipping badge shown when eligible', {
   await page.getByTestId('add-to-cart').click();
   await page.getByTestId('add-to-cart').click();
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to reflect all items
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to checkout
   await page.goto('/checkout');
@@ -101,10 +107,12 @@ invariant('Order summary displays all pricing components', {
   rule: 'Order summary shows breakdown of costs',
   tags: []
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto('/products/WIRELESS-EARBUDS');
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to checkout
   await page.goto('/checkout');
@@ -124,10 +132,12 @@ invariant('Shipping methods are selectable', {
   rule: 'User can select different shipping methods',
   tags: ['@shipping']
 }, async ({ page }) => {
-  await page.goto('/products');
+  await page.goto('/products/WIRELESS-EARBUDS');
 
   // Add item to cart
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to checkout
   await page.goto('/checkout');

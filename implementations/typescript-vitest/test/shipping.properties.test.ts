@@ -4,7 +4,7 @@ import { verifyShippingInvariant } from './fixtures/invariant-helper';
 
 describe('Shipping: Mathematical Invariants', () => {
 
-  it('Invariant: Standard shipping = $7 + (totalKg × $2) unless free', () => {
+  it('Standard shipping = $7 + (totalKg × $2) unless free', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.1 - Base Shipping & Weight',
       rule: 'Standard Shipping = $7.00 + (Total Weight × $2.00). Exception: Free shipping threshold overrides this.',
@@ -22,7 +22,7 @@ describe('Shipping: Mathematical Invariants', () => {
     });
   });
 
-  it('Invariant: Free shipping triggered exactly when discounted subtotal > $100', () => {
+  it('Free shipping triggered exactly when discounted subtotal > $100', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       rule: 'If finalTotal > $100.00, then totalShipping = 0. Order: Checked AFTER all product discounts are applied. Edge Case: Exactly $100.00 does NOT qualify.',
@@ -34,7 +34,7 @@ describe('Shipping: Mathematical Invariants', () => {
     });
   });
 
-  it('Invariant: Express delivery always costs exactly $25', () => {
+  it('Express delivery always costs exactly $25', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
       rule: 'Express Delivery always costs exactly $25.00. Interaction: NOT eligible for free shipping threshold, overrides all other shipping logic.',
@@ -46,7 +46,7 @@ describe('Shipping: Mathematical Invariants', () => {
     });
   });
 
-  it('Invariant: Shipping costs are NEVER included in product discount cap', () => {
+  it('Shipping costs are NEVER included in product discount cap', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.5 - Shipping Discount Cap',
       rule: 'Shipping costs do NOT count toward the 30% product discount cap. Enforcement: totalDiscount (product only) ≤ 30% of originalTotal. Formula: grandTotal = finalTotal + totalShipping.',

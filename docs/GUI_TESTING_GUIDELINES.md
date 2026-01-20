@@ -415,6 +415,76 @@ GUI tests must provide "Proof of Quality" just like API tests.
 
 ---
 
+## Allure Reporting for GUI Tests
+
+The `invariant()` test wrapper automatically generates Allure metadata for GUI tests. No manual configuration is needed in individual tests.
+
+### Automatic Metadata Mapping
+
+The `invariant()` helper in `src/test/e2e/fixtures/invariant-helper.ts` automatically:
+
+1. **Derives Technical Hierarchy** from filename:
+   ```typescript
+   // cart.ui.properties.test.ts → Suite: "Cart"
+   // checkout.ui.properties.test.ts → Suite: "Checkout"
+   ```
+
+2. **Maps Business Rule References** to Epic/Feature/Story:
+   ```typescript
+   {
+     ruleReference: 'pricing-strategy.md §3 - VIP Tier',
+     rule: 'VIP badge is visible for eligible users',
+     tags: ['@vip', '@pricing']
+   }
+   ```
+   → Epic: "3. VIP Tier", Story: "pricing-strategy.md §3 - VIP Tier"
+
+3. **Attaches Screenshots** on failure automatically
+
+### Example: Using the invariant() Wrapper
+
+```typescript
+import { invariant, PageBuilder } from './fixtures/invariant-helper';
+
+invariant('VIP badge shown for VIP users', {
+  ruleReference: 'pricing-strategy.md §3 - VIP Tier',
+  rule: 'VIP badge is visible for eligible users (tenure > 2 years)',
+  tags: ['@vip', '@pricing']
+}, async ({ page }) => {
+  await page.goto('/login');
+  await page.getByTestId('email-input').fill('vip@techhome.com');
+  await page.getByTestId('password-input').fill('password');
+  await page.getByTestId('login-button').click();
+
+  await page.goto('/cart');
+  await expect(page.getByTestId('vip-badge')).toBeVisible();
+});
+```
+
+### Viewing Reports
+
+**Generate reports after running GUI tests:**
+
+```bash
+# Run GUI tests
+cd implementations/react-playwright
+npm test
+
+# Generate Allure report (from root)
+cd ../..
+npm run reports:allure
+
+# View Allure report
+npm run reports:allure:open
+# or live reload:
+npm run reports:allure:serve
+
+# Generate Attestation report for compliance
+npm run reports:attestation
+```
+
+---
+
 ## Anti-Patterns to Reject
 
 - ❌ **Sleeping**: Never use `await page.waitForTimeout(1000)`. Use Web-First Assertions (`toBeVisible()`).

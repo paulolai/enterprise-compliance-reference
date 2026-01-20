@@ -56,26 +56,14 @@ Use this for pure business logic defined in `docs/pricing-strategy.md`.
 
 ```typescript
 // implementations/typescript-vitest/test/pricing.properties.test.ts
-it('Invariant: [Business Rule Description]', () => {
-  const testName = expect.getState().currentTestName!;
-  fc.assert(
-    fc.property(arbitraries..., (inputs...) => {
-      // Act
-      const result = DomainLogic.execute(inputs...);
-      
-      // Log for Attestation Report
-      tracer.log(testName, { inputs }, result);
-      
-      // Assert the Invariant
-      return result.someValue === expected;
-    })
-  );
-
-  // Register Business Metadata
-  registerInvariant({
-    ruleReference: 'strategy.md §X',
-    rule: 'Description of the rule',
-    tags: ['@tag']
+it('Final Total is always <= Original Total', () => {
+  verifyInvariant({
+    ruleReference: 'pricing-strategy.md §1',
+    rule: 'Final Total must never exceed Original Total (prices never increase)',
+    tags: ['@critical']
+  }, (_items, _user, result) => {
+    // Assert the Invariant
+    expect(result.finalTotal).toBeLessThanOrEqual(result.originalTotal);
   });
 });
 ```
@@ -85,16 +73,20 @@ Use this to verify that the UI correctly projects the business state. See [**GUI
 
 ```typescript
 // implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts
-test('Invariant: [UI Reflection of Rule]', async ({ page }) => {
+invariant('UI reflects Cart Total correctly', {
+  ruleReference: 'pricing-strategy.md §1',
+  rule: 'Cart Page must display the calculated total from the Pricing Engine',
+  tags: ['@critical']
+}, async ({ page }) => {
   // 1. Setup via Shared Builder
-  const cart = CartBuilder.new().withItem(...).build();
+  const cart = CartBuilder.new().withItem('Item A', 1000).build();
   
   // 2. Teleport (API Seam)
   await seedCartSession(page, cart);
   
   // 3. Verify
   await page.goto('/cart');
-  await expect(page.getByTestId('total')).toHaveText(...);
+  await expect(page.getByTestId('total')).toHaveText('$10.00');
 });
 ```
 
@@ -102,13 +94,8 @@ test('Invariant: [UI Reflection of Rule]', async ({ page }) => {
 Use this sparingly to illustrate specific "Happy Path" scenarios mentioned in the strategy document.
 
 ```typescript
-it('Example: [Specific Scenario]', () => {
-  const result = CartBuilder.new()
-    .withItem('Product', 1000, 1)
-    .asVipUser()
-    .calculate(expect.getState().currentTestName); // Logging handled by builder
-
-  expect(result.total).toBe(950);
+it('Example: VIP User gets 5% discount', () => {
+  // ... example setup ...
 });
 ```
 
@@ -128,7 +115,33 @@ We strictly separate "Test Data Generation" from "Test Execution". All generator
 
 ---
 
-## 5. Anti-Patterns
+## 5. Definition of Done (PR Checklist)
+
+Before submitting a PR, verify:
+
+1.  **Traceability:** Every test has a valid `ruleReference` linking to `pricing-strategy.md`.
+2.  **Observability:** The test appears in the **Attestation Report** (`npm run reports:attestation`) with captured Input/Output traces.
+3.  **Hierarchy:** The test file follows the `domain.layer.type.test.ts` convention (e.g., `cart.api.properties.test.ts`) so it appears in the correct Report Section.
+4.  **No Flakiness:** API tests run instantly; GUI tests use **Seams** (not UI clicks) for setup.
+5.  **Visuals:** If a GUI test, does it verify the *Business State* (e.g., "Badge Visible") or just the *DOM*? (Prefer Business State).
+
+---
+
+## 6. How to Debug
+
+**If a test fails:**
+
+1.  **Check the Dual Report:** Run `npm run reports:attestation` and open `reports/{latest}/attestation-full.html`.
+    *   **Technical View:** Is it an API logic bug or a GUI rendering bug?
+    *   **Business View:** Which Rule is broken?
+2.  **Inspect the Trace:** Click "View Execution Trace" in the report.
+    *   Look at the JSON `Input` vs `Output`.
+    *   If it's a Property Test, look at the **Counterexample** provided by fast-check (the simplest case that fails).
+3.  **Visual Evidence:** For GUI tests, check the attached Screenshot in the report trace.
+
+---
+
+## 7. Anti-Patterns
 
 - **❌ Manual Rounding**: Our system uses integer `Cents`. Assertions should use exact equality (`toBe`).
 - **❌ Brittle Step Definitions**: We reject Gherkin. All "specifications" are written in type-safe TypeScript.
@@ -137,7 +150,7 @@ We strictly separate "Test Data Generation" from "Test Execution". All generator
 
 ---
 
-## 6. Deep Dive References
+## 8. Deep Dive References
 
 - **[GUI Testing Guidelines](GUI_TESTING_GUIDELINES.md)** - Specific patterns for Playwright
 - **[Invariants & Property-Based Testing](reference/infinite-examples.md)** - How PBT extends the BDD "Examples" pillar
