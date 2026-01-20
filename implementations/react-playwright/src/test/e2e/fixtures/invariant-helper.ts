@@ -53,9 +53,17 @@ export function invariant(
     // 1. Register Metadata for Attestation Report
     registerAllureMetadata(allure, finalMetadata);
     
-    // 2. Add Native Playwright Annotations (for standard HTML report)
+    // 2. Add Native Playwright Annotations
     testInfo.annotations.push({ type: 'rule', description: metadata.rule });
     testInfo.annotations.push({ type: 'reference', description: metadata.ruleReference });
+
+    // Debug: Log browser console errors
+    page.on('console', msg => {
+      if (msg.type() === 'error') console.log(`[Browser Error] ${msg.text()}`);
+    });
+    page.on('pageerror', err => {
+      console.log(`[Browser Exception] ${err.message}`);
+    });
     
     // 3. Execute Test
     await testFunction({ page, request }, testInfo);

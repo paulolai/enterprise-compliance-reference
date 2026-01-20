@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { CartItem, PricingResult, ShippingMethod } from '../../../shared/src';
-import { User } from '../../../shared/src';
+import { ShippingMethod } from '../../../shared/src';
+import type { CartItem, PricingResult, User } from '../../../shared/src';
 
 export interface CartItemWithMetadata extends CartItem {
   addedAt: number;

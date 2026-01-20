@@ -2,7 +2,7 @@ import { useCartStore } from '../../store/cartStore';
 import { PriceDisplay } from '../ui/PriceDisplay';
 import { DiscountBadge } from '../ui/DiscountBadge';
 import { VIPBadge } from '../ui/VIPBadge';
-import { PricingResult } from '../../../../shared/src';
+import type { PricingResult } from '../../../../shared/src';
 
 interface CartSummaryProps {
   result?: PricingResult | null;

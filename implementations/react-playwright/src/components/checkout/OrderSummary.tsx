@@ -1,6 +1,6 @@
 import { useCartStore } from '../../store/cartStore';
 import { CartSummary } from '../cart/CartSummary';
-import { PricingResult } from '../../../../shared/src';
+import type { PricingResult } from '../../../../shared/src';
 
 interface OrderSummaryProps {
   result?: PricingResult | null;
