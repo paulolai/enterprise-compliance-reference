@@ -102,19 +102,23 @@ function loadAllureData() {
         processAttachments(content.attachments);
         processSteps(content.steps);
 
-        allTasks.push({
-          name: content.name,
-          suite,
-          subSuite,
-          status: content.status === 'passed' ? 'pass' : 'fail',
-          duration: content.stop - content.start,
-          metadata: {
-            rule,
-            ruleReference,
-            tags
-          },
-          traces
-        });
+      // Sanitize name for ID
+      const safeId = content.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+
+      allTasks.push({
+        id: safeId,
+        name: content.name,
+        suite,
+        subSuite,
+        status: content.status === 'passed' ? 'pass' : 'fail',
+        duration: content.stop - content.start,
+        metadata: {
+          rule,
+          ruleReference,
+          tags
+        },
+        traces
+      });
 
       } catch (e) {
         console.error(`Error parsing ${file}:`, e.message);
@@ -190,7 +194,13 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
   <div class="metadata">
     <div class="metadata-item"><span class="metadata-label">Generated</span><span class="metadata-value">${new Date().toLocaleString()}</span></div>
     <div class="metadata-item"><span class="metadata-label">Git Hash</span><span class="metadata-value"><code>${gitInfo.hash}</code></span></div>
-    ${gitInfo.dirtyFiles ? `<div style="color:red">⚠️ Uncommitted Changes</div>` : ''}
+    ${gitInfo.dirtyFiles ? `
+    <div class="metadata-item">
+      <span class="metadata-label" style="color:red">⚠️ Uncommitted Changes</span>
+      <div style="font-size: 0.8em; color: #666; max-height: 100px; overflow-y: auto; border: 1px solid #fee; padding: 5px; background: #fffcfc;">
+        ${gitInfo.dirtyFiles.split('\n').map(f => `<div>${f}</div>`).join('')}
+      </div>
+    </div>` : ''}
   </div>
 
   <h2>1. Executive Summary</h2>
@@ -252,7 +262,7 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
 
       const detailsHtml = details ? `<details><summary>View Details</summary><div class="test-details">${details}</div></details>` : '';
 
-      html += `<tr>
+      html += `<tr id="${task.id}">
         <td>
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <strong>${task.name}</strong>
@@ -285,7 +295,7 @@ function generateTraceabilityMatrix(tasks) {
   return Array.from(ruleMap.keys()).sort().map(ref => {
     const relevantTasks = ruleMap.get(ref);
     const testsHtml = relevantTasks.map(t => 
-      `<li>${t.name} <span style="font-size:0.8em">${t.status === 'pass' ? '✅' : '❌'}</span></li>`
+      `<li><a href="#${t.id}" style="text-decoration:none; color:#0366d6;">${t.name}</a> <span style="font-size:0.8em">${t.status === 'pass' ? '✅' : '❌'}</span></li>`
     ).join('');
     return `<tr><td class="matrix-rule">${ref}</td><td><ul class="matrix-tests" style="list-style:none;padding:0;margin:0">${testsHtml}</ul></td></tr>`;
   }).join('');
