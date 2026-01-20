@@ -29,35 +29,24 @@ AI Agents must ingest the following context before making changes:
 
 ## 🧪 Testing Guidelines
 
+### File Naming Convention (Auto-Tagging)
+To ensure zero-toil reporting, test files MUST follow the `domain.layer.type.test.ts` convention.
+The system automatically derives Allure tags from the filename:
+*   `cart.ui.properties.test.ts` -> `['@cart', '@ui', '@properties']`
+*   `pricing.api.spec.ts` -> `['@pricing', '@api']`
+
+**Do not manually add tags** that duplicate these structural concepts. Only add semantic tags like `@critical` or `@compliance`.
+
 ### Property-Based Testing
 - **Invariants over Examples:** Prefer `fast-check` properties that prove business rules hold for *all* valid inputs.
 - **Example Tests:** Used primarily for documentation and explaining the "happy path."
 
 ### Deep Observability (Tracer)
 - **Mandatory Instrumentation:** To ensure high-fidelity attestation reports, all tests must capture their inputs and outputs to the `tracer`.
-- **Boilerplate Pattern:**
-  ```typescript
-  it('Invariant: ...', () => {
-    // 1. Log traces for every execution
-    const testName = expect.getState().currentTestName!;
-    fc.assert(
-      fc.property(arbitraries..., (inputs...) => {
-        const result = DomainLogic.execute(inputs...);
-        tracer.log(testName, { inputs }, result);
-        return result.isValid;
-      })
-    );
+- **API Tests:** Use `tracer.log(testName, input, output)`.
+- **GUI Tests:** The `invariant` helper automatically handles basic logging, but ensure critical state changes are captured.
 
-    // 2. Register metadata for the report
-    registerInvariant({
-      name: 'Invariant: ...', // Must match test name (or be omitted if helper derives it)
-      ruleReference: 'pricing-strategy.md §X - Section Name',
-      rule: 'Plain english explanation of the business rule',
-      tags: ['@tag', '@critical']
-    });
-  });
-  ```
-  **Note:** Use `expect.getState().currentTestName!` to ensure the trace key matches the test name exactly.
+**Verification Rule:** After running tests, check `reports/{latest}/attestation-full.html`. If a test is listed but has no "Input/Output" trace, it is considered **incomplete**.
 
 ### Network Mocking Strategy (The Split Brain)
 

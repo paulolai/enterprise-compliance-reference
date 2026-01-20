@@ -89,7 +89,7 @@ At **Google**, we didn't have "QA Tooling" teams—we had **Engineering Producti
 
 ### 2. Continuous Attestation (The CBA Lesson)
 In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](implementations/typescript-vitest/reporting-architecture.md) for details):
-- **Attestation Report**: Business-rule traceability for auditors.
+- **Attestation Report**: Business-rule traceability for auditors. Generated via `npm run reports:attestation`.
 - **Allure Report**: Historical trends and flakiness detection for engineers.
 
 ### 3. Infinite Examples (The Scalability Lesson)
