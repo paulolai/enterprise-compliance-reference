@@ -9,7 +9,7 @@ import {
 } from './fixtures/invariant-helper';
 import { productCatalog } from '../../store/cartStore';
 
-invariant('Invariant: Cart total matches calculation result', {
+invariant('Cart total matches calculation result', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'UI must accurately reflect the calculated cart total',
   tags: ['@pricing', '@critical']
@@ -33,7 +33,7 @@ invariant('Invariant: Cart total matches calculation result', {
   expect(grandTotalText).toMatch(/\$\d+\.\d{2}/);
 });
 
-invariant('Invariant: Cart badge shows correct item count', {
+invariant('Cart badge shows correct item count', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Cart badge count matches total items in cart',
   tags: ['@ux']
@@ -55,7 +55,7 @@ invariant('Invariant: Cart badge shows correct item count', {
   expect(badgeText).toBe('2');
 });
 
-invariant('Invariant: VIP badge shown for VIP users', {
+invariant('VIP badge shown for VIP users', {
   ruleReference: 'pricing-strategy.md §3 - VIP Tier',
   rule: 'VIP badge is visible for eligible users (tenure > 2 years)',
   tags: ['@vip', '@pricing']
@@ -84,7 +84,7 @@ invariant('Invariant: VIP badge shown for VIP users', {
   await expect(vipBadge).toBeVisible();
 });
 
-invariant('Invariant: VIP badge NOT shown for non-VIP users', {
+invariant('VIP badge NOT shown for non-VIP users', {
   ruleReference: 'pricing-strategy.md §3 - VIP Tier',
   rule: 'VIP badge is HIDDEN for non-eligible users',
   tags: ['@vip', '@pricing']
@@ -111,7 +111,7 @@ invariant('Invariant: VIP badge NOT shown for non-VIP users', {
   await expect(vipBadge).not.toBeVisible();
 });
 
-invariant('Invariant: Cart allows removing items', {
+invariant('Cart allows removing items', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'User can remove items from cart',
   tags: ['@interaction']
@@ -136,7 +136,7 @@ invariant('Invariant: Cart allows removing items', {
   await expect(emptyCartMessage).toBeVisible();
 });
 
-invariant('Invariant: Cart allows quantity updates', {
+invariant('Cart allows quantity updates', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'User can update item quantity in cart',
   tags: ['@interaction']

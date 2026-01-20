@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { invariant, PageBuilder } from './fixtures/invariant-helper';
 
-invariant('Invariant: Grand total equals product total plus shipping', {
+invariant('Grand total equals product total plus shipping', {
   ruleReference: 'pricing-strategy.md §5 - Shipping Calculation',
   rule: 'Grand Total = Final Product Total + Shipping Cost',
   tags: ['@pricing']
@@ -33,7 +33,7 @@ invariant('Invariant: Grand total equals product total plus shipping', {
   expect(grandTotal).toBeGreaterThanOrEqual(shippingCost);
 });
 
-invariant('Invariant: Express shipping costs exactly $25', {
+invariant('Express shipping costs exactly $25', {
   ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
   rule: 'Express shipping is fixed at $25.00 in UI',
   tags: ['@shipping', '@express']
@@ -57,7 +57,7 @@ invariant('Invariant: Express shipping costs exactly $25', {
   expect(shippingCost).toBe(25);
 });
 
-invariant('Invariant: Free shipping badge shown when eligible', {
+invariant('Free shipping badge shown when eligible', {
   ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
   rule: 'UI shows Free Shipping badge when total > $100',
   tags: ['@shipping', '@free-shipping']
@@ -78,7 +78,7 @@ invariant('Invariant: Free shipping badge shown when eligible', {
   await expect(freeShippingBadge).toBeVisible();
 });
 
-invariant('Invariant: Free shipping badge NOT shown when not eligible', {
+invariant('Free shipping badge NOT shown when not eligible', {
   ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
   rule: 'UI hides Free Shipping badge when total <= $100',
   tags: ['@shipping']
@@ -96,7 +96,7 @@ invariant('Invariant: Free shipping badge NOT shown when not eligible', {
   await expect(freeShippingBadge).not.toBeVisible();
 });
 
-invariant('Invariant: Order summary displays all pricing components', {
+invariant('Order summary displays all pricing components', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Order summary shows breakdown of costs',
   tags: []
@@ -119,7 +119,7 @@ invariant('Invariant: Order summary displays all pricing components', {
   await expect(page.getByText(/Grand Total/)).toBeVisible();
 });
 
-invariant('Invariant: Shipping methods are selectable', {
+invariant('Shipping methods are selectable', {
   ruleReference: 'pricing-strategy.md §5 - Shipping Calculation',
   rule: 'User can select different shipping methods',
   tags: ['@shipping']

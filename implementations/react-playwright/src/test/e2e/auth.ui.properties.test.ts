@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { invariant } from './fixtures/invariant-helper';
 
-invariant('Invariant: Login page renders correctly', {
+invariant('Login page renders correctly', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Login page structure verification',
   tags: []
@@ -15,7 +15,7 @@ invariant('Invariant: Login page renders correctly', {
   await expect(page.getByTestId('login-button')).toBeVisible();
 });
 
-invariant('Invariant: Demo user buttons work', {
+invariant('Demo user buttons work', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Demo functionality for testing',
   tags: ['@demo']
@@ -30,7 +30,7 @@ invariant('Invariant: Demo user buttons work', {
   await expect(emailInput).toHaveValue('vip@techhome.com');
 });
 
-invariant('Invariant: Register page renders correctly', {
+invariant('Register page renders correctly', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Register page structure verification',
   tags: []
@@ -44,7 +44,7 @@ invariant('Invariant: Register page renders correctly', {
   await expect(page.getByTestId('register-button')).toBeVisible();
 });
 
-invariant('Invariant: Login with valid credentials succeeds', {
+invariant('Login with valid credentials succeeds', {
   ruleReference: 'pricing-strategy.md §3 - VIP Tier',
   rule: 'Valid login grants access and loads user state (VIP status)',
   tags: ['@vip']
@@ -63,7 +63,7 @@ invariant('Invariant: Login with valid credentials succeeds', {
   await expect(page.getByTestId('vip-badge')).toBeVisible();
 });
 
-invariant('Invariant: Login with invalid credentials shows error', {
+invariant('Login with invalid credentials shows error', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'System rejects invalid authentication',
   tags: ['@security']
@@ -79,7 +79,7 @@ invariant('Invariant: Login with invalid credentials shows error', {
   await expect(page.getByText(/Invalid credentials/)).toBeVisible();
 });
 
-invariant('Invariant: Registration with new email succeeds', {
+invariant('Registration with new email succeeds', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'New user registration flow',
   tags: []
