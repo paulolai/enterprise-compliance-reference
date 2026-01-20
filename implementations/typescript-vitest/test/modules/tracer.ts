@@ -183,18 +183,16 @@ export class TestTracer<TInput = unknown, TOutput = unknown> {
 
     // Attach to Allure (for Unified Reporting)
     try {
-      // Dynamic import to avoid loading allure-vitest in the main process (reporter context)
-      import('allure-vitest/setup').then(({ allure }) => {
+      const allure = (globalThis as any).allure;
+      if (allure && typeof allure.attachment === 'function') {
         allure.attachment(
           `Trace #${currentCount + 1}`,
           JSON.stringify({ input, output }, null, 2),
           'application/json'
         );
-      }).catch(() => {
-        // Ignore if allure is not available
-      });
+      }
     } catch (e) {
-      // Ignore if not running in Allure context
+      // Ignore if not running in Allure context or other issues
     }
 
     // Update summary statistics

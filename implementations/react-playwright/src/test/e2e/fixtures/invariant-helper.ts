@@ -44,7 +44,9 @@ export function invariant(
 ) {
   test(title, async ({ page, request }, testInfo) => {
     // 0. Auto-derive tags from file path
-    const autoTags = deriveTagsFromPath(testInfo.file);
+    // testInfo.file points to this helper file, so we use titlePath[0] which is the spec file path
+    const specPath = testInfo.titlePath[0] || ''; 
+    const autoTags = deriveTagsFromPath(specPath);
     const combinedTags = Array.from(new Set([...(metadata.tags || []), ...autoTags]));
     const finalMetadata = { ...metadata, tags: combinedTags };
 

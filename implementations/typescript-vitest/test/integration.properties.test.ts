@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { allure } from 'allure-vitest/setup';
 import { PricingEngine, ShippingMethod } from '../../shared/src';
 import { cartArb, userArb } from '../../shared/fixtures';
 import { registerAllureMetadata } from '../../shared/fixtures/allure-helpers';
@@ -9,6 +8,7 @@ import { tracer } from './modules/tracer';
 describe('Integration: Multi-Rule Interactions', () => {
 
   it('Bulk + VIP discounts combine correctly and respect cap', () => {
+    const allure = (globalThis as any).allure;
     registerAllureMetadata(allure, {
       ruleReference: 'pricing-strategy.md §4 - Safety Valve',
       rule: 'Integration of Bulk and VIP discounts with Safety Valve',
@@ -56,6 +56,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Free shipping eligibility depends on POST-DISCOUNT total', () => {
+    const allure = (globalThis as any).allure;
     registerAllureMetadata(allure, {
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
       rule: 'Free shipping based on final total after all discounts',
@@ -83,6 +84,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Express/Expedited shipping calculations are correct', () => {
+    const allure = (globalThis as any).allure;
     registerAllureMetadata(allure, {
       ruleReference: 'pricing-strategy.md §5 - Shipping Calculation',
       rule: 'Express and Expedited shipping logic interacting with weight and total',
@@ -131,6 +133,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Complex carts with bulk, VIP, and free shipping', () => {
+    const allure = (globalThis as any).allure;
     registerAllureMetadata(allure, {
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       rule: 'General system stability with complex cart combinations',
@@ -168,6 +171,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Boundary conditions are handled consistently', () => {
+    const allure = (globalThis as any).allure;
     registerAllureMetadata(allure, {
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       rule: 'Edge cases and boundary values verification',
@@ -232,6 +236,7 @@ describe('Integration: Multi-Rule Interactions', () => {
   });
 
   it('Line item math matches cart total math', () => {
+    const allure = (globalThis as any).allure;
     registerAllureMetadata(allure, {
       ruleReference: 'pricing-strategy.md §1 - Base Rules',
       rule: 'Mathematical consistency between line items and totals',

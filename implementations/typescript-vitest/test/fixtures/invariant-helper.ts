@@ -1,6 +1,5 @@
 import * as fc from 'fast-check';
 import { expect } from 'vitest';
-import { allure } from 'allure-vitest/setup';
 import { PricingEngine, CartItem, User, ShippingMethod, PricingResult } from '../../../shared/src';
 import { cartArb, userArb, shippingMethodArb } from '../../../shared/fixtures';
 import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
@@ -68,6 +67,7 @@ export function verifyInvariant(
   assertion: AssertionCallback
 ) {
   const name = metadata.name || expect.getState().currentTestName!;
+  const allure = (globalThis as any).allure;
   
   // Auto-tagging
   const autoTags = deriveTagsFromTestPath();
@@ -121,6 +121,7 @@ export function verifyShippingInvariant(
   assertion: ShippingAssertionCallback
 ) {
   const name = metadata.name || expect.getState().currentTestName!;
+  const allure = (globalThis as any).allure;
   
   // Auto-tagging
   const autoTags = deriveTagsFromTestPath();
@@ -167,6 +168,7 @@ export function verifyShippingInvariant(
  */
 export function registerPrecondition(metadata: PreconditionMetadata) {
   const name = metadata.name || expect.getState().currentTestName!;
+  const allure = (globalThis as any).allure;
   
   // Register Allure metadata
   registerAllureMetadata(allure, {

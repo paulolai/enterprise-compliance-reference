@@ -70,10 +70,11 @@ function loadAllureData() {
         const rule = ruleMatch ? ruleMatch[1].trim() : 'See details';
         const ruleReference = refMatch ? refMatch[1].trim() : (getLabel('story') || 'Unknown Reference');
 
-        // Extract Traces from Attachments
+        // Extract Traces from Attachments (recursively through steps)
         const traces = [];
-        if (content.attachments) {
-          content.attachments.forEach(att => {
+        const processAttachments = (attachments) => {
+          if (!attachments) return;
+          attachments.forEach(att => {
             if (att.type === 'application/json' || att.name.includes('Trace')) {
               try {
                 const attPath = path.join(dir, att.source);
@@ -85,14 +86,21 @@ function loadAllureData() {
                 // ignore
               }
             } else if (att.type.startsWith('image/')) {
-               // Handle screenshots - copy to report dir?
-               // For now, we just link or embedded if needed. 
-               // Currently Attestation Reporter embeds images or links them.
-               // We'll store the path to the attachment source
                traces.push({ type: 'image', name: att.name, source: path.join(dir, att.source) });
             }
           });
-        }
+        };
+
+        const processSteps = (steps) => {
+          if (!steps) return;
+          steps.forEach(step => {
+            processAttachments(step.attachments);
+            processSteps(step.steps);
+          });
+        };
+
+        processAttachments(content.attachments);
+        processSteps(content.steps);
 
         allTasks.push({
           name: content.name,
