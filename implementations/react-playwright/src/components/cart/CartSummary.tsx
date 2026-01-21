@@ -10,9 +10,13 @@ interface CartSummaryProps {
 
 export function CartSummary({ result }: CartSummaryProps) {
   const user = useCartStore((state) => state.user);
-  const pricingResult = result || useCartStore((state) => state.pricingResult);
+  const storePricingResult = useCartStore((state) => state.pricingResult);
+  const pricingResult = result || storePricingResult;
 
-  if (!pricingResult) return null;
+  // Render placeholder if no pricing result available
+  if (!pricingResult) {
+    return <div className="cart-summary-placeholder" data-testid="cart-summary" />;
+  }
 
   return (
     <div className="cart-summary" data-testid="cart-summary">

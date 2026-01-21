@@ -65,7 +65,7 @@ export function CartPage() {
         <div className="page-header">
           <h1>Shopping Cart</h1>
           {user?.tenureYears && user.tenureYears > 2 && (
-            <span className="vip-badge" data-testid="vip-badge">
+            <span className="vip-badge" data-testid="vip-user-label">
               VIP Member ({user.tenureYears} years)
             </span>
           )}

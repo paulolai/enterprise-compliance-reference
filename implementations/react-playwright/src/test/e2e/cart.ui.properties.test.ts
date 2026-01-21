@@ -26,6 +26,9 @@ invariant('Cart total matches calculation result', {
   // Navigate to cart
   await page.goto('/cart');
 
+  // Wait for page to fully load and state to hydrate
+  await page.waitForLoadState('networkidle');
+
   // Check cart total exists and is positive
   const grandTotal = page.getByTestId('grand-total');
   await expect(grandTotal).toBeVisible();
@@ -79,12 +82,16 @@ invariant('VIP badge shown for VIP users', {
   // Navigate to products and add item
   await page.goto(`/products/${productCatalog[0].sku}`);
   await page.getByTestId('add-to-cart').click();
+  // Wait for cart badge to update, ensuring state is persisted
+  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to cart
   await page.goto('/cart');
+  // Wait for page to fully load and state to hydrate
+  await page.waitForLoadState('networkidle');
 
   // VIP badge should be visible (user has 4 years tenure)
-  const vipBadge = page.getByTestId('vip-badge');
+  const vipBadge = page.getByTestId('vip-user-label');
   await expect(vipBadge).toBeVisible();
 });
 
@@ -111,7 +118,7 @@ invariant('VIP badge NOT shown for non-VIP users', {
   await page.goto('/cart');
 
   // VIP badge should NOT be visible (user has 0 years tenure)
-  const vipBadge = page.getByTestId('vip-badge');
+  const vipBadge = page.getByTestId('vip-user-label');
   await expect(vipBadge).not.toBeVisible();
 });
 
@@ -130,12 +137,15 @@ invariant('Cart allows removing items', {
   // Navigate to cart
   await page.goto('/cart');
 
+  // Wait for page to fully load and state to hydrate
+  await page.waitForLoadState('networkidle');
+
   // Cart should have the item
-  const cartItem = page.getByTestId(/cart-item-/);
+  const cartItem = page.getByTestId(`cart-item-${productCatalog[0].sku}`);
   await expect(cartItem).toBeVisible();
 
   // Remove the item
-  await page.getByTestId(/remove-cart-item-/).click();
+  await page.getByTestId(`remove-cart-item-${productCatalog[0].sku}`).click();
 
   // Cart should be empty
   const emptyCartMessage = page.getByText('Your cart is empty');
@@ -157,8 +167,11 @@ invariant('Cart allows quantity updates', {
   // Navigate to cart
   await page.goto('/cart');
 
+  // Wait for page to fully load and state to hydrate
+  await page.waitForLoadState('networkidle');
+
   // Get initial quantity
-  const quantityInput = page.getByTestId(/cart-item-quantity-/);
+  const quantityInput = page.getByTestId(`cart-item-quantity-${productCatalog[0].sku}`);
   const initialQuantity = await quantityInput.inputValue();
   expect(initialQuantity).toBe('1');
 
