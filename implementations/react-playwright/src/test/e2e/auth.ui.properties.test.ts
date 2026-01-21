@@ -60,7 +60,7 @@ invariant('Login with valid credentials succeeds', {
   await page.waitForURL(/\/cart/);
 
   // VIP badge should be visible in cart
-  await expect(page.getByTestId('vip-badge')).toBeVisible();
+  await expect(page.getByTestId('vip-user-label')).toBeVisible();
 });
 
 invariant('Login with invalid credentials shows error', {

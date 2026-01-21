@@ -79,8 +79,8 @@ invariant('Free shipping badge shown when eligible', {
   // Navigate to checkout
   await page.goto('/checkout');
 
-  // Free shipping badge should be visible
-  const freeShippingBadge = page.getByTestId('free-shipping-badge');
+  // Free shipping badge should be visible on standard method
+  const freeShippingBadge = page.getByTestId('shipping-standard').getByTestId('free-shipping-badge');
   await expect(freeShippingBadge).toBeVisible();
 });
 
@@ -97,8 +97,9 @@ invariant('Free shipping badge NOT shown when not eligible', {
   // Navigate to checkout
   await page.goto('/checkout');
 
-  // Free shipping badge should NOT be visible
-  const freeShippingBadge = page.getByTestId('free-shipping-badge');
+  // Free shipping badge should NOT be visible (using cart summary badge location)
+  const cartSummary = page.getByTestId('cart-summary');
+  const freeShippingBadge = cartSummary.getByTestId('free-shipping-badge');
   await expect(freeShippingBadge).not.toBeVisible();
 });
 
@@ -123,7 +124,7 @@ invariant('Order summary displays all pricing components', {
 
   // Check for key pricing components
   await expect(page.getByText(/Product Total/)).toBeVisible();
-  await expect(page.getByText(/Shipping/)).toBeVisible();
+  await expect(orderSummary.getByText(/Shipping/)).toBeVisible();
   await expect(page.getByText(/Grand Total/)).toBeVisible();
 });
 
@@ -149,5 +150,5 @@ invariant('Shipping methods are selectable', {
 
   // Select expedited
   await page.getByTestId('shipping-expedited').click();
-  await expect(page.getByTestId('shipping-expedited')).toBeChecked();
+  await expect(page.getByTestId('shipping-expedited').locator('input')).toBeChecked();
 });
