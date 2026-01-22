@@ -36,3 +36,17 @@ We use [Conventional Commits](https://www.conventionalcommits.org).
 - `fix`: A bug fix.
 - `test`: Improving verification or adding invariants.
 - `docs`: Documentation updates.
+
+## Documentation Automation
+We use `markdown-toc` to automatically maintain Table of Contents in our documentation.
+- **How it works:** Any markdown file with the `
+
+<!-- toc -->
+
+
+
+<!-- tocstop -->
+
+` token will have its TOC regenerated automatically on commit.
+- **Manual Trigger:** Run `npm run docs:fix` to regenerate TOCs for all files in `docs/`.
+- **Infrastructure:** This is handled by `husky` (pre-commit hook) and `lint-staged`.

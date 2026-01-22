@@ -2,18 +2,39 @@
 
 This document defines the canonical patterns for GUI/E2E testing using **Playwright**. For framework-level concepts, see [Testing Framework Guide](TESTING_FRAMEWORK.md).
 
-## Table of Contents
-1. [Quick Start](#quick-start-first-test-in-5-minutes)
-2. [Core Philosophy](#core-philosophy)
-3. [Fixture Route Pattern](#fixture-route-pattern)
-4. [The "Seam-Based" Setup Pattern](#the-seam-based-setup-pattern)
-5. [Intent-Based Drivers](#intent-based-drivers)
-6. [Visual Invariant Pattern](#visual-invariant-pattern)
-7. [Visual Regression Testing](#visual-regression-testing)
-8. [Complete Test File Example](#complete-test-file-example)
-9. [Allure Reporting](#allure-reporting-for-gui-tests)
-10. [Observability & Attestation](#observability--attestation)
-11. [Anti-Patterns](#anti-patterns-to-reject)
+<!-- toc -->
+
+- [Quick Start: First Test in 5 Minutes](#quick-start-first-test-in-5-minutes)
+- [Core Philosophy](#core-philosophy)
+  * [1. The UI is a Projection of State](#1-the-ui-is-a-projection-of-state)
+  * [2. Tests are "User Intent" Specifications](#2-tests-are-user-intent-specifications)
+  * [3. Velocity over Ceremony](#3-velocity-over-ceremony)
+- [Fixture Route Pattern](#fixture-route-pattern)
+  * [Avoiding Hardcoded Routes](#avoiding-hardcoded-routes)
+  * [Security: Development-Only Routes](#security-development-only-routes)
+- [The "Seam-Based" Setup Pattern](#the-seam-based-setup-pattern)
+  * [The "Teleport" Method](#the-teleport-method)
+- [Intent-Based Drivers](#intent-based-drivers)
+- [Visual Invariant Pattern](#visual-invariant-pattern)
+- [Visual Regression Testing](#visual-regression-testing)
+  * [Storage & Versioning](#storage--versioning)
+  * [Scope: Targeted vs. Full Page](#scope-targeted-vs-full-page)
+  * [Assertion Strategy](#assertion-strategy)
+  * [Cross-Platform Consistency (The "Docker Rule")](#cross-platform-consistency-the-docker-rule)
+  * [Attestation Integration](#attestation-integration)
+- [Complete Test File Example](#complete-test-file-example)
+- [Troubleshooting: Common Screenshot Failures](#troubleshooting-common-screenshot-failures)
+  * ["Screenshot mismatch due to anti-aliasing"](#screenshot-mismatch-due-to-anti-aliasing)
+  * ["Font rendering differs on macOS vs Linux"](#font-rendering-differs-on-macos-vs-linux)
+  * ["Snapshot changes on unrelated UI update"](#snapshot-changes-on-unrelated-ui-update)
+  * ["Timestamp/date values cause diffs"](#timestampdate-values-cause-diffs)
+- [Allure Reporting for GUI Tests](#allure-reporting-for-gui-tests)
+  * [Automatic Metadata Mapping](#automatic-metadata-mapping)
+  * [Viewing Reports](#viewing-reports)
+- [Observability & Attestation](#observability--attestation)
+- [Anti-Patterns to Reject](#anti-patterns-to-reject)
+
+<!-- tocstop -->
 
 ---
 

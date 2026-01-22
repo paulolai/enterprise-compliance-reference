@@ -2,15 +2,34 @@
 
 This document defines the canonical patterns for API/Unit testing using **Vitest** and **fast-check**. For framework-level concepts, see [Testing Framework Guide](TESTING_FRAMEWORK.md).
 
-## Table of Contents
-1. [The "API Invariant" Pattern (Level 3)](#the-api-invariant-pattern)
-2. [The "Example" Pattern (Level 1)](#the-example-pattern-level-1---low-friction)
-3. [The "Data-Driven" Pattern (Level 2)](#the-data-driven-pattern-level-2---medium-rigor)
-4. [Working with Arbitraries](#working-with-arbitraries)
-5. [Integration Tests](#integration-tests-multi-rule)
-6. [Anti-Patterns to Reject](#anti-patterns-to-reject)
-7. [Common Scenarios](#common-scenarios)
-8. [Debugging Failed Property Tests](#debugging-failed-property-tests)
+<!-- toc -->
+
+- [The "API Invariant" Pattern](#the-api-invariant-pattern)
+  * [Property-Based Test (Level 3 - High Rigor)](#property-based-test-level-3---high-rigor)
+  * [The Anatomy of `verifyInvariant`](#the-anatomy-of-verifyinvariant)
+  * [How It Works](#how-it-works)
+- [The "Example" Pattern (Level 1 - Low Friction)](#the-example-pattern-level-1---low-friction)
+  * [Manual Example](#manual-example)
+  * [Traced with `verifyExample`](#traced-with-verifyexample)
+- [The "Data-Driven" Pattern (Level 2 - Medium Rigor)](#the-data-driven-pattern-level-2---medium-rigor)
+- [Working with Arbitraries](#working-with-arbitraries)
+  * [Custom Arbitraries](#custom-arbitraries)
+  * [Filtering](#filtering)
+  * [Mapping (Transformation)](#mapping-transformation)
+- [Integration Tests (Multi-Rule)](#integration-tests-multi-rule)
+- [Anti-Patterns to Reject](#anti-patterns-to-reject)
+  * [❌ Manual Rounding](#%E2%9D%8C-manual-rounding)
+  * [❌ Brittle Step Definitions](#%E2%9D%8C-brittle-step-definitions)
+  * [❌ Hidden Logic](#%E2%9D%8C-hidden-logic)
+  * [❌ Testing Implementation Details](#%E2%9D%8C-testing-implementation-details)
+  * [❌ Magic Objects in Tests](#%E2%9D%8C-magic-objects-in-tests)
+- [Common Scenarios](#common-scenarios)
+  * [Testing Error Conditions](#testing-error-conditions)
+  * [Testing Edge Cases with `fc.constantFrom`](#testing-edge-cases-with-fcconstantfrom)
+  * [Testing State Changes](#testing-state-changes)
+- [Debugging Failed Property Tests](#debugging-failed-property-tests)
+
+<!-- tocstop -->
 
 ---
 

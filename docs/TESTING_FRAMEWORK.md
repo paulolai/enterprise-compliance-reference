@@ -6,18 +6,41 @@ For layer-specific implementation patterns, see:
 - **[API Testing Patterns](API_TESTING_PATTERNS.md)** - Vitest, fast-check, property-based testing
 - **[GUI Testing Patterns](GUI_TESTING_PATTERNS.md)** - Playwright, visual regression, debug routes
 
-## Table of Contents
-1. [Philosophy: Code as Specification](#philosophy-code-as-specification)
-2. [Quick Start](#quick-start)
-3. [Test Types & Usage](#test-types--when-to-use-each)
-4. [Core Philosophy](#core-philosophy-1)
-5. [Tools & Stack](#tools--stack)
-6. [Shared Test Data Management](#shared-test-data-management)
-7. [Coverage & Quality Gates](#coverage--quality-gates)
-8. [Reporting & Attestation](#reporting--attestation)
-9. [Maturity Model](#maturity-model-progressive-adoption)
-10. [Definition of Done](#definition-of-done-pr-checklist)
-11. [How to Debug](#how-to-debug)
+<!-- toc -->
+
+- [Philosophy: Code as Specification](#philosophy-code-as-specification)
+  * [Core Tenets](#core-tenets)
+- [Quick Start](#quick-start)
+  * [API Tests (Logic & Rules)](#api-tests-logic--rules)
+  * [GUI Tests (End-to-End)](#gui-tests-end-to-end)
+- [Test Types & When to Use Each](#test-types--when-to-use-each)
+- [Core Philosophy](#core-philosophy)
+  * [1. Invariants over Examples](#1-invariants-over-examples)
+  * [2. Deep Observability](#2-deep-observability)
+  * [3. Shared Truth](#3-shared-truth)
+  * [4. Dev-Native Velocity](#4-dev-native-velocity)
+- [Tools & Stack](#tools--stack)
+  * [Runners](#runners)
+  * [Core Libraries](#core-libraries)
+- [Shared Test Data Management](#shared-test-data-management)
+- [Coverage & Quality Gates](#coverage--quality-gates)
+  * [A. Code Coverage (Technical)](#a-code-coverage-technical)
+  * [B. Domain Coverage (Business)](#b-domain-coverage-business)
+- [Reporting & Attestation](#reporting--attestation)
+  * [Types of Reports](#types-of-reports)
+  * [Attestation Report Content](#attestation-report-content)
+  * [Accessing Reports](#accessing-reports)
+- [Maturity Model (Progressive Adoption)](#maturity-model-progressive-adoption)
+  * [Level 1: Traceable Unit Tests (Low Friction)](#level-1-traceable-unit-tests-low-friction)
+  * [Level 2: Data-Driven Tests (Medium Rigor)](#level-2-data-driven-tests-medium-rigor)
+  * [Level 3: Property-Based Invariants (High Rigor)](#level-3-property-based-invariants-high-rigor)
+  * [When to Level Up?](#when-to-level-up)
+- [Definition of Done (PR Checklist)](#definition-of-done-pr-checklist)
+- [How to Debug](#how-to-debug)
+- [File Naming Convention](#file-naming-convention)
+- [Deep Dive References](#deep-dive-references)
+
+<!-- tocstop -->
 
 ---
 
