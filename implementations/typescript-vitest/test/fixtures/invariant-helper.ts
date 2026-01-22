@@ -16,7 +16,7 @@ export interface InvariantMetadata {
 export interface PreconditionMetadata {
   name?: string;
   ruleReference: string; // e.g., "pricing-strategy.md §2 - Bulk Discounts"
-  scenario: string; // e.g., "Critical boundary: quantity = 3 (exactly at bulk threshold)"
+  rule: string; // e.g., "Critical boundary: quantity = 3 (exactly at bulk threshold)"
   tags: string[]; // e.g., ['@precondition', '@pricing', '@boundary']
 }
 
@@ -177,27 +177,30 @@ export function verifyShippingInvariant(
  * @param metadata - Business rule documentation for attestation reports
  */
 export function registerPrecondition(metadata: PreconditionMetadata) {
-  const name = metadata.name || expect.getState().currentTestName!;
+  const name = metadata.name || expect.getState().currentTestName;
+  if (!name) {
+    throw new Error('registerPrecondition must be called within a test or provide explicit name in metadata.name');
+  }
   const allure = (globalThis as any).allure;
-  
+
   // Register Allure metadata
   registerAllureMetadata(allure, {
     ruleReference: metadata.ruleReference,
-    rule: metadata.scenario,
+    rule: metadata.rule,
     tags: metadata.tags
   });
 
   tracer.registerInvariant({
     name,
     ruleReference: metadata.ruleReference,
-    rule: metadata.scenario, // Reuse 'rule' field for scenario description
+    rule: metadata.rule,
     tags: metadata.tags
   });
 }
 
 /**
  * Helper to verify a specific example (non-PBT).
- * Lightweight wrapper that handles metadata registration and optional auto-logging.
+ * Lightweight wrapper that handles metadata registration, error context, and optional auto-logging.
  *
  * @param metadata - Business rule documentation
  * @param testFn - The test logic. If it returns an object with {input, output}, it will be logged automatically.
@@ -206,15 +209,18 @@ export async function verifyExample(
   metadata: PreconditionMetadata,
   testFn: () => void | Promise<void> | { input: any, output: any } | Promise<{ input: any, output: any }>
 ) {
-  const name = metadata.name || expect.getState().currentTestName!;
-  
+  const name = metadata.name || expect.getState().currentTestName;
+  if (!name) {
+    throw new Error('verifyExample must be called within a test or provide explicit name in metadata.name');
+  }
+
   // Auto-derive Hierarchy
   const hierarchy = deriveHierarchyFromTestPath();
   const combinedTags = metadata.tags || [];
 
   const finalMetadata = {
     ruleReference: metadata.ruleReference,
-    rule: metadata.scenario, // Map scenario to rule field for consistency
+    rule: metadata.rule,
     tags: combinedTags,
     ...hierarchy
   };
@@ -224,13 +230,51 @@ export async function verifyExample(
   registerAllureMetadata(allure, finalMetadata);
   tracer.registerInvariant({ ...finalMetadata, name });
 
-  // Execute Test
-  const result = await testFn();
+  // Execute Test with error context enhancement
+  try {
+    const result = await testFn();
 
-  // Auto-Log if the test returned structured data
-  if (result && typeof result === 'object' && 'input' in result && 'output' in result) {
-    tracer.log(name, result.input, result.output);
+    // Auto-Log if the test returned structured data
+    if (isTraceableResult(result)) {
+      tracer.log(name, result.input, result.output);
+    }
+  } catch (error) {
+    // Enhance error with business context
+    throw new Error(
+      `Test Failed: ${name}\n` +
+      `Business Rule: ${metadata.ruleReference} - ${metadata.rule}\n` +
+      `Tags: ${metadata.tags.join(', ')}\n` +
+      `Original Error: ${error}`
+    );
   }
+}
+
+/**
+ * Type guard to check if a value has the exact {input, output} shape
+ * This prevents false positives on objects with extra properties
+ */
+function isTraceableResult(result: unknown): result is { input: any, output: any } {
+  return result !== null
+    && typeof result === 'object'
+    && !Array.isArray(result)
+    && 'input' in result
+    && 'output' in result
+    && Object.keys(result).length === 2;
+}
+
+/**
+ * Helper to log precondition test data for attestation reports
+ *
+ * This is used by example-based precondition tests to log input/output pairs
+ * for attestation reports. Unlike verifyInvariant() which handles PBT logging,
+ * this is for specific edge cases that need explicit documentation.
+ *
+ * @param input - Test input data (items, user, method, etc.)
+ * @param output - Test result (PricingResult)
+ */
+export function logPrecondition(input: any, output: any) {
+  const name = expect.getState().currentTestName!;
+  tracer.log(name, input, output);
 }
 
 function explainBusinessContext(

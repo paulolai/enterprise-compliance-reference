@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { pricingRouter } from './routes/pricing';
 import { authRouter } from './routes/auth';
+import { debugRouter } from './routes/debug';
 
 const app = new Hono();
 
@@ -9,6 +10,7 @@ app.use('*', cors());
 
 app.route('/api/pricing', pricingRouter);
 app.route('/api/auth', authRouter);
+app.route('/api/debug', debugRouter);
 
 // Health check endpoint
 app.get('/api/health', (c) => {
