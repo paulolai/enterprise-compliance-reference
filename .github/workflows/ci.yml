@@ -31,10 +31,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Tests with Coverage
-        run: cd implementations/typescript-vitest && pnpm test:coverage
+        working-directory: ./implementations/typescript-vitest
+        run: pnpm test:coverage
 
       - name: Generate Allure Report
-        run: cd implementations/typescript-vitest && pnpm test:allure && pnpm report:allure:generate
+        working-directory: ./implementations/typescript-vitest
+        run: pnpm test:allure && pnpm report:allure:generate
 
       - name: Upload Coverage Report
         if: always()
@@ -87,7 +89,8 @@ jobs:
 
       - name: Get Playwright Browsers Cache Key
         id: playwright-cache-key
-        run: echo "key=$(npx playwright --version)" >> $GITHUB_OUTPUT
+        working-directory: ./implementations/react-playwright
+        run: echo "key=$(pnpm exec playwright --version)" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright Browsers
         uses: actions/cache@v4
@@ -98,16 +101,20 @@ jobs:
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        working-directory: ./implementations/react-playwright
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Type Check
-        run: cd implementations/react-playwright && npx tsc --noEmit
+        working-directory: ./implementations/react-playwright
+        run: pnpm exec tsc --noEmit
 
       - name: Lint
-        run: cd implementations/react-playwright && pnpm lint
+        working-directory: ./implementations/react-playwright
+        run: pnpm lint
 
       - name: Run Playwright Tests
-        run: cd implementations/react-playwright && pnpm test
+        working-directory: ./implementations/react-playwright
+        run: pnpm test
 
       - name: Upload Playwright Report
         if: always()
@@ -164,7 +171,7 @@ jobs:
         if: hashFiles('merged-allure-results/') != ''
         run: |
           # Use the root package.json script but pointing to the merged dir
-          npx allure-commandline generate merged-allure-results/ --clean --output allure-report/
+          pnpm exec allure-commandline generate merged-allure-results/ --clean --output allure-report/
 
       - name: Upload Unified Allure Report
         uses: actions/upload-artifact@v4
