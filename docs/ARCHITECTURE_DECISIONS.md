@@ -315,3 +315,24 @@ This decision assumes regulated or compliance-heavy environments where audit tra
 - Resource-constrained environments where trace storage is costly
 
 In these cases, standard test output + CI logs may be sufficient.
+
+---
+
+## 12. Dual-Coverage Strategy (Business vs. Code)
+
+### The Decision
+We verify quality using two distinct coverage metrics that must **both** pass quality gates.
+1.  **Code Coverage (Technical):** Do tests execute the lines of code?
+2.  **Domain Coverage (Business):** Do tests verify the rules in the requirements document?
+
+### Why?
+*   **The "Testing the Wrong Thing" Problem:** You can have 100% code coverage without testing a single business rule (e.g., executing a function but asserting nothing).
+*   **The "Dead Requirements" Problem:** Features are often specified in Markdown but never implemented or tested. Domain Coverage highlights these gaps.
+*   **Stakeholder Communication:** Business stakeholders don't care about `branches covered`. They care about `rules verified`.
+
+### Implementation
+*   **Tooling:** We use a custom `DomainCoverageParser` that reads `pricing-strategy.md` and maps it to test metadata (`ruleReference`).
+*   **Reporting:** The final Attestation Report displays both metrics side-by-side.
+
+### Rule
+*   **All new features need 2 layers of tests:** One to execute the code (Code Coverage) and one to verify the invariant (Domain Coverage).

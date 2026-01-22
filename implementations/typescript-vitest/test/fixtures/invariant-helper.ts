@@ -196,22 +196,43 @@ export function registerPrecondition(metadata: PreconditionMetadata) {
 }
 
 /**
- * Log input/output for a precondition test
+ * Helper to verify a specific example (non-PBT).
+ * Lightweight wrapper that handles metadata registration and optional auto-logging.
  *
- * Should be called after calculating the result to record it in the attestation report.
- *
- * @param input - Input (cart, user, and optionally method)
- * @param output - Output (pricing result)
- * @param testName - Optional name of the precondition test (defaults to current test)
+ * @param metadata - Business rule documentation
+ * @param testFn - The test logic. If it returns an object with {input, output}, it will be logged automatically.
  */
-export function logPrecondition(input: any, output: any, testName?: string) {
-  const name = testName || expect.getState().currentTestName!;
-  tracer.log(name, input, output);
+export async function verifyExample(
+  metadata: PreconditionMetadata,
+  testFn: () => void | Promise<void> | { input: any, output: any } | Promise<{ input: any, output: any }>
+) {
+  const name = metadata.name || expect.getState().currentTestName!;
+  
+  // Auto-derive Hierarchy
+  const hierarchy = deriveHierarchyFromTestPath();
+  const combinedTags = metadata.tags || [];
+
+  const finalMetadata = {
+    ruleReference: metadata.ruleReference,
+    rule: metadata.scenario, // Map scenario to rule field for consistency
+    tags: combinedTags,
+    ...hierarchy
+  };
+
+  // Register Metadata
+  const allure = (globalThis as any).allure;
+  registerAllureMetadata(allure, finalMetadata);
+  tracer.registerInvariant({ ...finalMetadata, name });
+
+  // Execute Test
+  const result = await testFn();
+
+  // Auto-Log if the test returned structured data
+  if (result && typeof result === 'object' && 'input' in result && 'output' in result) {
+    tracer.log(name, result.input, result.output);
+  }
 }
 
-/**
- * Explain the business context for a test failure
- */
 function explainBusinessContext(
   items: CartItem[],
   user: User,
