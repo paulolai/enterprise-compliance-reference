@@ -1,6 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
+
+// ESM equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuration
 const ROOT_DIR = path.resolve(__dirname, '../../../');
@@ -12,7 +17,7 @@ const ALLURE_DIRS = [
 
 function main() {
   console.log('[Attestation] Generating report from Allure results...');
-  
+
   // 1. Load Allure Data
   const tasks = loadAllureData();
   console.log(`[Attestation] Loaded ${tasks.length} test results.`);
@@ -44,17 +49,17 @@ function loadAllureData() {
 
   ALLURE_DIRS.forEach(dir => {
     if (!fs.existsSync(dir)) return;
-    
+
     const files = fs.readdirSync(dir).filter(f => f.endsWith('-result.json'));
-    
+
     files.forEach(file => {
       try {
         const content = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf-8'));
-        
+
         // Extract metadata from labels
         const labels = content.labels || [];
         const getLabel = (name) => labels.find(l => l.name === name)?.value;
-        
+
         // Technical Hierarchy
         const parentSuite = getLabel('parentSuite') || 'Uncategorized';
         const suite = getLabel('suite') || 'General';
@@ -66,12 +71,12 @@ function loadAllureData() {
         const story = getLabel('story') || getLabel('subSuite') || 'Other';
 
         const tags = labels.filter(l => l.name === 'tag').map(l => l.value);
-        
+
         // Extract Rule Info
         const description = content.description || '';
         const ruleMatch = description.match(/\*\*Business Rule:\*\* (.*?)\n/);
         const refMatch = description.match(/\*\*Reference:\*\* (.*?)$/m) || description.match(/\*\*Reference:\*\* (.*)/);
-        
+
         const rule = ruleMatch ? ruleMatch[1].trim() : (content.name || 'See details');
         const ruleReference = refMatch ? refMatch[1].trim() : (story || 'Unknown Reference');
 
@@ -128,7 +133,7 @@ function loadAllureData() {
       }
     });
   });
-  
+
   return allTasks;
 }
 
@@ -194,12 +199,12 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>QA Attestation Report</title>
+<title>Test Attestation Report</title>
 <style>
   :root { --primary: #0366d6; --bg: #fff; --text: #24292e; --border: #e1e4e8; --pass: #22863a; --fail: #cb2431; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1280px; margin: 0 auto; padding: 20px; color: var(--text); background-color: var(--bg); }
   h1 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-bottom: 20px; }
-  
+
   /* Tabs */
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
   .tab-btn { padding: 10px 20px; cursor: pointer; border: 1px solid transparent; border-bottom: none; background: none; font-weight: 500; color: #586069; }
@@ -217,7 +222,7 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
   table { border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eaeaea; vertical-align: top; }
   th { background-color: #f6f8fa; font-weight: 600; }
-  
+
   /* Sections */
   .section-header { margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid var(--primary); color: var(--primary); font-size: 1.4em; }
   .group-header { background: #f1f8ff; padding: 10px 15px; border: 1px solid var(--border); font-weight: 600; margin-top: 20px; border-radius: 6px 6px 0 0; border-bottom: none; display: flex; justify-content: space-between; }
@@ -228,7 +233,7 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
   .status-fail { color: var(--fail); font-weight: bold; }
   .tag { display: inline-block; background: #e1f5ff; color: var(--primary); padding: 2px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 4px; border: 1px solid #b4d9fa; }
   .tag-critical { background: #ffeef0; color: var(--fail); border-color: #f9c0c7; }
-  
+
   /* Details */
   details { margin-top: 5px; }
   summary { cursor: pointer; color: var(--primary); font-size: 0.9em; outline: none; }
@@ -250,8 +255,8 @@ function openTab(evt, tabName) {
 </script>
 </head>
 <body>
-  <h1>QA Attestation Report</h1>
-  
+  <h1>Test Attestation Report</h1>
+
   <div class="metadata">
     <div class="metadata-item"><span class="metadata-label">Generated</span><span class="metadata-value">${new Date().toLocaleString()}</span></div>
     <div class="metadata-item"><span class="metadata-label">Git Commit</span><span class="metadata-value"><code>${gitInfo.hash}</code></span></div>
@@ -293,14 +298,14 @@ function openTab(evt, tabName) {
 
 function renderTree(tree, includeTraces, groupLabel, subGroupLabel) {
   if (Object.keys(tree).length === 0) return '<p>No data available.</p>';
-  
+
   return Object.keys(tree).sort().map(group => {
     const subGroups = tree[group];
     const groupHtml = Object.keys(subGroups).sort().map(subGroup => {
       const tasks = subGroups[subGroup];
       const passCount = tasks.filter(t => t.status === 'pass').length;
       const failCount = tasks.filter(t => t.status === 'fail').length;
-      
+
       let html = `<div class="group-header">
         <span>${group} <span style="color:#999">/</span> ${subGroup}</span>
         <span>
@@ -308,13 +313,13 @@ function renderTree(tree, includeTraces, groupLabel, subGroupLabel) {
           <span style="color:${failCount > 0 ? '#cb2431' : '#ccc'}; margin-left:10px">✖ ${failCount}</span>
         </span>
       </div>`;
-      
+
       html += `<table class="test-table">
         ${tasks.map(task => renderTaskRow(task, includeTraces)).join('')}
       </table>`;
       return html;
     }).join('');
-    
+
     return `<div style="margin-bottom: 30px">${groupHtml}</div>`;
   }).join('');
 }
@@ -330,7 +335,7 @@ function renderTaskRow(task, includeTraces) {
   // Traceability Link
   const ruleRef = task.metadata.ruleReference;
   const fileRef = ruleRef.split(' ')[0]; // Take first part "pricing-strategy.md"
-  const link = fileRef.endsWith('.md') 
+  const link = fileRef.endsWith('.md')
     ? `<a href="https://github.com/paulolai/executable-specs-demo/blob/main/docs/${fileRef}" target="_blank" style="font-size:0.85em; color:#0366d6; margin-left:10px;">📄 ${ruleRef}</a>`
     : `<span style="font-size:0.85em; color:#666; margin-left:10px;">${ruleRef}</span>`;
 
@@ -349,7 +354,7 @@ function renderTaskRow(task, includeTraces) {
       }
     });
   }
-  
+
   const detailsHtml = details ? `<details><summary>View Execution Trace</summary><div class="test-details">${details}</div></details>` : '';
 
   return `<tr>
@@ -459,7 +464,7 @@ function generateMarkdown(tasks, gitInfo, duration) {
   const matrixSection = renderTraceabilityMatrixMarkdown(matrixData);
   const tagStatsSection = renderTagStatsMarkdown(tagStatsData);
 
-  return `# QA Attestation
+  return `# Test Attestation
 
 Generated: ${new Date().toLocaleString()}
 Git: \`${gitInfo.hash}\`
@@ -491,8 +496,6 @@ ${businessView}
 
 ## Traceability Matrix
 
-| Business Rule (Story) | Verified By |
-|-----------------------|-------------|
 ${matrixSection}
 
 ---
@@ -535,10 +538,25 @@ function buildTagStatsData(tasks) {
 }
 
 function renderTraceabilityMatrixMarkdown(matrixData) {
+  // Use collapsible details for each business rule reference
   return matrixData.map(entry => {
-    const tests = entry.tasks.map(t => `- ${t.name} ${t.status === 'pass' ? '✅' : '❌'}`).join('\n');
-    return `| ${entry.ref} | ${tests} |`;
-  }).join('\n');
+    const passCount = entry.tasks.filter(t => t.status === 'pass').length;
+    const total = entry.tasks.length;
+
+    // Build table of tests for this rule
+    const rows = entry.tasks.map(task => {
+      const icon = task.status === 'pass' ? '✅' : '❌';
+      return `| ${task.name} | ${icon} |`;
+    }).join('\n');
+
+    return `<details>
+<summary><b>${entry.ref}</b> (${passCount}/${total} passed)</summary>
+
+| Test | Status |
+|------|--------|
+${rows}
+</details>`;
+  }).join('\n\n');
 }
 
 function renderTagStatsMarkdown(tagStatsData) {
