@@ -192,7 +192,7 @@ jobs:
         if: hashFiles('merged-allure-results/') != ''
         run: |
           # Use the root package.json script but pointing to the merged dir
-          pnpm exec allure-commandline generate merged-allure-results/ --clean --output allure-report/
+          pnpm exec allure generate merged-allure-results/ --clean --output allure-report/
 
       - name: Upload Unified Allure Report
         uses: actions/upload-artifact@v4
