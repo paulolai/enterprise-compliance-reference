@@ -6,8 +6,11 @@ node_modules
 # Testing
 coverage/
 *.log
+test-results/
+*.test-results/
 allure-results/
 allure-report/
+merged-allure-results/
 
 # Build outputs
 build/
