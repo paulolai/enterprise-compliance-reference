@@ -59,14 +59,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: attestation-reports
-          path: implementations/typescript-vitest/reports/
+          path: reports/
           retention-days: 30
 
       - name: Display Attestation Summary
         if: always()
-        working-directory: ./implementations/typescript-vitest
+        working-directory: ./
         run: |
-          ATTESTATION=$(find reports -name "attestation-full.html" | tail -1)
+          ATTESTATION=$(find reports -name "attestation.md" | tail -1)
           if [ -n "$ATTESTATION" ]; then
             echo "## 📊 Attestation Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
