@@ -1,4 +1,5 @@
 {
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "test": "cd implementations/typescript-vitest && npm test",
     "test:coverage": "cd implementations/typescript-vitest && npm run test:coverage",
@@ -6,13 +7,21 @@
     "reports:allure": "allure generate allure-results/ --clean --output allure-report/",
     "reports:allure:open": "allure open allure-report/",
     "reports:allure:serve": "allure serve allure-results/",
-    "reports:attestation": "node implementations/typescript-vitest/scripts/generate-attestation.cjs"
+    "reports:attestation": "node implementations/typescript-vitest/scripts/generate-attestation.cjs",
+    "docs:fix": "find docs -name '*.md' -exec markdown-toc -i {} \\;",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "docs/*.md": "bash -c 'for f in \"$@\"; do markdown-toc -i \"$f\"; done' --"
   },
   "dependencies": {
     "update": "^0.7.4",
     "upgrade": "^1.1.0"
   },
   "devDependencies": {
-    "allure-commandline": "^2.36.0"
+    "allure-commandline": "^2.36.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "markdown-toc": "^1.2.0"
   }
 }

@@ -14,7 +14,7 @@
     "test:ui": "playwright test --ui"
   },
   "dependencies": {
-    "@executable-specs/shared": "file:../shared",
+    "@executable-specs/shared": "workspace:*",
     "hono": "^4.11.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
