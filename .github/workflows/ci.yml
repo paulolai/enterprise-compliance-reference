@@ -54,21 +54,21 @@ jobs:
           path: implementations/typescript-vitest/allure-results/
           retention-days: 30
 
-      - name: Upload Attestation Reports
+      - name: Upload API Attestation Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: attestation-reports
+          name: attestation-api
           path: reports/
           retention-days: 30
 
-      - name: Display Attestation Summary
+      - name: Display API Attestation Summary
         if: always()
         working-directory: ./
         run: |
           ATTESTATION=$(find reports -name "attestation.md" | tail -1)
           if [ -n "$ATTESTATION" ]; then
-            echo "## 📊 Attestation Report" >> $GITHUB_STEP_SUMMARY
+            echo "## 📊 API Attestation Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             cat "$ATTESTATION" >> $GITHUB_STEP_SUMMARY
           fi
@@ -125,6 +125,12 @@ jobs:
         working-directory: ./implementations/react-playwright
         run: pnpm test
 
+      - name: Generate GUI Attestation
+        # Ensure report is generated even if tests fail
+        if: always()
+        working-directory: ./
+        run: pnpm reports:attestation
+
       - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -148,6 +154,25 @@ jobs:
           name: allure-gui
           path: allure-results/gui/
           retention-days: 30
+
+      - name: Upload GUI Attestation Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-gui
+          path: reports/
+          retention-days: 30
+
+      - name: Display GUI Attestation Summary
+        if: always()
+        working-directory: ./
+        run: |
+          ATTESTATION=$(find reports -name "attestation.md" | tail -1)
+          if [ -n "$ATTESTATION" ]; then
+            echo "## 🖥️ GUI Attestation Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$ATTESTATION" >> $GITHUB_STEP_SUMMARY
+          fi
 
   generate-reports:
     name: Generate Unified Reports
