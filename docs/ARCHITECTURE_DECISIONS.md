@@ -336,3 +336,15 @@ We verify quality using two distinct coverage metrics that must **both** pass qu
 
 ### Rule
 *   **All new features need 2 layers of tests:** One to execute the code (Code Coverage) and one to verify the invariant (Domain Coverage).
+
+### Quality Gates
+| Metric | Tool | Minimum Threshold | CI Gate |
+|--------|------|-------------------|---------|
+| Code Coverage (Lines) | vitest/v8 | 90% | Yes |
+| Domain Coverage (Rules Verified) | DomainCoverageParser | 80% for critical features | Warning at 60%, Fail at 50% |
+
+**Rationale for thresholds:**
+- **90% code coverage**: Ensures dead code detection while allowing some unreachable error branches.
+- **80% domain coverage**: Core rules must be verified. Lower rules may be documentation-only or pending implementation.
+
+**Note on Domain Coverage:** A section with multiple invariants (e.g., "Bulk Discounts" with 3 invariant rules) counts as "covered" if ANY of its invariants have a passing test. This allows progressive discovery of edge cases.

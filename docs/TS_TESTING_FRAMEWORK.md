@@ -194,15 +194,15 @@ Teams can adopt this framework progressively while still gaining the benefits of
 it('Rule §1: Basic calculation', async () => {
   await verifyExample({
     ruleReference: 'pricing-strategy.md §1',
-    scenario: 'Basic cart calculation',
+    rule: 'Basic cart calculation',
     tags: ['@pricing']
   }, () => {
     // 1. Standard Setup
     const cart = CartBuilder.new().withItem('Apple', 100).build();
-    
+
     // 2. Standard Execution
     const result = PricingEngine.calculate(cart.items, cart.user);
-    
+
     // 3. Standard Assertion
     expect(result.finalTotal).toBe(100);
 
@@ -210,6 +210,15 @@ it('Rule §1: Basic calculation', async () => {
     return { input: cart, output: result };
   });
 });
+```
+
+**Note on Auto-Logging:**
+- If your test returns `{ input, output }`, the tracer automatically logs to the attestation report
+- If you don't return anything (just assertions), the test is still registered in the report but lacks input/output trace data
+
+For full observability, prefer the return pattern:
+```typescript
+return { input: cart, output: result };
 ```
 
 ### Level 2: Data-Driven Tests (Medium Rigor)
@@ -222,12 +231,15 @@ test.each([
   { qty: 5, expected: 500 },
   { qty: 0, expected: 0 }
 ])('Rule §1: Quantity Logic', async ({ qty, expected }) => {
-  await verifyExample({
+  return verifyExample({
     ruleReference: 'pricing-strategy.md §1',
-    scenario: `Quantity: ${qty}`,
+    rule: `Quantity: ${qty}`,
     tags: ['@pricing']
-  }, () => {
-    // ... test logic ...
+  }, async () => {
+    const cart = CartBuilder.new().withItem('Apple', 100, qty).build();
+    const result = PricingEngine.calculate(cart.items, cart.user);
+    expect(result.finalTotal).toBe(expected);
+    return { input: cart, output: result };  // Auto-log
   });
 });
 ```
@@ -248,3 +260,18 @@ it('Rule §1: Total is consistent', () => {
   });
 });
 ```
+
+### When to Level Up?
+
+| Signal | Current State | Recommended Action |
+|--------|---------------|-------------------|
+| Writing `test.each` with 3-5 similar cases | **Level 1** | Move to **Level 2** (data-driven) |
+| Same assertion repeated across multiple files | **Level 1-2** | Consider **Level 3** (property) |
+| Test covers "all known edge cases" from spec | **Level 2** | Evaluate for **Level 3** verification |
+| Input setup is complex with many combinations | **Level 2** | Consider **Level 3** generator |
+| Test verifies a critical business invariant | *Any* | Use **Level 3** for mathematical proof |
+
+**Maturity Model Summary:**
+- **Level 1**: Get on the radar (traceability)
+- **Level 2**: Efficiency with known edge cases
+- **Level 3**: Mathematical correctness across infinite inputs

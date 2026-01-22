@@ -18,13 +18,19 @@ Create a suite of scripts in `implementations/shared/scripts/`.
 ### A. The Detective (`check-drift.ts`)
 *   **Inputs:** `pricing-strategy.md` and `**/*.test.ts`.
 *   **Logic:**
-    1.  Parse all `Rule §X` definitions from Markdown.
-    2.  Parse all `ruleReference: '...'` from Tests.
-    3.  Compare sets.
+    1.  Leverage existing `DomainCoverageParser` from `implementations/typescript-vitest/test/domain-coverage/`
+    2.  Call `parseBusinessRules()` to get all rules from Markdown
+    3.  Call `extractRuleReferences()` to get all references from Tests
+    4.  Compare sets to identify:
+        - **Orphaned Tests:** Tests referencing rules that don't exist in MD
+        - **Missing Tests:** Rules in MD not referenced by any test
+        - **Typos:** Rules with similar names (fuzzy match suggestion)
 *   **Outputs:**
-    *   **Error (Exit 1):** If an "Orphaned Test" exists (references a non-existent rule). This prevents misleading reporting.
-    *   **Warning (Exit 0):** If a "Missing Test" exists (rule defined but not tested).
+    *   **Error (Exit 1):** Orphaned Tests exist (prevents misleading reporting)
+    *   **Warning (Exit 0):** Missing Tests exist (alerts to unverified features)
     *   **Suggestion:** "Found 'Rule §5' in tests, but MD has 'Rule § 5'. Did you mean...?"
+
+**Note:** The ` implementations/shared/scripts/` directory should be created if it does not exist. The implementation should validate directory existence and provide a helpful error message.
 
 ### B. The Fixer (`scaffold-tests.ts`)
 *   **Trigger:** `npm run drift:fix` or interactive CLI.
