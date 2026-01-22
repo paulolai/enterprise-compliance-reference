@@ -8,7 +8,7 @@ Before building the tool, we define the contract.
 *   **Update `docs/ARCHITECTURE_DECISIONS.md`**:
     *   Add **ADR 13: Drift Detection Strategy**.
     *   Explicitly decide: "We treat Documentation Bugs (typos, stale rules) as Build Failures."
-*   **Update `docs/TS_TESTING_FRAMEWORK.md`**:
+*   **Update `docs/TESTING_FRAMEWORK.md`**:
     *   Add "Managing Drift" section.
     *   Explain the `drift:check` command.
 

@@ -1,6 +1,21 @@
-# GUI Testing Guidelines (Dev-Native & High-Velocity)
+# GUI Testing Patterns
 
-This document defines the standards for GUI automation. Our goal is to make UI testing a **development accelerator**, not a maintenance burden.
+This document defines the canonical patterns for GUI/E2E testing using **Playwright**. For framework-level concepts, see [Testing Framework Guide](TESTING_FRAMEWORK.md).
+
+## Table of Contents
+1. [Quick Start](#quick-start-first-test-in-5-minutes)
+2. [Core Philosophy](#core-philosophy)
+3. [Fixture Route Pattern](#fixture-route-pattern)
+4. [The "Seam-Based" Setup Pattern](#the-seam-based-setup-pattern)
+5. [Intent-Based Drivers](#intent-based-drivers)
+6. [Visual Invariant Pattern](#visual-invariant-pattern)
+7. [Visual Regression Testing](#visual-regression-testing)
+8. [Complete Test File Example](#complete-test-file-example)
+9. [Allure Reporting](#allure-reporting-for-gui-tests)
+10. [Observability & Attestation](#observability--attestation)
+11. [Anti-Patterns](#anti-patterns-to-reject)
+
+---
 
 ## Quick Start: First Test in 5 Minutes
 
@@ -30,17 +45,34 @@ test('Invariant: Cart total matches sum of line items', async ({ page }) => {
 
 ## Core Philosophy
 
-### 1. The UI is a Projection of State (Debug Route Pattern)
+### 1. The UI is a Projection of State
+
 For isolation, we do not rely on heavy frameworks like Storybook. Instead, we use **Fixture Routes** (or "Debug Routes") to render components, pages, or flows in specific states.
 
 - **The Idea:** Create routes like `/debug/cart-view?scenario=vip-user` that are only available during development.
 - **Critical Security Rule:** These routes **MUST** be conditionally included only when `import.meta.env.DEV` is true. They must **never** exist in the production bundle.
 - **Why it wins:**
-    - **Visual Debugging:** Developers and students can visit the URL to see the exact state being tested.
-    - **Zero Setup:** All Providers (Auth, Router, Store) are already configured in the app's main entry point.
-    - **Isolation:** You test the "Cart Page" without needing to navigate through the "Login" or "Catalog" pages.
+  - **Visual Debugging:** Developers and students can visit the URL to see the exact state being tested.
+  - **Zero Setup:** All Providers (Auth, Router, Store) are already configured in the app's main entry point.
+  - **Isolation:** You test the "Cart Page" without needing to navigate through the "Login" or "Catalog" pages.
 
-#### Avoiding Hardcoded Routes
+### 2. Tests are "User Intent" Specifications
+
+We verify **Business Capabilities**, not DOM structures.
+- **Bad (Implementation):** `await page.click('#submit-btn')`
+- **Good (Intent):** `await App.checkout.placeOrder(user)`
+
+### 3. Velocity over Ceremony
+
+- **Dev-Native:** Tests should run fast against your local dev server.
+- **No Gherkin:** Write TypeScript.
+- **Fluent Builders:** Use the shared `CartBuilder` to define scenarios concisely.
+
+---
+
+## Fixture Route Pattern
+
+### Avoiding Hardcoded Routes
 
 Instead of spreading route strings throughout tests, centralize them:
 
@@ -100,23 +132,8 @@ test('Invariant: VIP Badge visible', async ({ page }) => {
 });
 ```
 
-### 2. Tests are "User Intent" Specifications
-We verify **Business Capabilities**, not DOM structures.
-- **Bad (Implementation):** `await page.click('#submit-btn')`
-- **Good (Intent):** `await App.checkout.placeOrder(user)`
+### Security: Development-Only Routes
 
-### 3. Velocity over Ceremony
-- **Dev-Native**: Tests should run fast against your local dev server.
-- **No Gherkin**: Write TypeScript.
-- **Fluent Builders**: Use the shared `CartBuilder` to define scenarios concisely.
-
----
-
-## The "Seam-Based" Setup Pattern
-
-To keep tests fast and non-flaky, we "cheat" during setup. We use **Backend Seams** to establish preconditions instantly.
-
-### Security Warning: Production Safety 🛡️
 These "Cheats" are backdoor routes. You **MUST** ensure they never ship to production.
 
 ```typescript
@@ -124,7 +141,7 @@ These "Cheats" are backdoor routes. You **MUST** ensure they never ship to produ
 // ✅ GOOD: Wrapped in Env Check
 export const debugRouter = new Hono();
 
-if (import.meta.env.DEV) { 
+if (import.meta.env.DEV) {
   debugRouter.post('/seed-cart', async (c) => { ... });
   debugRouter.post('/reset-db', async (c) => { ... });
 } else {
@@ -133,7 +150,14 @@ if (import.meta.env.DEV) {
 }
 ```
 
+---
+
+## The "Seam-Based" Setup Pattern
+
+To keep tests fast and non-flaky, we "cheat" during setup. We use **Backend Seams** to establish preconditions instantly.
+
 ### The "Teleport" Method
+
 If you are testing the **Checkout Logic**:
 1. **Don't** visit the home page, search, add to cart, then go to cart.
 2. **Do** POST a prepared cart to the API, then `page.goto('/checkout')`.
@@ -156,9 +180,8 @@ test('Invariant: Free shipping applies > $100', async ({ page, request }) => {
 
 ---
 
-## Canonical Patterns
+## Intent-Based Drivers
 
-### A. Intent-Based Drivers (Not Page Objects)
 Avoid creating classes that mirror HTML files. Create "Drivers" that group **User Actions**.
 
 ```typescript
@@ -168,65 +191,80 @@ export const checkoutDriver = (page: Page) => ({
   selectShipping: async (method: string) => {
     await page.getByRole('radio', { name: method }).check();
   },
-  
+
   // The Query (Answer a question)
   getGrandTotal: async () => {
     const text = await page.getByTestId('grand-total').textContent();
     return parseFloat(text!);
   }
 });
+
+// Usage
+test('Invariant: Shipping cost reflects selection', async ({ page }) => {
+  const checkout = checkoutDriver(page);
+  await checkout.selectShipping('EXPRESS');
+  expect(await checkout.getGrandTotal()).toBeGreaterThan(await checkout.getGrandTotal());
+});
 ```
 
-### B. Visual Invariants
+---
+
+## Visual Invariant Pattern
+
 Assert that the UI *truthfully* reflects the business domain.
 
 ```typescript
-// invariant-helper.ts
-await verifyUiInvariant({
-    rule: 'VIP Badge visibility matches tenure',
-  }, 
-  // PBT Property
-  async (page, { user }) => {
-    // Inject state
-    await seedUserSession(page, user); 
-    
-    // Assert visual truth
-    const isVipVisible = await page.getByTestId('vip-badge').isVisible();
-    expect(isVipVisible).toBe(user.tenureYears > 2);
-  }
+import { invariant } from './fixtures/invariant-helper';
+
+invariant('VIP Badge visibility matches tenure', {
+  ruleReference: 'pricing-strategy.md §3',
+  rule: 'VIP badge shown for users with tenure > 2 years',
+  tags: ['@critical']
+},
+// PBT Property
+async (page, { user }) => {
+  // Inject state
+  await seedUserSession(page, user);
+
+  // Assert visual truth
+  const isVipVisible = await page.getByTestId('vip-badge').isVisible();
+  expect(isVipVisible).toBe(user.tenureYears > 2);
+}
 );
 ```
 
 ---
 
-## Visual Regression (Mechanics)
+## Visual Regression Testing
 
 We use Visual Regression not just to catch CSS bugs, but as **Attestation Evidence**.
 
-### 1. Storage & Versioning
+### Storage & Versioning
 - **Location**: Snapshots are stored in `__snapshots__` directories next to the test files.
 - **Git LFS**: All binary screenshots (`*.png`) **MUST** be tracked via Git LFS to prevent repo bloat.
-    ```bash
-    git lfs track "**/__snapshots__/**/*.png"
-    ```
+  ```bash
+  git lfs track "**/__snapshots__/**/*.png"
+  ```
 - **Naming with Traceability**: Include the rule reference from the business spec for full traceability.
-    - **✅ Good:** `pricing-strategy-3.2-vip-badge-active.png` (links to §3.2 of pricing-strategy.md)
-    - **✅ Also Good:** `vip-badge-active.png` (simple, component-focused)
-    - **❌ Avoid:** `screenshot-1.png`, `test.png` (no semantic meaning)
+  - **✅ Good:** `pricing-strategy-3.2-vip-badge-active.png` (links to §3.2 of pricing-strategy.md)
+  - **✅ Also Good:** `vip-badge-active.png` (simple, component-focused)
+  - **❌ Avoid:** `screenshot-1.png`, `test.png` (no semantic meaning)
 
-### 2. Scope: Targeted vs. Full Page
+### Scope: Targeted vs. Full Page
+
 **Avoid Full Page Snapshots** for attestation. They are brittle and fail when unrelated parts of the page (like a footer) change.
+
 - **✅ Good (Targeted):** Snapshot only the component relevant to the rule.
-    ```typescript
-    // Invariant: VIP Badge is visible
-    const badge = page.getByTestId('vip-badge');
-    await expect(badge).toHaveScreenshot('vip-badge-active.png');
-    ```
+  ```typescript
+  // Invariant: VIP Badge is visible
+  const badge = page.getByTestId('vip-badge');
+  await expect(badge).toHaveScreenshot('vip-badge-active.png');
+  ```
 - **❌ Bad (Broad):** Snapshot the entire viewport to check a badge.
 
-### 3. Assertion Strategy
+### Assertion Strategy
 
-Use Playwright's native `toHaveScreenshot()` with appropriate tolerance for different scenarios:
+Use Playwright's native `toHaveScreenshot()` with appropriate tolerance:
 
 ```typescript
 await expect(component).toHaveScreenshot('component-name.png', {
@@ -243,37 +281,19 @@ await expect(component).toHaveScreenshot('component-name.png', {
 | **Complex UI** | `0.02` (2%) | Multi-element layouts may have subpixel positioning diffs |
 | **Full Pages** | `0.03` (3%) | More elements = higher cumulative variance (but avoid full pages) |
 
-**When to Adjust Tolerance:**
-- Increase `maxDiffPixelRatio` if tests fail only due to anti-aliasing, not actual content changes
-- Decrease to `0` for critical UI elements that must be pixel-perfect (logos, brand icons)
-- Never exceed `0.05` (5%) - larger differences indicate real changes, not rendering variance
+### Cross-Platform Consistency (The "Docker Rule")
 
-### 4. Cross-Platform Consistency (The "Docker Rule")
 Fonts render differently on macOS, Windows, and Linux.
+
 - **Rule**: The **Linux** rendering (CI Environment) is the Canonical Standard.
 - **Workflow**:
-    1.  Run tests locally. If visuals fail due to OS differences, ignore them or use the Docker helper.
-    2.  To update snapshots: `npm run test:update-snapshots:docker`. This spins up a Linux container to generate the authoritative images.
+  1. Run tests locally. If visuals fail due to OS differences, ignore them or use the Docker helper.
+  2. To update snapshots: `npm run test:update-snapshots:docker`. This spins up a Linux container to generate the authoritative images.
 
-### 5. Attestation Integration
+### Attestation Integration
+
 - **Trace**: When a visual check passes, log `Visual Evidence: [Image Name]` to the tracer.
 - **Report**: The Attestation Report uses these confirmed paths to embed the "Golden Master" as evidence of compliance.
-
-**Example Attestation Report Entry:**
-```markdown
-## Cart Badge Visibility
-
-| Rule | Evidence | Status |
-|------|----------|--------|
-| pricing-strategy.md §2 - Bulk discounts apply when qty >= 3 | ![vip-badge-active](../__snapshots__/cart-pricing-2.3-vip-badge-active.png) | ✓ Pass |
-| pricing-strategy.md §3 - VIP badge shown for tenure > 2 years | ![](../__snapshots__/cart-pricing-3.2-vip-badge-active.png) | ✓ Pass |
-
-**Verification Method:**
-- GUI Test: `cart.ui.properties.test.ts` → `Invariant: VIP Badge visibility`
-- Test Runs: 100 (PBT)
-- Platform: Linux (Canonical)
-- Snapshot Hash: `a3f9c2b1...`
-```
 
 ---
 
@@ -405,16 +425,6 @@ maxDiffPixelRatio: 0.02  // Increase from 0.01
 
 ---
 
-## Observability & Attestation
-
-GUI tests must provide "Proof of Quality" just like API tests.
-
-1.  **Trace Business Steps**: Log "User added item", not "Clicked button X".
-2.  **Screenshots as Artifacts**: Auto-capture screenshots on failure and at key verification points.
-3.  **Network correlation**: Ensure failed tests dump the API response bodies to the log.
-
----
-
 ## Allure Reporting for GUI Tests
 
 The `invariant()` test wrapper automatically generates Allure metadata for GUI tests. No manual configuration is needed in individual tests.
@@ -441,26 +451,6 @@ The `invariant()` helper in `src/test/e2e/fixtures/invariant-helper.ts` automati
 
 3. **Attaches Screenshots** on failure automatically
 
-### Example: Using the invariant() Wrapper
-
-```typescript
-import { invariant, PageBuilder } from './fixtures/invariant-helper';
-
-invariant('VIP badge shown for VIP users', {
-  ruleReference: 'pricing-strategy.md §3 - VIP Tier',
-  rule: 'VIP badge is visible for eligible users (tenure > 2 years)',
-  tags: ['@vip', '@pricing']
-}, async ({ page }) => {
-  await page.goto('/login');
-  await page.getByTestId('email-input').fill('vip@techhome.com');
-  await page.getByTestId('password-input').fill('password');
-  await page.getByTestId('login-button').click();
-
-  await page.goto('/cart');
-  await expect(page.getByTestId('vip-badge')).toBeVisible();
-});
-```
-
 ### Viewing Reports
 
 **Generate reports after running GUI tests:**
@@ -482,6 +472,16 @@ npm run reports:allure:serve
 # Generate Attestation report for compliance
 npm run reports:attestation
 ```
+
+---
+
+## Observability & Attestation
+
+GUI tests must provide "Proof of Quality" just like API tests.
+
+1. **Trace Business Steps**: Log "User added item", not "Clicked button X".
+2. **Screenshots as Artifacts**: Auto-capture screenshots on failure and at key verification points.
+3. **Network correlation**: Ensure failed tests dump the API response bodies to the log.
 
 ---
 

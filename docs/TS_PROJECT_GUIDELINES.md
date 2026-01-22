@@ -5,8 +5,8 @@ This document outlines the core development principles for this project.
 ## Core Principles
 
 ### 1. Verification-Driven Development
-We follow the "Executable Specifications" pattern. Logic is defined in Markdown and proven through code. 
-- **[`TS_TESTING_FRAMEWORK.md`](./TS_TESTING_FRAMEWORK.md)**: The canonical guide for writing tests.
+We follow the "Executable Specifications" pattern. Logic is defined in Markdown and proven through code.
+- **[`TESTING_FRAMEWORK.md`](./TESTING_FRAMEWORK.md)**: The canonical guide for writing tests.
 
 ### 2. Functional Programming
 We favor a functional style to ensure logic is pure and testable:

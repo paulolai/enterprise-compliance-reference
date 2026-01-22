@@ -11,10 +11,12 @@ AI Agents must ingest the following context before making changes:
 
 1.  **Business Truth**: [`docs/pricing-strategy.md`](docs/pricing-strategy.md)
     *   The definitive requirements. Code must strictly follow these rules.
-2.  **Testing Standard**: [`docs/TS_TESTING_FRAMEWORK.md`](docs/TS_TESTING_FRAMEWORK.md)
+2.  **Testing Standard**: [`docs/TESTING_FRAMEWORK.md`](docs/TESTING_FRAMEWORK.md)
     *   Standards for how verification should be structured.
 3.  **Engineering Guidelines**: [`docs/TS_PROJECT_GUIDELINES.md`](docs/TS_PROJECT_GUIDELINES.md)
     *   TypeScript best practices (Immutability, Strong Typing).
+4.  **Architecture Decisions**: [`docs/ARCHITECTURE_DECISIONS.md`](docs/ARCHITECTURE_DECISIONS.md)
+    *   The "why" behind our architectural choices. Before suggesting alternatives, verify they haven't already been rejected.
 
 ## ⚡ Operational Workflows
 

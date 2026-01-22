@@ -148,8 +148,9 @@ npm run dev
 
 | Topic | Document |
 |-------|----------|
-| **Writing Tests** | [docs/TS_TESTING_FRAMEWORK.md](docs/TS_TESTING_FRAMEWORK.md) |
-| **GUI Automation** | [docs/GUI_TESTING_GUIDELINES.md](docs/GUI_TESTING_GUIDELINES.md) |
+| **Testing Framework** | [docs/TESTING_FRAMEWORK.md](docs/TESTING_FRAMEWORK.md) |
+| **API Testing Patterns** | [docs/API_TESTING_PATTERNS.md](docs/API_TESTING_PATTERNS.md) |
+| **GUI Testing Patterns** | [docs/GUI_TESTING_PATTERNS.md](docs/GUI_TESTING_PATTERNS.md) |
 | **Invariants & PBT** | [docs/reference/infinite-examples.md](docs/reference/infinite-examples.md) |
 | **Type Safety** | [docs/reference/semantic-integrity.md](docs/reference/semantic-integrity.md) |
 | **Business Rules** | [docs/pricing-strategy.md](docs/pricing-strategy.md) |
