@@ -138,9 +138,23 @@ npm test
 npm run dev
 ```
 
+### Documentation Automation
+
+We use `markdown-toc` to automatically maintain Table of Contents in our documentation:
+
+```bash
+# Generate TOCs for all documentation files
+npm run docs:fix
+```
+
+**How it works:**
+- Any markdown file with the `<!-- toc -->` token will have its TOC regenerated automatically on commit
+- This is handled by `husky` (pre-commit hook) and `lint-staged`
+- No manual TOC updates needed—stay focused on content
+
 ### Viewing the Artifacts
 - **Audit Evidence:** Open `reports/{timestamp}/attestation-full.html`
-- **Engineering Trends:** `npm run report:allure:serve` (Requires Java)
+- **Engineering Trends:** `npm run reports:allure:serve` (Requires Java)
 
 ---
 
