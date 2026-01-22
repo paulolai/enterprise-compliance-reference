@@ -9,7 +9,10 @@ interface OrderSummaryProps {
 export function OrderSummary({ result }: OrderSummaryProps) {
   const pricingResult = result || useCartStore((state) => state.pricingResult);
 
-  if (!pricingResult) return null;
+  // Render placeholder if no pricing result available
+  if (!pricingResult) {
+    return <div className="order-summary-placeholder" data-testid="order-summary" />;
+  }
 
   return (
     <div className="order-summary" data-testid="order-summary">

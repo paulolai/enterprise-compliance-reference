@@ -1,5 +1,8 @@
 {
   "scripts": {
+    "test": "cd implementations/typescript-vitest && npm test",
+    "test:coverage": "cd implementations/typescript-vitest && npm run test:coverage",
+    "test:allure": "cd implementations/typescript-vitest && npm run test:allure",
     "reports:allure": "allure generate allure-results/ --clean --output allure-report/",
     "reports:allure:open": "allure open allure-report/",
     "reports:allure:serve": "allure serve allure-results/",

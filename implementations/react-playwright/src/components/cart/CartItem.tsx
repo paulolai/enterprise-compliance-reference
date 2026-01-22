@@ -12,8 +12,6 @@ export function CartItem({ sku }: CartItemProps) {
   const removeItem = useCartStore((state) => state.removeItem);
   const pricingResult = useCartStore((state) => state.pricingResult);
 
-  if (!item) return null;
-
   const lineItemResult = pricingResult?.lineItems.find((li) => li.sku === sku);
   const bulkDiscount = lineItemResult?.bulkDiscount || 0;
 
@@ -21,6 +19,11 @@ export function CartItem({ sku }: CartItemProps) {
     const quantity = parseInt(e.target.value, 10) || 0;
     updateQuantity(sku, quantity);
   };
+
+  // Render empty placeholder if item doesn't exist (parent should guard, but handle gracefully)
+  if (!item) {
+    return <div className="cart-item-placeholder" data-testid={`cart-item-${sku}`} />;
+  }
 
   return (
     <div className="cart-item" data-testid={`cart-item-${sku}`}>

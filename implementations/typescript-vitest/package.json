@@ -8,11 +8,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:allure": "vitest run --config vitest.config.allure.ts",
+    "test:coverage": "vitest run --coverage",
+    "coverage:open": "npx --yes http-server coverage -o",
     "report:allure:generate": "allure generate allure-results --clean -o reports/allure-report",
     "report:allure:serve": "allure serve allure-results",
     "report:allure:view": "npx --yes http-server reports/allure-report -o -c-1"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.17",
     "@vitest/runner": "^4.0.16",
     "allure-commandline": "^2.36.0",
     "allure-vitest": "^3.4.5",

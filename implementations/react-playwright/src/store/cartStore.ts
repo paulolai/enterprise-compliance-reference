@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { ShippingMethod } from '../../../shared/src';
 import type { CartItem, PricingResult, User } from '../../../shared/src';
 
@@ -22,61 +23,74 @@ interface CartState {
   clear: () => void;
 }
 
-export const useCartStore = create<CartState>((set, get) => ({
-  items: [],
-  user: null,
-  shippingMethod: ShippingMethod.STANDARD,
-  pricingResult: null,
-
-  addItem: (item) => {
-    set((state) => {
-      const existingItem = state.items.find((i) => i.sku === item.sku);
-      if (existingItem) {
-        return {
-          items: state.items.map((i) =>
-            i.sku === item.sku
-              ? { ...i, quantity: i.quantity + item.quantity }
-              : i
-          ),
-        };
-      }
-      return {
-        items: [...state.items, { ...item, addedAt: Date.now() }],
-      };
-    });
-  },
-
-  removeItem: (sku) => {
-    set((state) => ({
-      items: state.items.filter((item) => item.sku !== sku),
-    }));
-  },
-
-  updateQuantity: (sku, quantity) => {
-    if (quantity <= 0) {
-      get().removeItem(sku);
-      return;
-    }
-    set((state) => ({
-      items: state.items.map((item) =>
-        item.sku === sku ? { ...item, quantity } : item
-      ),
-    }));
-  },
-
-  setUser: (user) => set({ user }),
-
-  setShippingMethod: (method) => set({ shippingMethod: method }),
-
-  setPricingResult: (result) => set({ pricingResult: result }),
-
-  clear: () =>
-    set({
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
       items: [],
-      pricingResult: null,
+      user: null,
       shippingMethod: ShippingMethod.STANDARD,
+      pricingResult: null,
+
+      addItem: (item) => {
+        set((state) => {
+          const existingItem = state.items.find((i) => i.sku === item.sku);
+          if (existingItem) {
+            return {
+              items: state.items.map((i) =>
+                i.sku === item.sku
+                  ? { ...i, quantity: i.quantity + item.quantity }
+                  : i
+              ),
+            };
+          }
+          return {
+            items: [...state.items, { ...item, addedAt: Date.now() }],
+          };
+        });
+      },
+
+      removeItem: (sku) => {
+        set((state) => ({
+          items: state.items.filter((item) => item.sku !== sku),
+        }));
+      },
+
+      updateQuantity: (sku, quantity) => {
+        if (quantity <= 0) {
+          get().removeItem(sku);
+          return;
+        }
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.sku === sku ? { ...item, quantity } : item
+          ),
+        }));
+      },
+
+      setUser: (user) => set({ user }),
+
+      setShippingMethod: (method) => set({ shippingMethod: method }),
+
+      setPricingResult: (result) => set({ pricingResult: result }),
+
+      clear: () =>
+        set({
+          items: [],
+          pricingResult: null,
+          shippingMethod: ShippingMethod.STANDARD,
+        }),
     }),
-}));
+    {
+      name: 'cart-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
+
+// Expose store to window for testing/debugging
+if (typeof window !== 'undefined') {
+  (window as any).__cartStore = useCartStore;
+}
 
 // Mock product catalog (10-15 items per plan)
 export const productCatalog: Array<{

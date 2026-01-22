@@ -4,6 +4,17 @@ import * as fc from 'fast-check';
 import { CartItem, User, ShippingMethod } from '../../../../../shared/src';
 import { registerAllureMetadata } from '../../../../../shared/fixtures/allure-helpers';
 
+// Clear localStorage before the first test to ensure clean state
+test.beforeAll(async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+  });
+  await context.close();
+});
+
 export interface PageBuilderState {
   cart: CartItem[];
   user: User;

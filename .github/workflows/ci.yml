@@ -7,11 +7,13 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test-and-attest:
+  test-api:
+    name: API Tests with Coverage
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    
+    defaults:
+      run:
+        working-directory: ./implementations/typescript-vitest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -21,105 +23,136 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: implementations/*/package-lock.json
+          cache-dependency-path: implementations/typescript-vitest/package-lock.json
 
-      - name: Install Dependencies (Executable Specs)
-        run: |
-          cd implementations/typescript-vitest
-          npm ci
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: Install Dependencies (Gherkin Anti-Pattern)
-        run: |
-          cd implementations/typescript-cucumber
-          npm install
-
-      - name: Run Executable Specs (Vitest)
-        run: |
-          cd implementations/typescript-vitest
-          npm test
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Run Tests with Allure
-        if: always()  # Run even if previous tests fail to capture failure evidence
-        run: |
-          cd implementations/typescript-vitest
-          npm run test:allure
+      - name: Run Tests with Coverage
+        run: npm run test:coverage
 
       - name: Generate Allure Report
+        run: npm run test:allure && npm run report:allure:generate
+
+      - name: Upload Coverage Report
         if: always()
-        run: |
-          cd implementations/typescript-vitest
-          npm run report:allure:generate
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: implementations/typescript-vitest/coverage/
+          retention-days: 30
 
       - name: Upload Allure Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ github.run_number }}
+          name: allure-api
           path: implementations/typescript-vitest/allure-results/
-          retention-days: 90
-          if-no-files-found: warn
-
-      - name: Upload Allure Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-${{ github.run_number }}
-          path: implementations/typescript-vitest/reports/allure-report/
-          retention-days: 90
-          if-no-files-found: warn
-
-      - name: Run Gherkin Anti-Pattern (Cucumber)
-        continue-on-error: true # Don't fail the build if the anti-pattern fails (it's for demo)
-        run: |
-          cd implementations/typescript-cucumber
-          npm run report
-          # Move report to common reports dir for artifact upload
-          cp cucumber-report.html ../../reports/cucumber-report.html
+          retention-days: 30
 
       - name: Display Attestation Summary
         if: always()
         run: |
-          echo "::group::📊 Attestation Summary"
-          cd implementations/typescript-vitest
-          # Find the most recent attestation report
-          LATEST_REPORT=$(ls -t ../../reports/*/attestation.md 2>/dev/null | head -1)
-          if [ -n "$LATEST_REPORT" ]; then
-            echo "📄 Report: $LATEST_REPORT"
-            echo ""
-            cat "$LATEST_REPORT"
-          else
-            echo "❌ No attestation report found"
-          fi
-          echo "::endgroup::"
-
-      - name: Add Markdown Summary
-        if: always()
-        run: |
-          cd implementations/typescript-vitest
-          # Find the most recent attestation report
-          LATEST_REPORT=$(ls -t ../../reports/*/attestation.md 2>/dev/null | head -1)
-          if [ -n "$LATEST_REPORT" ]; then
-            {
-              echo "# 📊 Test Attestation Report"
-              echo ""
-              cat "$LATEST_REPORT"
-            } >> $GITHUB_STEP_SUMMARY
-          else
-            echo "# 📊 Attestation Report" >> $GITHUB_STEP_SUMMARY
+          ATTESTATION=$(find reports -name "attestation-full.html" | tail -1)
+          if [ -n "$ATTESTATION" ]; then
+            echo "## Attestation Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "❌ No attestation report found" >> $GITHUB_STEP_SUMMARY
+            cat "$ATTESTATION" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload Attestation Reports
+  test-gui:
+    name: GUI Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./implementations/react-playwright
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: implementations/react-playwright/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run Playwright Tests
+        run: npm test
+
+      - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: attestation-reports
-          path: reports/
+          name: playwright-report
+          path: implementations/react-playwright/playwright-report/
+          retention-days: 7
+
+      - name: Upload Playwright Traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: implementations/react-playwright/test-results/
+          retention-days: 7
+
+      - name: Upload Allure GUI Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-gui
+          path: allure-results/gui/
+          retention-days: 30
+
+  generate-reports:
+    name: Generate Unified Reports
+    runs-on: ubuntu-latest
+    needs: [test-api, test-gui]
+    if: always()
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download All Outputs
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Merge Allure Results
+        run: |
+          mkdir -p merged-allure-results
+          # Check if directories exist before copying to avoid errors if one job failed completely
+          if [ -d "artifacts/allure-api" ]; then
+            cp -r artifacts/allure-api/* merged-allure-results/ 2>/dev/null || true
+          fi
+          if [ -d "artifacts/allure-gui" ]; then
+            cp -r artifacts/allure-gui/* merged-allure-results/ 2>/dev/null || true
+          fi
+
+      - name: Generate Overall Allure Report
+        # Only run if we have results
+        if: hashFiles('merged-allure-results/') != ''
+        run: |
+          # Use the root package.json script but pointing to the merged dir
+          npx allure-commandline generate merged-allure-results/ --clean --output allure-report/
+
+      - name: Upload Unified Allure Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
           retention-days: 30
