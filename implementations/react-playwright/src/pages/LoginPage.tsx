@@ -15,7 +15,7 @@ export function LoginPage() {
     try {
       await authClient.login(email, password);
       navigate('/cart');
-    } catch (err) {
+    } catch {
       setError('Invalid credentials. Try vip@techhome.com or new@customer.com');
     }
   };

@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 /**
  * Intent-Based Cart Driver
@@ -13,18 +13,6 @@ import type { Page, Locator } from '@playwright/test';
  * This aligns with the "Executable Specifications" pattern where tests describe
  * business behavior using domain language.
  */
-
-interface CartDriverState {
-  page: Page;
-  cartItems: Locator;
-  cartTotal: Locator;
-  vipBadge: Locator;
-  removeButtons: Locator;
-  quantityControls: {
-    increment: (sku: string) => Locator;
-    decrement: (sku: string) => Locator;
-  };
-}
 
 /**
  * Create a cart driver that operates on the given page

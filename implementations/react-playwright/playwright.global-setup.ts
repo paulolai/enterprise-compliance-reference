@@ -30,9 +30,10 @@ export default async function globalSetup() {
     }
 
     console.log('✅ TypeScript type check passed');
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ TypeScript type check failed:');
-    console.error(error.stdout || error.stderr || error.message);
+    const err = error as { stdout?: string; stderr?: string; message?: string };
+    console.error(err.stdout || err.stderr || err.message);
 
     // Rethrow to prevent tests from running
     throw new Error(

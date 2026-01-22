@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { CartPage } from '../CartPage';
 import { useCartStore } from '../../store/cartStore';
 import { CartBuilder } from '../../../../shared/fixtures';
 import { ShippingMethod } from '../../../../shared/src';
+import type { CartItem, User } from '../../../../shared/src';
 
 /**
  * Debug Page for Visual Debugging of Cart States
@@ -21,19 +22,20 @@ import { ShippingMethod } from '../../../../shared/src';
  * - Quick verification of UI components
  */
 export function CartDebugPage() {
-  const [initialized, setInitialized] = useState(false);
+  const initializedRef = useRef(false);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = searchParams.get('scenario') || 'custom';
 
   useEffect(() => {
     // Only initialize once
-    if (initialized) return;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-    let items;
-    let user;
+    let items: CartItem[];
+    let user: User;
 
     switch (scenario) {
-      case 'vip':
+      case 'vip': {
         // VIP user with single item
         const vipBuilder = CartBuilder.new()
           .withItem({ name: 'Laptop Pro', price: 89900, quantity: 1 })
@@ -42,8 +44,9 @@ export function CartDebugPage() {
         items = vipInput.items;
         user = { ...vipInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
-      case 'bulk':
+      case 'bulk': {
         // Regular user with bulk quantity (triggering bulk discount)
         const bulkBuilder = CartBuilder.new()
           .withItem({ name: 'Wireless Earbuds', price: 8900, quantity: 5 });
@@ -51,8 +54,9 @@ export function CartDebugPage() {
         items = bulkInput.items;
         user = { ...bulkInput.user, email: 'regular@test.com', name: 'Regular Customer' };
         break;
+      }
 
-      case 'vip-bulk':
+      case 'vip-bulk': {
         // VIP user with bulk items (both discounts)
         const vipBulkBuilder = CartBuilder.new()
           .withItem({ name: 'Smart Watch', price: 24900, quantity: 4 })
@@ -61,8 +65,9 @@ export function CartDebugPage() {
         items = vipBulkInput.items;
         user = { ...vipBulkInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
-      case 'bundle':
+      case 'bundle': {
         // Multiple items with mixed attributes
         const bundleBuilder = CartBuilder.new()
           .withItem({ name: 'Wireless Earbuds', price: 8900, quantity: 4 })
@@ -72,8 +77,9 @@ export function CartDebugPage() {
         items = bundleInput.items;
         user = { ...bundleInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
-      case 'free-shipping':
+      case 'free-shipping': {
         // Just over free shipping threshold
         const freeShipBuilder = CartBuilder.new()
           .withItem({ name: 'Tablet', price: 49900, quantity: 3 });
@@ -81,14 +87,16 @@ export function CartDebugPage() {
         items = freeShipInput.items;
         user = { ...freeShipInput.user, email: 'regular@test.com', name: 'Regular Customer' };
         break;
+      }
 
       case 'empty':
+
         // Empty cart
         items = [];
         user = { email: 'regular@test.com', name: 'Regular Customer', tenureYears: 0 };
         break;
 
-      case 'discount-cap':
+      case 'discount-cap': {
         // High value to trigger discount cap warning
         const capBuilder = CartBuilder.new()
           .withItem({ name: 'High-Value Item', price: 50000, quantity: 20 })
@@ -97,9 +105,10 @@ export function CartDebugPage() {
         items = capInput.items;
         user = { ...capInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
       case 'custom':
-      default:
+      default: {
         // Custom parameters from URL
         const tenureYears = parseInt(searchParams.get('tenureYears') || '0');
         const quantity = parseInt(searchParams.get('quantity') || '1');
@@ -111,22 +120,19 @@ export function CartDebugPage() {
         const customInput = customBuilder.getInputs();
         items = customInput.items;
         user = { ...customInput.user, email: `debug-${tenureYears}yrs@test.com`, name: `${tenureYears > 2 ? 'VIP' : 'Regular'} Customer` };
+      }
     }
 
     // Override store for debug mode
+    const now = Date.now();
     useCartStore.setState({
-      items: items.map((item: any) => ({ ...item, addedAt: Date.now() })),
+      items: items.map((item: CartItem) => ({ ...item, addedAt: now })),
       user,
       shippingMethod: ShippingMethod.STANDARD,
       pricingResult: null
     });
-
-    setInitialized(true);
-  }, [scenario, initialized]);
-
-  if (!initialized) {
-    return <div className="p-8">Loading debug scenario: {scenario}...</div>;
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenario]);
 
   return (
     <div className="debug-page">

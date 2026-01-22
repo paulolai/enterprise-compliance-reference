@@ -1,5 +1,4 @@
-import { test, expect } from '@playwright/test';
-import { allure } from 'allure-playwright';
+import { expect } from '@playwright/test';
 import { invariant } from './fixtures/invariant-helper';
 
 invariant('Login page renders correctly', {

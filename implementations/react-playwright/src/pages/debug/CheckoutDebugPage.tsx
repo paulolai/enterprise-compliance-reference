@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { CheckoutPage } from '../CheckoutPage';
 import { useCartStore } from '../../store/cartStore';
 import { CartBuilder } from '../../../../shared/fixtures';
 import { ShippingMethod } from '../../../../shared/src';
+import type { CartItem, User } from '../../../../shared/src';
 
 /**
  * Debug Page for Visual Debugging of Checkout States
@@ -21,20 +22,21 @@ import { ShippingMethod } from '../../../../shared/src';
  * - Quick verification of shipping UI components
  */
 export function CheckoutDebugPage() {
-  const [initialized, setInitialized] = useState(false);
+  const initializedRef = useRef(false);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = searchParams.get('scenario') || 'standard';
 
   useEffect(() => {
     // Only initialize once
-    if (initialized) return;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-    let items;
-    let user;
+    let items: CartItem[];
+    let user: User;
     let shipping: ShippingMethod = ShippingMethod.STANDARD;
 
     switch (scenario) {
-      case 'heavy-cart':
+      case 'heavy-cart': {
         const heavyBuilder = CartBuilder.new()
           .withItem({ name: 'Wireless Earbuds', price: 8900, quantity: 4 })
           .withItem({ name: 'Smart Watch', price: 24900, quantity: 2 })
@@ -43,8 +45,9 @@ export function CheckoutDebugPage() {
         items = heavyInput.items;
         user = { ...heavyInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
-      case 'free-shipping-threshold':
+      case 'free-shipping-threshold': {
         // Just at threshold - should NOT qualify
         const thresholdBuilder = CartBuilder.new()
           .withItem({ name: 'Tablet', price: 10000, quantity: 10 });
@@ -52,8 +55,9 @@ export function CheckoutDebugPage() {
         items = thresholdInput.items;
         user = { ...thresholdInput.user, email: 'regular@test.com', name: 'Regular Customer' };
         break;
+      }
 
-      case 'free-shipping-qualified':
+      case 'free-shipping-qualified': {
         // Just over threshold - SHOULD qualify
         const qualifiedBuilder = CartBuilder.new()
           .withItem({ name: 'Tablet', price: 10000, quantity: 11 });
@@ -61,8 +65,9 @@ export function CheckoutDebugPage() {
         items = qualifiedInput.items;
         user = { ...qualifiedInput.user, email: 'regular@test.com', name: 'Regular Customer' };
         break;
+      }
 
-      case 'express-shipping':
+      case 'express-shipping': {
         const expressBuilder = CartBuilder.new()
           .withItem({ name: 'Laptop Pro', price: 89900, quantity: 1 });
         const expressInput = expressBuilder.getInputs();
@@ -70,8 +75,9 @@ export function CheckoutDebugPage() {
         user = { ...expressInput.user, email: 'regular@test.com', name: 'Regular Customer' };
         shipping = ShippingMethod.EXPRESS;
         break;
+      }
 
-      case 'expedited-shipping':
+      case 'expedited-shipping': {
         const expeditedBuilder = CartBuilder.new()
           .withItem({ name: 'Smart Watch', price: 24900, quantity: 1 })
           .withTenure(3);
@@ -80,8 +86,9 @@ export function CheckoutDebugPage() {
         user = { ...expeditedInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         shipping = ShippingMethod.EXPEDITED;
         break;
+      }
 
-      case 'multi-discounts':
+      case 'multi-discounts': {
         const multiBuilder = CartBuilder.new()
           .withItem({ name: 'Wireless Earbuds', price: 8900, quantity: 5 })
           .withItem({ name: 'Coffee Maker', price: 8900, quantity: 3 })
@@ -90,8 +97,9 @@ export function CheckoutDebugPage() {
         items = multiInput.items;
         user = { ...multiInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
-      case 'discount-cap-warning':
+      case 'discount-cap-warning': {
         const capWarnBuilder = CartBuilder.new()
           .withItem({ name: 'Expensive Item', price: 50000, quantity: 20 })
           .withTenure(10);
@@ -99,39 +107,37 @@ export function CheckoutDebugPage() {
         items = capWarnInput.items;
         user = { ...capWarnInput.user, email: 'vip@test.com', name: 'VIP Customer' };
         break;
+      }
 
-      case 'light-cart':
+      case 'light-cart': {
         const lightBuilder = CartBuilder.new()
           .withItem({ name: 'T-Shirt Basic', price: 2500, quantity: 1 });
         const lightInput = lightBuilder.getInputs();
         items = lightInput.items;
         user = { ...lightInput.user, email: 'new@test.com', name: 'New Customer' };
         break;
+      }
 
       case 'standard':
-      default:
+      default: {
         const standardBuilder = CartBuilder.new()
           .withItem({ name: 'Wireless Earbuds', price: 8900, quantity: 2 })
           .withItem({ name: 'Basic T-Shirt', price: 2500, quantity: 1 });
         const standardInput = standardBuilder.getInputs();
         items = standardInput.items;
         user = { ...standardInput.user, email: 'regular@test.com', name: 'Regular Customer' };
+      }
     }
 
     // Override store for debug mode
+    const now = Date.now();
     useCartStore.setState({
-      items: items.map((item: any) => ({ ...item, addedAt: Date.now() })),
+      items: items.map((item: CartItem) => ({ ...item, addedAt: now })),
       user,
       shippingMethod: shipping,
       pricingResult: null
     });
-
-    setInitialized(true);
-  }, [scenario, initialized]);
-
-  if (!initialized) {
-    return <div className="p-8">Loading debug scenario: {scenario}...</div>;
-  }
+  }, [scenario]);
 
   return (
     <div className="debug-page">

@@ -1,12 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { allure } from 'allure-playwright';
-import {
-  invariant,
-  PageBuilder,
-  cartArb,
-  userArb,
-  cartItemArb,
-} from './fixtures/invariant-helper';
+import { expect } from '@playwright/test';
+import { invariant } from './fixtures/invariant-helper';
 import { productCatalog } from '../../store/cartStore';
 
 invariant('Cart total matches calculation result', {

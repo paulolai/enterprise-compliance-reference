@@ -7,7 +7,10 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ result }: OrderSummaryProps) {
-  const pricingResult = result || useCartStore((state) => state.pricingResult);
+  // Always call hook unconditionally
+  const storePricingResult = useCartStore((state) => state.pricingResult);
+  // Use prop result if provided, otherwise fall back to store
+  const pricingResult = result ?? storePricingResult;
 
   // Render placeholder if no pricing result available
   if (!pricingResult) {

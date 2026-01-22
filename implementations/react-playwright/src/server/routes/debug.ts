@@ -97,7 +97,11 @@ router.get('/state', async (c) => {
   const state = useCartStore.getState();
 
   // Omit addedAt from items for cleaner response
-  const itemsWithoutMetadata = state.items.map(({ addedAt, ...item }) => item);
+  const itemsWithoutMetadata = state.items.map((item) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { addedAt: _unused, ...rest } = item;
+    return rest;
+  });
 
   return c.json({
     items: itemsWithoutMetadata,

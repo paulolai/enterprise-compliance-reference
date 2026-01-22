@@ -89,7 +89,7 @@ export const useCartStore = create<CartState>()(
 
 // Expose store to window for testing/debugging
 if (typeof window !== 'undefined') {
-  (window as any).__cartStore = useCartStore;
+  (window as typeof window & { __cartStore?: typeof useCartStore }).__cartStore = useCartStore;
 }
 
 // Mock product catalog (10-15 items per plan)

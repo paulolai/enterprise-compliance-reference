@@ -16,7 +16,7 @@ export function RegisterPage() {
     try {
       await authClient.register(email, name, password);
       navigate('/cart');
-    } catch (err) {
+    } catch {
       setError('Registration failed. Email may already be in use.');
     }
   };

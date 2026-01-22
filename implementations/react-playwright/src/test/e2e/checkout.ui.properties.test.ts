@@ -1,6 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { allure } from 'allure-playwright';
-import { invariant, PageBuilder } from './fixtures/invariant-helper';
+import { expect } from '@playwright/test';
+import { invariant } from './fixtures/invariant-helper';
 
 invariant('Grand total equals product total plus shipping', {
   ruleReference: 'pricing-strategy.md §5 - Shipping Calculation',
@@ -23,7 +22,7 @@ invariant('Grand total equals product total plus shipping', {
   try {
     const shippingText = await shippingCostElement.textContent();
     shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
-  } catch (e) {
+  } catch {
     // Shipping might not be loaded or in a different format
   }
 

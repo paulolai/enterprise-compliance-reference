@@ -1,4 +1,4 @@
-import { Page, test, APIRequestContext } from '@playwright/test';
+import { Page, test, APIRequestContext, TestInfo } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import * as fc from 'fast-check';
 import { CartItem, User, ShippingMethod } from '../../../../../shared/src';
@@ -51,7 +51,7 @@ function deriveHierarchyFromPath(filePath: string): { parentSuite: string, suite
 export function invariant(
   title: string,
   metadata: InvariantMetadata,
-  testFunction: (args: { page: Page, request: APIRequestContext }, testInfo: any) => Promise<void>
+  testFunction: (args: { page: Page, request: APIRequestContext }, testInfo: TestInfo) => Promise<void>
 ) {
   test(title, async ({ page, request }, testInfo) => {
     // 0. Auto-derive Hierarchy

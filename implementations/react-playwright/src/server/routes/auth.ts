@@ -17,7 +17,8 @@ router.post('/login', async (c) => {
     const user = USERS.get(email);
     if (user && password === 'password') {
       // Return user without password and with a mock access token
-      const { password: _, ...userWithoutPassword } = user as any;
+      const { email: userEmail, name, tenureYears } = user;
+      const userWithoutPassword = { email: userEmail, name, tenureYears };
       return c.json({
         user: userWithoutPassword,
         accessToken: 'mock-token-' + Math.random().toString(36).substr(2),
@@ -33,7 +34,7 @@ router.post('/login', async (c) => {
 
 router.post('/register', async (c) => {
   try {
-    const { email, name, password } = await c.req.json();
+    const { email, name } = await c.req.json();
 
     // Check if user already exists
     if (USERS.has(email)) {
