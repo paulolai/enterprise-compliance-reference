@@ -7,15 +7,14 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
-    preserveSymlinks: true,
     alias: {
       '@executable-specs/shared': path.resolve(__dirname, '../shared/src'),
       '@executable-specs/shared/fixtures': path.resolve(__dirname, '../shared/fixtures'),
     },
-    modules: ['node_modules', '../shared/node_modules'],
   },
   optimizeDeps: {
-    exclude: ['@executable-specs/shared', 'zod', 'fast-check'],
+    include: ['react', 'react-dom', 'react-router-dom', 'zod', 'zustand', 'hono'],
+    exclude: ['@executable-specs/shared', 'fast-check'],
   },
   plugins: [
     react(),
