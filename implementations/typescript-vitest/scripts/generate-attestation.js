@@ -432,19 +432,33 @@ function renderTreeMarkdown(tree, groupLabel, subGroupLabel) {
       const tasks = subGroups[subGroup];
       const passCount = tasks.filter(t => t.status === 'pass').length;
       const failCount = tasks.filter(t => t.status === 'fail').length;
+      const total = tasks.length;
 
-      let md = `### ${group} / ${subGroup}\n\n`;
-      md += `${passCount} passed, ${failCount} failed\n\n`;
-      md += '| Test | Rule Reference | Status |\n';
-      md += '|------|----------------|--------|\n';
+      // Sort: failed tests first, then alphabetically by name within each status
+      const sortedTasks = [...tasks].sort((a, b) => {
+        // Failed tests first
+        if (a.status !== b.status) {
+          return a.status === 'fail' ? -1 : 1;
+        }
+        // Then alphabetically by name
+        return a.name.localeCompare(b.name);
+      });
 
-      tasks.forEach(task => {
+      let md = `<details>
+<summary><b>${group} / ${subGroup}</b> (${passCount}/${total} passed)</summary>
+
+| Test | Rule Reference | Status |
+|------|----------------|--------|
+`;
+
+      sortedTasks.forEach(task => {
         const icon = task.status === 'pass' ? '✅' : '❌';
         const ruleRef = task.metadata.ruleReference;
         const tags = (task.metadata.tags || []).map(t => `\`${t}\``).join(' ');
         md += `| **${task.name}**<br>${tags || ''} | ${ruleRef} | ${icon} ${task.status.toUpperCase()} |\n`;
       });
 
+      md += `</details>`;
       return md + '\n';
     }).join('');
   }).join('');
@@ -543,8 +557,18 @@ function renderTraceabilityMatrixMarkdown(matrixData) {
     const passCount = entry.tasks.filter(t => t.status === 'pass').length;
     const total = entry.tasks.length;
 
+    // Sort: failed tests first, then alphabetically by name within each status
+    const sortedTasks = [...entry.tasks].sort((a, b) => {
+      // Failed tests first
+      if (a.status !== b.status) {
+        return a.status === 'fail' ? -1 : 1;
+      }
+      // Then alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
+
     // Build table of tests for this rule
-    const rows = entry.tasks.map(task => {
+    const rows = sortedTasks.map(task => {
       const icon = task.status === 'pass' ? '✅' : '❌';
       return `| ${task.name} | ${icon} |`;
     }).join('\n');
