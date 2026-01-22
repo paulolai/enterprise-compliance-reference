@@ -46,13 +46,26 @@ jobs:
           path: implementations/typescript-vitest/coverage/
           retention-days: 30
 
+      - name: Reorganize Allure Results for Upload
+        if: always()
+        run: |
+          # create api/ subdirectory for compatibility with generate-attestation.cjs
+          mkdir -p allure-results/api
+          cp -r implementations/typescript-vitest/allure-results/* allure-results/api/ || true
+
       - name: Upload Allure Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-api
-          path: implementations/typescript-vitest/allure-results/
+          path: allure-results/api/
           retention-days: 30
+
+      - name: Generate API Attestation
+        # Ensure report is generated even if tests fail
+        if: always()
+        working-directory: ./
+        run: pnpm reports:attestation
 
       - name: Upload API Attestation Reports
         if: always()
@@ -125,12 +138,6 @@ jobs:
         working-directory: ./implementations/react-playwright
         run: pnpm test
 
-      - name: Generate GUI Attestation
-        # Ensure report is generated even if tests fail
-        if: always()
-        working-directory: ./
-        run: pnpm reports:attestation
-
       - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -154,25 +161,6 @@ jobs:
           name: allure-gui
           path: allure-results/gui/
           retention-days: 30
-
-      - name: Upload GUI Attestation Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: attestation-gui
-          path: reports/
-          retention-days: 30
-
-      - name: Display GUI Attestation Summary
-        if: always()
-        working-directory: ./
-        run: |
-          ATTESTATION=$(find reports -name "attestation.md" | tail -1)
-          if [ -n "$ATTESTATION" ]; then
-            echo "## 🖥️ GUI Attestation Report" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            cat "$ATTESTATION" >> $GITHUB_STEP_SUMMARY
-          fi
 
   generate-reports:
     name: Generate Unified Reports
@@ -203,25 +191,55 @@ jobs:
 
       - name: Merge Allure Results
         run: |
-          mkdir -p merged-allure-results
+          # Create merged directory structure expected by generate-attestation.cjs
+          mkdir -p allure-results/api
+          mkdir -p allure-results/gui
           # Check if directories exist before copying to avoid errors if one job failed completely
           if [ -d "artifacts/allure-api" ]; then
-            cp -r artifacts/allure-api/* merged-allure-results/ 2>/dev/null || true
+            cp -r artifacts/allure-api/* allure-results/api/ 2>/dev/null || true
           fi
           if [ -d "artifacts/allure-gui" ]; then
-            cp -r artifacts/allure-gui/* merged-allure-results/ 2>/dev/null || true
+            cp -r artifacts/allure-gui/* allure-results/gui/ 2>/dev/null || true
           fi
 
+      - name: Generate Unified Attestation
+        if: always()
+        run: pnpm reports:attestation
+
       - name: Generate Overall Allure Report
+        if: always()
+        run: |
+          # Merge both api and gui results for the Allure HTML report
+          mkdir -p merged-allure-results
+          if [ -d "allure-results/api" ]; then
+            cp -r allure-results/api/* merged-allure-results/ 2>/dev/null || true
+          fi
+          if [ -d "allure-results/gui" ]; then
+            cp -r allure-results/gui/* merged-allure-results/ 2>/dev/null || true
+          fi
+
+      - name: Generate Overall Allure HTML Report
         # Only run if we have results
         if: hashFiles('merged-allure-results/') != ''
         run: |
-          # Use the root package.json script but pointing to the merged dir
           pnpm exec allure generate merged-allure-results/ --clean --output allure-report/
 
-      - name: Upload Unified Allure Report
+      - name: Upload Unified Reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: allure-report/
+          name: unified-reports
+          path: |
+            reports/
+            allure-report/
           retention-days: 30
+
+      - name: Display Unified Attestation Summary
+        if: always()
+        run: |
+          ATTESTATION=$(find reports -name "attestation.md" | tail -1)
+          if [ -n "$ATTESTATION" ]; then
+            echo "## 📋 Unified Attestation Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$ATTESTATION" >> $GITHUB_STEP_SUMMARY
+          fi

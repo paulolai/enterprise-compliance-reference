@@ -29,7 +29,7 @@ function main() {
   const duration = calculateDuration(tasks);
   const htmlFull = generateHtml(tasks, gitInfo, duration, true);
   const htmlLight = generateHtml(tasks, gitInfo, duration, false);
-  const markdown = generateMarkdown(tasks, gitInfo);
+  const markdown = generateMarkdown(tasks, gitInfo, duration);
 
   // 5. Write Files
   fs.writeFileSync(path.join(outDir, 'attestation-full.html'), htmlFull);
@@ -147,26 +147,45 @@ function calculateDuration(tasks) {
   return (total / 1000).toFixed(2);
 }
 
-function generateHtml(tasks, gitInfo, duration, includeTraces) {
-  // Build Hierarchies
-  const technicalTree = {};
-  const businessTree = {};
-
+function buildTechnicalTree(tasks) {
+  // Technical Tree: ParentSuite (Layer) -> Suite (Domain) -> Tests
+  const tree = {};
   tasks.forEach(task => {
-    // Technical Tree: ParentSuite -> Suite -> Tests
-    const tLayer = task.metadata.technical.parentSuite;
-    const tDomain = task.metadata.technical.suite;
-    if (!technicalTree[tLayer]) technicalTree[tLayer] = {};
-    if (!technicalTree[tLayer][tDomain]) technicalTree[tLayer][tDomain] = [];
-    technicalTree[tLayer][tDomain].push(task);
-
-    // Business Tree: Epic -> Feature -> Tests
-    const bGoal = task.metadata.business.epic;
-    const bDomain = task.metadata.business.feature;
-    if (!businessTree[bGoal]) businessTree[bGoal] = {};
-    if (!businessTree[bGoal][bDomain]) businessTree[bGoal][bDomain] = [];
-    businessTree[bGoal][bDomain].push(task);
+    const layer = task.metadata.technical.parentSuite;
+    const domain = task.metadata.technical.suite;
+    if (!tree[layer]) tree[layer] = {};
+    if (!tree[layer][domain]) tree[layer][domain] = [];
+    tree[layer][domain].push(task);
   });
+  return tree;
+}
+
+function buildBusinessTree(tasks) {
+  // Business Tree: Epic (Business Goal) -> Feature (Domain) -> Tests
+  const tree = {};
+  tasks.forEach(task => {
+    const goal = task.metadata.business.epic;
+    const feature = task.metadata.business.feature;
+    if (!tree[goal]) tree[goal] = {};
+    if (!tree[goal][feature]) tree[goal][feature] = [];
+    tree[goal][feature].push(task);
+  });
+  return tree;
+}
+
+function calculateSummaryStats(tasks) {
+  const total = tasks.length;
+  const passed = tasks.filter(t => t.status === 'pass').length;
+  const failed = tasks.filter(t => t.status === 'fail').length;
+  const duration = tasks.reduce((sum, t) => sum + (t.duration || 0), 0);
+  return { total, passed, failed, duration: (duration / 1000).toFixed(2) };
+}
+
+function generateHtml(tasks, gitInfo, duration, includeTraces) {
+  // Build Hierarchies using shared helpers
+  const technicalTree = buildTechnicalTree(tasks);
+  const businessTree = buildBusinessTree(tasks);
+  const summaryStats = calculateSummaryStats(tasks);
 
   const matrix = generateTraceabilityMatrix(tasks);
   const tagStats = calculateTagStats(tasks);
@@ -389,24 +408,145 @@ function generateTraceabilityMatrix(tasks) {
       ruleMap.get(ref).push(task);
     }
   });
-  
+
   return Array.from(ruleMap.keys()).sort().map(ref => {
     const relevantTasks = ruleMap.get(ref);
-    const testsHtml = relevantTasks.map(t => 
+    const testsHtml = relevantTasks.map(t =>
       `<li><span style="font-size:0.9em">${t.name}</span> <span style="font-size:0.8em">${t.status === 'pass' ? '✅' : '❌'}</span></li>`
     ).join('');
     return `<tr><td style="width:30%; font-weight:500">${ref}</td><td><ul style="list-style:none;padding:0;margin:0">${testsHtml}</ul></td></tr>`;
   }).join('');
 }
 
-function generateMarkdown(tasks, gitInfo) {
+function renderTreeMarkdown(tree, groupLabel, subGroupLabel) {
+  if (Object.keys(tree).length === 0) return 'No data available.';
+
+  return Object.keys(tree).sort().map(group => {
+    const subGroups = tree[group];
+    return Object.keys(subGroups).sort().map(subGroup => {
+      const tasks = subGroups[subGroup];
+      const passCount = tasks.filter(t => t.status === 'pass').length;
+      const failCount = tasks.filter(t => t.status === 'fail').length;
+
+      let md = `### ${group} / ${subGroup}\n\n`;
+      md += `${passCount} passed, ${failCount} failed\n\n`;
+      md += '| Test | Rule Reference | Status |\n';
+      md += '|------|----------------|--------|\n';
+
+      tasks.forEach(task => {
+        const icon = task.status === 'pass' ? '✅' : '❌';
+        const ruleRef = task.metadata.ruleReference;
+        const tags = (task.metadata.tags || []).map(t => `\`${t}\``).join(' ');
+        md += `| **${task.name}**<br>${tags || ''} | ${ruleRef} | ${icon} ${task.status.toUpperCase()} |\n`;
+      });
+
+      return md + '\n';
+    }).join('');
+  }).join('');
+}
+
+function generateMarkdown(tasks, gitInfo, duration) {
+  // Build data using shared helpers
+  const summaryStats = calculateSummaryStats(tasks);
+  const technicalTree = buildTechnicalTree(tasks);
+  const businessTree = buildBusinessTree(tasks);
+  const matrixData = buildTraceabilityMatrixData(tasks);
+  const tagStatsData = buildTagStatsData(tasks);
+
+  // Render sections
+  const technicalView = renderTreeMarkdown(technicalTree, 'Layer', 'Domain');
+  const businessView = renderTreeMarkdown(businessTree, 'Business Goal', 'Feature');
+  const matrixSection = renderTraceabilityMatrixMarkdown(matrixData);
+  const tagStatsSection = renderTagStatsMarkdown(tagStatsData);
+
   return `# QA Attestation
 
 Generated: ${new Date().toLocaleString()}
-Git: ${gitInfo.hash}
+Git: \`${gitInfo.hash}\`
+${gitInfo.dirtyFiles ? '\n⚠️ **Warning**: Uncommitted changes detected in working directory.' : ''}
 
-## Results
-Total Tests: ${tasks.length}`;
+## Executive Summary
+
+| Metric | Value |
+|--------|-------|
+| Total Tests | ${summaryStats.total} |
+| Passed | ${summaryStats.passed} |
+| Failed | ${summaryStats.failed} |
+| Pass Rate | ${summaryStats.total > 0 ? Math.round((summaryStats.passed / summaryStats.total) * 100) : 0}% |
+| Duration | ${summaryStats.duration}s |
+
+---
+
+## Technical View (Architecture)
+
+${technicalView}
+
+---
+
+## Business View (Goals)
+
+${businessView}
+
+---
+
+## Traceability Matrix
+
+| Business Rule (Story) | Verified By |
+|-----------------------|-------------|
+${matrixSection}
+
+---
+
+## Tag Statistics
+
+| Tag | Total | Pass | Fail | Pass % |
+|-----|-------|------|------|--------|
+${tagStatsSection}
+`;
+}
+
+// Shared data builders for markdown rendering (avoid duplicating HTML logic)
+function buildTraceabilityMatrixData(tasks) {
+  const ruleMap = new Map();
+  tasks.forEach(task => {
+    const ref = task.metadata.ruleReference;
+    if (ref && ref !== 'Unknown Reference') {
+      if (!ruleMap.has(ref)) ruleMap.set(ref, []);
+      ruleMap.get(ref).push(task);
+    }
+  });
+  return Array.from(ruleMap.keys()).sort().map(ref => ({
+    ref,
+    tasks: ruleMap.get(ref)
+  }));
+}
+
+function buildTagStatsData(tasks) {
+  const tagStats = {};
+  tasks.forEach(task => {
+    (task.metadata.tags || []).forEach(tag => {
+      if (!tagStats[tag]) tagStats[tag] = { total: 0, passed: 0, failed: 0 };
+      tagStats[tag].total++;
+      if (task.status === 'pass') tagStats[tag].passed++;
+      else tagStats[tag].failed++;
+    });
+  });
+  return tagStats;
+}
+
+function renderTraceabilityMatrixMarkdown(matrixData) {
+  return matrixData.map(entry => {
+    const tests = entry.tasks.map(t => `- ${t.name} ${t.status === 'pass' ? '✅' : '❌'}`).join('\n');
+    return `| ${entry.ref} | ${tests} |`;
+  }).join('\n');
+}
+
+function renderTagStatsMarkdown(tagStatsData) {
+  return Object.keys(tagStatsData).sort().map(tag => {
+    const stats = tagStatsData[tag];
+    const passRate = Math.round((stats.passed / stats.total) * 100);
+    return `| \`${tag}\` | ${stats.total} | ${stats.passed} | ${stats.failed} | ${passRate}% |`;
+  }).join('\n');
 }
 
 main();
