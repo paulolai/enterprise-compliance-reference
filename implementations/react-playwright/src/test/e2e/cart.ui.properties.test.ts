@@ -72,6 +72,9 @@ invariant('VIP badge shown for VIP users', {
   await page.getByTestId('password-input').fill('password');
   await page.getByTestId('login-button').click();
 
+  // Wait for login to complete and user state to sync
+  await page.waitForURL(/\/cart/, { timeout: 3000 });
+
   // Navigate to products and add item
   await page.goto(`/products/${productCatalog[0].sku}`);
   await page.getByTestId('add-to-cart').click();
@@ -102,6 +105,9 @@ invariant('VIP badge NOT shown for non-VIP users', {
   await page.getByTestId('email-input').fill(newEmail);
   await page.getByTestId('password-input').fill('password');
   await page.getByTestId('login-button').click();
+
+  // Wait for login to complete and user state to sync
+  await page.waitForURL(/\/cart/, { timeout: 3000 });
 
   // Navigate to products and add item
   await page.goto(`/products/${productCatalog[0].sku}`);
