@@ -54,12 +54,21 @@ jobs:
           path: implementations/typescript-vitest/allure-results/
           retention-days: 30
 
+      - name: Upload Attestation Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-reports
+          path: implementations/typescript-vitest/reports/
+          retention-days: 30
+
       - name: Display Attestation Summary
         if: always()
+        working-directory: ./implementations/typescript-vitest
         run: |
           ATTESTATION=$(find reports -name "attestation-full.html" | tail -1)
           if [ -n "$ATTESTATION" ]; then
-            echo "## Attestation Report" >> $GITHUB_STEP_SUMMARY
+            echo "## 📊 Attestation Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             cat "$ATTESTATION" >> $GITHUB_STEP_SUMMARY
           fi
