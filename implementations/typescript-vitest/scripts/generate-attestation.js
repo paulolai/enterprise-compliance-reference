@@ -199,7 +199,7 @@ function generateHtml(tasks, gitInfo, duration, includeTraces) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Test Attestation Report</title>
+<title>Attestation Report</title>
 <style>
   :root { --primary: #0366d6; --bg: #fff; --text: #24292e; --border: #e1e4e8; --pass: #22863a; --fail: #cb2431; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1280px; margin: 0 auto; padding: 20px; color: var(--text); background-color: var(--bg); }
@@ -255,7 +255,7 @@ function openTab(evt, tabName) {
 </script>
 </head>
 <body>
-  <h1>Test Attestation Report</h1>
+  <h1>Attestation Report</h1>
 
   <div class="metadata">
     <div class="metadata-item"><span class="metadata-label">Generated</span><span class="metadata-value">${new Date().toLocaleString()}</span></div>
@@ -464,7 +464,7 @@ function generateMarkdown(tasks, gitInfo, duration) {
   const matrixSection = renderTraceabilityMatrixMarkdown(matrixData);
   const tagStatsSection = renderTagStatsMarkdown(tagStatsData);
 
-  return `# Test Attestation
+  return `# Attestation
 
 Generated: ${new Date().toLocaleString()}
 Git: \`${gitInfo.hash}\`
