@@ -2,9 +2,21 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import app from './src/server/index'
 import http from 'http'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    preserveSymlinks: true,
+    alias: {
+      '@executable-specs/shared': path.resolve(__dirname, '../shared/src'),
+      '@executable-specs/shared/fixtures': path.resolve(__dirname, '../shared/fixtures'),
+    },
+    modules: ['node_modules', '../shared/node_modules'],
+  },
+  optimizeDeps: {
+    exclude: ['@executable-specs/shared', 'zod', 'fast-check'],
+  },
   plugins: [
     react(),
     {
