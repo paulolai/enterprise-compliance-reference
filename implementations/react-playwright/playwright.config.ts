@@ -21,6 +21,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
+  // Run TypeScript type check before tests to catch import/typing errors early
+  // This is much faster than discovering errors during Playwright execution
+  globalSetup: './playwright.global-setup.ts',
+
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:5173',
