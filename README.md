@@ -2,6 +2,9 @@
 
 **An up-to-date public recreation of the reference implementation built at Commonwealth Bank.**
 
+> [!NOTE] Work in Progress (WIP)
+> This repository demonstrates ATDD (Acceptance Test-Driven Development) in practice. The testing infrastructure was built first to enable test runs before the full application implementation was completed. See the [folder structure](#project-structure) for the current state.
+
 > *How to enable developers to own Quality & Compliance without slowing them down.*
 
 ---
@@ -110,16 +113,18 @@ It solves a specific, painful problem found in enterprises:
 ## 🛠 Getting Started
 
 ### The "Clean Room" Teaching Stack
-We use a modern, zero-config stack designed for instant learning, prioritizing **Clone-and-Run** simplicity.
+We use a modern stack designed for instant learning, prioritizing **Clone-and-Run** simplicity.
 
+<!-- TODO: Update this table with current state. Remove shadcn/ui, SQLite, Drizzle references (not installed). Document actual UI library and state management (Zustand). -->
 | Layer | Technology | Rationale |
 | --- | --- | --- |
 | **Frontend** | **Vite + React** | Instant feedback loops. No "Server Component" confusion. |
-| **UI Lib** | **shadcn/ui** | Accessible code that lives in your repo (not `node_modules`). |
+| **UI Lib** | **[TODO: Document actual UI library]** | <!-- TODO: shadcn/ui not currently installed --> |
 | **Backend** | **Hono** | The "Feynman" of Backends. Ultra-light, standards-based replacement for Express. |
-| **Database** | **SQLite + Drizzle** | **Zero DevOps.** It's just a file. No Docker required. |
+| **Database** | **[TODO: Document actual DB layer]** | <!-- TODO: SQLite + Drizzle not currently installed --> |
 | **Testing** | **Vitest + Playwright** | The "Double Loop" engines for ATDD. |
 
+<!-- TODO: Update rationale section after tech stack is finalized -->
 #### Why this specific stack?
 *   **Hono:** Removes boilerplate. Lets you teach "API Concepts" without fighting the framework.
 *   **SQLite:** Removes the "DevOps Wall". Committable "seed" databases ensure every student starts with the same state.
@@ -128,14 +133,46 @@ We use a modern, zero-config stack designed for instant learning, prioritizing *
 ### Running the Project
 
 ```bash
-# 1. Install dependencies
+# 1. Install dependencies (runs from root)
 npm install
 
-# 2. Run the full ATDD Loop (API + GUI)
+# 2. Run the Vitest unit tests (pricing engine layer)
 npm test
 
-# 3. Start the Dev Environment (App + Tests)
+# 3. Navigate to React app and start dev server
+cd implementations/react-playwright
 npm run dev
+
+# 4. Run Playwright E2E tests (from react-playwright dir)
+cd implementations/react-playwright
+npm test
+```
+
+## 📁 Project Structure
+
+This repository follows a multi-implementation structure to demonstrate ATDD patterns at different layers:
+
+```
+implementations/
+├── typescript-vitest/     # Unit test layer: Pricing engine + Vitest
+│   ├── src/               # Core business logic (PricingEngine)
+│   ├── test/              # Property-based tests, integration tests
+│   └── scripts/           # Attestation report generation
+│
+├── react-playwright/      # E2E test layer: React app + Playwright + Hono API
+│   ├── src/
+│   │   ├── components/    # Cart, checkout, product components
+│   │   ├── pages/         # Home, Products, Cart, Checkout, Login, Register
+│   │   ├── server/        # Hono backend API (pricing, auth)
+│   │   ├── store/         # Zustand state management
+│   │   └── providers/     # React context providers
+│   └── test-results/      # Playwright test output
+│
+├── shared/                # Shared types and utilities
+└── typescript-cucumber/   # Cucumber implementation (documentation/contrast only)
+
+reports/                   # Generated attestation reports
+docs/                      # Business rules, patterns, and guidelines
 ```
 
 ### Documentation Automation
