@@ -29,7 +29,9 @@ export default class AttestationReporter implements Reporter {
       fs.unlinkSync(currentRunFile);
     }
 
-    const reportsRoot = path.resolve(process.cwd(), '../../reports');
+    const reportsRoot = process.env.ATTESTATION_REPORT_DIR 
+      ? path.resolve(process.env.ATTESTATION_REPORT_DIR)
+      : path.resolve(process.cwd(), '../../reports');
     const reportDir = path.join(reportsRoot, timestamp);
     
     if (!fs.existsSync(reportDir)) {

@@ -1,11 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { tracer } from './modules/tracer';
 import AttestationReporter from './reporters/attestation-reporter';
 import { File } from 'vitest';
+import os from 'os';
 
 describe('Report Generation Validation', () => {
+  let tempDir: string;
+
+  afterEach(() => {
+    // Cleanup
+    if (tempDir && fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+    delete process.env.ATTESTATION_REPORT_DIR;
+  });
 
   it('Metadata is registered correctly for invariants', () => {
     // Register some test metadata
@@ -45,6 +55,10 @@ describe('Report Generation Validation', () => {
   });
 
   it('Generates a valid report artifact', () => {
+    // Setup temp dir for reports
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vitest-reports-'));
+    process.env.ATTESTATION_REPORT_DIR = tempDir;
+
     const reporter = new AttestationReporter();
     reporter.onInit();
 
@@ -86,12 +100,9 @@ describe('Report Generation Validation', () => {
     reporter.onFinished(mockFiles);
 
     // Validation
-    const reportsRoot = path.resolve(process.cwd(), '../../reports');
-    expect(fs.existsSync(reportsRoot)).toBe(true);
-
     // Get all report directories sorted by date (newest first)
-    const reportDirs = fs.readdirSync(reportsRoot)
-      .map(name => path.join(reportsRoot, name))
+    const reportDirs = fs.readdirSync(tempDir)
+      .map(name => path.join(tempDir, name))
       .filter(fullPath => fs.statSync(fullPath).isDirectory())
       .sort((a, b) => {
         const statA = fs.statSync(a);
