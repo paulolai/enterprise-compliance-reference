@@ -67,19 +67,22 @@ export class TestTracer<TInput = unknown, TOutput = unknown> {
   private logCounts: Map<string, number> = new Map();
   private maxLogsPerTest: number = 5;
 
-  constructor() {
+  constructor(options: { isolated?: boolean } = {}) {
     // Check if there's already a current run ID (from another worker)
     const currentRunFile = path.join(os.tmpdir(), 'vitest-current-run-id.txt');
     let runId: string;
 
-    if (fs.existsSync(currentRunFile)) {
+    if (!options.isolated && fs.existsSync(currentRunFile)) {
       // Use existing run ID
       runId = fs.readFileSync(currentRunFile, 'utf-8').trim();
     } else {
       // Create new run ID
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       runId = `run-${timestamp}-${Math.random().toString(36).substr(2, 6)}`;
-      fs.writeFileSync(currentRunFile, runId);
+      
+      if (!options.isolated) {
+        fs.writeFileSync(currentRunFile, runId);
+      }
     }
 
     this.runDir = path.join(os.tmpdir(), `vitest-runs`, runId);

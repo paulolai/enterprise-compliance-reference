@@ -5,7 +5,7 @@ describe('Tracer Integration: File Operations & Persistence', () => {
   let testTracer: TestTracer;
   
   beforeEach(() => {
-    testTracer = new TestTracer();
+    testTracer = new TestTracer({ isolated: true });
     testTracer.clear();
   });
 
