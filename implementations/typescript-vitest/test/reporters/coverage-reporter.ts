@@ -13,7 +13,8 @@ export default class CoverageReporter implements Reporter {
   }
 
   onInit() {
-    this.runDir = path.resolve(process.cwd(), '../../reports/coverage');
+    // Project root is 4 levels up from this file
+    this.runDir = path.resolve(__dirname, '../../../../reports/coverage');
     if (!fs.existsSync(this.runDir)) {
       fs.mkdirSync(this.runDir, { recursive: true });
     }
@@ -21,17 +22,10 @@ export default class CoverageReporter implements Reporter {
 
   onFinished(files: File[]) {
     try {
-      console.log('[CoverageReporter] Starting domain coverage calculation...');
-      // Get all test files
       const testFiles = files.map(f => f.filepath);
-
-      // Extract rule references from tests
       const ruleReferences = this.parser.extractRuleReferences(testFiles);
-
-      // Calculate domain coverage
       const coverage = this.parser.calculateCoverage(ruleReferences);
 
-      // Save JSON and Markdown reports
       fs.writeFileSync(
         path.join(this.runDir!, 'domain-coverage.json'),
         JSON.stringify(coverage, null, 2)

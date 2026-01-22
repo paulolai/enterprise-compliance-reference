@@ -16,16 +16,18 @@ export default defineConfig({
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       all: true,
       include: [
-        resolve(__dirname, 'src/**/*.ts'),
-        resolve(__dirname, '../shared/src/**/*.ts')
+        'src/**/*.ts',
+        '../shared/src/**/*.ts'
       ],
       exclude: [
-        'node_modules/**',
-        'test/**',
+        '**/node_modules/**',
+        '**/test/**',
         '**/*.test.ts',
         '**/*.spec.ts',
         '**/coverage/**',
-        '**/dist/**'
+        '**/dist/**',
+        '**/allure-results/**',
+        '**/*.config.ts'
       ],
       // Enforce quality gates
       statements: 85,

@@ -73,9 +73,12 @@ export default class AttestationReporter implements Reporter {
     };
 
     try {
+      // Project root is 4 levels up from this file
+      // implementations/typescript-vitest/test/reporters/attestation-reporter.ts
+      const rootDir = path.resolve(__dirname, '../../../../');
+      
       // Domain Coverage
-      const reportsRoot = path.resolve(process.cwd(), '../../reports');
-      const domainPath = path.join(reportsRoot, 'coverage/domain-coverage.json');
+      const domainPath = path.join(rootDir, 'reports/coverage/domain-coverage.json');
       if (fs.existsSync(domainPath)) {
         const domain = JSON.parse(fs.readFileSync(domainPath, 'utf-8'));
         stats.domain = domain.summary.coveragePercentage;
@@ -84,7 +87,7 @@ export default class AttestationReporter implements Reporter {
       }
 
       // Code Coverage
-      const codePath = path.resolve(process.cwd(), 'coverage/coverage-summary.json');
+      const codePath = path.resolve(__dirname, '../../coverage/coverage-summary.json');
       if (fs.existsSync(codePath)) {
         const code = JSON.parse(fs.readFileSync(codePath, 'utf-8'));
         stats.code = code.total.lines.pct;
