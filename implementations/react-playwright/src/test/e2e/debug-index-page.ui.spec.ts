@@ -24,9 +24,9 @@ invariant('Debug index page loads successfully', {
 
   expect(response.status()).toBeLessThan(400);
 
-  // Check for header
-  const heading = await page.getByRole('heading', { name: /debug/i }).textContent();
-  expect(heading).toBeTruthy();
+  // Check for header - use exact match to avoid strict mode violation
+  const heading = await page.getByRole('heading', { name: 'Debug Index' }).textContent();
+  expect(heading).toBe('Debug Index');
 });
 
 invariant('Debug index shows all debug scenarios', {
@@ -81,14 +81,6 @@ invariant('Reset button clears all state', {
   rule: 'Reset button clears cart, user, and session state',
   tags: ['@debug', '@reset']
 }, async ({ page }) => {
-  const response = await page.goto('/debug');
-
-  if (response && response.status() === 404) {
-    // Debug index page not implemented yet
-    expect(true).toBe(true);
-    return;
-  }
-
   // First, set up some state
   await page.goto('/products/WIRELESS-EARBUDS');
   await page.getByTestId('add-to-cart').click();
@@ -101,8 +93,12 @@ invariant('Reset button clears all state', {
   if (await resetButton.isVisible()) {
     await resetButton.click();
 
+    // Navigate back to home to check the cart badge
+    await page.goto('/');
+
     // Verify state is cleared
     const cartBadge = page.getByTestId('cart-badge');
+    await cartBadge.waitFor({ state: 'visible' });
     const badgeText = await cartBadge.textContent();
     expect(badgeText).toBe('0');
   }
@@ -170,8 +166,8 @@ invariant('Debug index page is marked as development only', {
     return;
   }
 
-  // Check for warning banner
-  const warningBanner = page.getByText(/development|debug|test only/i);
+  // Check for warning banner - use specific text to avoid strict mode violation
+  const warningBanner = page.getByText('Development Only');
   await expect(warningBanner).toBeVisible();
 });
 
@@ -180,24 +176,18 @@ invariant('Empty Cart scenario creates empty cart', {
   rule: 'Empty Cart scenario clears all items',
   tags: ['@debug', '@teleport', '@scenario']
 }, async ({ page }) => {
-  const response = await page.goto('/debug');
-
-  if (response && response.status() === 404) {
-    // Debug index page not implemented yet
-    expect(true).toBe(true);
-    return;
-  }
-
   const emptyCartScenario = page.getByText(/empty cart/i);
   const applyButton = emptyCartScenario.locator('..').getByRole('button', { name: /apply/i });
 
   if (await applyButton.isVisible()) {
     await applyButton.click();
 
-    // Verify cart is empty
-    const cartBadge = page.getByTestId('cart-badge');
-    const badgeText = await cartBadge.textContent();
-    expect(badgeText).toBe('0');
+    // Navigate to cart to verify state
+    await page.goto('/cart');
+
+    // Verify cart is empty (should show empty message)
+    const emptyCartMessage = page.getByText('Your cart is empty');
+    await expect(emptyCartMessage).toBeVisible();
   }
 });
 
@@ -206,24 +196,18 @@ invariant('VIP User scenario creates VIP customer', {
   rule: 'VIP User scenario creates customer with tenure > 2',
   tags: ['@debug', '@teleport', '@scenario']
 }, async ({ page }) => {
-  const response = await page.goto('/debug');
-
-  if (response && response.status() === 404) {
-    // Debug index page not implemented yet
-    expect(true).toBe(true);
-    return;
-  }
-
   const vipScenario = page.getByText(/vip user/i, { exact: false });
   const applyButton = vipScenario.locator('..').getByRole('button', { name: /apply/i });
 
   if (await applyButton.isVisible()) {
     await applyButton.click();
 
-    // Navigate to checkout to verify VIP badge
+    // Add an item to cart first
     await page.goto('/products/WIRELESS-EARBUDS');
     await page.getByTestId('add-to-cart').click();
     await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
+
+    // Navigate to cart to verify VIP badge
     await page.goto('/cart');
 
     const vipBadge = page.getByTestId('vip-user-label');

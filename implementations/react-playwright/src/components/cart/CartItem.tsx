@@ -4,9 +4,10 @@ import { DiscountBadge } from '../ui/DiscountBadge';
 
 interface CartItemProps {
   sku: string;
+  testId?: string;
 }
 
-export function CartItem({ sku }: CartItemProps) {
+export function CartItem({ sku, testId }: CartItemProps) {
   const item = useCartStore((state) => state.items.find((i) => i.sku === sku));
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -50,11 +51,12 @@ export function CartItem({ sku }: CartItemProps) {
       </div>
 
       <div className="cart-item-pricing">
-        <PriceDisplay amount={item.price} label="Price" />
+        <PriceDisplay amount={item.price} label="Price" testId={`cart-item-price-${sku}`} />
         {bulkDiscount > 0 && <DiscountBadge amount={bulkDiscount} variant="bulk" sku={sku} />}
         <PriceDisplay
           amount={lineItemResult?.totalAfterBulk || 0}
           label="Subtotal"
+          testId={`cart-item-subtotal-${sku}`}
         />
       </div>
 

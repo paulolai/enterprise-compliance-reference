@@ -8,6 +8,7 @@ import path from 'path'
 export default defineConfig({
   resolve: {
     alias: {
+      '@/lib': path.resolve(__dirname, './src/lib'),
       '@executable-specs/shared': path.resolve(__dirname, '../shared/src'),
       '@executable-specs/shared/fixtures': path.resolve(__dirname, '../shared/fixtures'),
     },
@@ -21,9 +22,6 @@ export default defineConfig({
       'drizzle-orm',
       'stripe',
     ],
-  },
-  ssr: {
-    noExternal: ['react', 'react-dom'],
   },
   plugins: [
     react(),

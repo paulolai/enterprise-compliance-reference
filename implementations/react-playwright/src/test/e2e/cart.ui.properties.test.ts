@@ -187,7 +187,7 @@ invariant('Add to cart preserves price at time of add', {
   tags: ['@pricing', '@preservation']
 }, async ({ page }) => {
   const product = productCatalog[0];
-  const originalPrice = product.priceInCents;
+  const originalPrice = product.price; // price is stored in cents
 
   await page.goto(`/products/${product.sku}`);
 
@@ -202,9 +202,10 @@ invariant('Add to cart preserves price at time of add', {
   // Check that the cart shows the original price
   const itemPriceElement = page.getByTestId(`cart-item-price-${product.sku}`);
   const priceText = await itemPriceElement.textContent();
+  // Price is displayed as "$89.00" - we extract 8900 from it
   const cartPrice = parseInt(priceText?.replace(/[^0-9]/g, '') || '0');
 
-  // Price should match the original price (in cents, displayed in dollars)
+  // Price should match the original price (in cents)
   expect(cartPrice).toBe(originalPrice);
 });
 
