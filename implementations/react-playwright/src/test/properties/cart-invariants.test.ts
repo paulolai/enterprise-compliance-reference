@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import * as fc from 'fast-check';
 import { PricingEngine, ShippingMethod } from '@executable-specs/shared';
-import { itemArb, userArb, shippingMethodArb, cartArb } from '@executable-specs/shared/fixtures';
+import { userArb, shippingMethodArb, cartArb } from '@executable-specs/shared/fixtures';
 
 test.describe('Cart Domain Invariants (PBT)', () => {
   
