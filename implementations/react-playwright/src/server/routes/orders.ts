@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { logger } from '../../lib/logger';
 import { randomUUID } from 'crypto';
 import { db, OrderStatus } from '../../../../shared/src/index-server';
 import { orders, orderItems } from '../../../../shared/src/index-server';
@@ -82,7 +83,7 @@ router.post('/', async (c) => {
       total,
     });
   } catch (error) {
-    console.error('Order creation error:', error);
+    logger.error('Order creation failed', error, { action: 'create_order' });
     return c.json({ error: 'Failed to create order' }, 500);
   }
 });
@@ -129,11 +130,11 @@ router.get('/:id', async (c) => {
         })),
       });
     } catch (parseError) {
-      console.error('JSON parse error for order:', parseError);
+      logger.error('Order data parse failed', parseError, { action: 'parse_order' });
       return c.json({ error: 'Invalid order data format' }, 400);
     }
   } catch (error) {
-    console.error('Order retrieval error:', error);
+    logger.error('Order retrieval failed', error, { action: 'get_order' });
     return c.json({ error: 'Failed to retrieve order' }, 500);
   }
 });
@@ -160,7 +161,7 @@ router.get('/user/:userId', async (c) => {
       })),
     });
   } catch (error) {
-    console.error('User orders retrieval error:', error);
+    logger.error('User orders retrieval failed', error, { action: 'get_user_orders' });
     return c.json({ error: 'Failed to retrieve user orders' }, 500);
   }
 });
@@ -184,7 +185,7 @@ router.delete('/:id', async (c) => {
 
     return c.json({ success: true });
   } catch (error) {
-    console.error('Order deletion error:', error);
+    logger.error('Order deletion failed', error, { action: 'delete_order' });
     return c.json({ error: 'Failed to delete order' }, 500);
   }
 });

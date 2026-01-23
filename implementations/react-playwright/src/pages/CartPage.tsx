@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cartStore';
 import { CartBadge } from '../components/cart/CartBadge';
 import { CartItem as CartItemComponent } from '../components/cart/CartItem';
 import { CartSummary } from '../components/cart/CartSummary';
+import { logger } from '../lib/logger';
 
 export function CartPage() {
   const items = useCartStore((state) => state.items);
@@ -35,7 +36,7 @@ export function CartPage() {
           useCartStore.setState({ pricingResult: result });
         }
       } catch (error) {
-        console.error('Failed to fetch pricing:', error);
+        logger.error('Pricing fetch failed', error, { page: 'cart' });
       }
     };
 

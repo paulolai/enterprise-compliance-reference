@@ -14,7 +14,20 @@
  * @see PRODUCTION_READY_PLAN.md Part 3.1: Structured Logging
  */
 
-import { env } from './env';
+/**
+ * Check if running in browser
+ */
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+
+/**
+ * Get environment variable safely (works in both Node and browser)
+ */
+const getEnvVar = (key: string, defaultValue: string): string => {
+  if (isBrowser || typeof process === 'undefined') {
+    return defaultValue;
+  }
+  return process.env[key] ?? defaultValue;
+};
 
 /**
  * Log level enum
@@ -48,7 +61,9 @@ const parseLogLevel = (level: string): LogLevel => {
  * Current log level threshold
  * Logs below this level are filtered out.
  */
-export const currentLogLevel = parseLogLevel(env.LOG_LEVEL);
+export const currentLogLevel = parseLogLevel(
+  getEnvVar('LOG_LEVEL', 'info')
+);
 
 /**
  * Request ID token for async context
@@ -65,18 +80,23 @@ let requestIdStore: {
  */
 export function initAsyncContext(): void {
   // Lazy load async_hooks only in Node.js
-  if (typeof process === 'undefined' || requestRequestIdStore) {
+  if (typeof process === 'undefined' || requestIdStore) {
     return;
   }
 
-  const { AsyncLocalStorage } = require('node:async_hooks');
-  const context = new AsyncLocalStorage<string>();
+  try {
+    const { AsyncLocalStorage } = require('node:async_hooks');
+    const context = new AsyncLocalStorage<string>();
 
-  requestRequestIdStore = {
-    getId: () => context.getStore(),
-    setId: (id: string) => context.run(id, () => {}),
-    clear: () => context.run('', () => {}),
-  };
+    requestIdStore = {
+      getId: () => context.getStore(),
+      setId: (id: string) => context.run(id, () => {}),
+      clear: () => context.run('', () => {}),
+    };
+  } catch (e) {
+    // Silently fail in environments where node:async_hooks is not available
+    // (e.g., Vite bundler, browser, etc.)
+  }
 }
 
 /**
@@ -99,21 +119,21 @@ export function generateRequestId(): string {
  * Get current request ID from async context
  */
 export function getRequestId(): string | undefined {
-  return requestRequestIdStore?.getId();
+  return requestIdStore?.getId();
 }
 
 /**
  * Set request ID in async context
  */
 export function setRequestId(id: string): void {
-  requestRequestIdStore?.setId(id);
+  requestIdStore?.setId(id);
 }
 
 /**
  * Clear request ID from async context
  */
 export function clearRequestId(): void {
-  requestRequestIdStore?.clear();
+  requestIdStore?.clear();
 }
 
 /**
@@ -454,7 +474,7 @@ export function prettyPrint(entry: LogEntry): string {
 /**
  * Enable pretty printing for console output in development
  */
-if (env.NODE_ENV === 'development') {
+if (getEnvVar('NODE_ENV', 'development') === 'development') {
   const originalConsole = { ...console };
   logger.log = function (level: LogLevel, message: string, context?: LogContext) {
     if (level < currentLogLevel) {

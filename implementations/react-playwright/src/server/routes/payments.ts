@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { logger } from '../../lib/logger';
 import Stripe from 'stripe';
 import { db, OrderStatus } from '../../../../shared/src/index-server';
 import { orders, orderItems } from '../../../../shared/src/index-server';
@@ -97,12 +98,12 @@ router.post('/create-intent', async (c) => {
     });
   } catch (error) {
     if (error instanceof Stripe.errors.StripeError) {
-      console.error('Stripe error:', error.message);
+      logger.error('StripeAPI error', error.message, { action: 'create_intent' });
       const statusCode: StatusCode = (error.statusCode || 500) as StatusCode;
       return c.json({ error: error.message }, statusCode);
     }
 
-    console.error('PaymentIntent creation error:', error);
+    logger.error('PaymentIntent creation failed', error, { action: 'create_intent' });
     return c.json({ error: 'Failed to create PaymentIntent' }, 500);
   }
 });
@@ -262,12 +263,12 @@ router.post('/confirm', async (c) => {
     });
   } catch (error) {
     if (error instanceof Stripe.errors.StripeError) {
-      console.error('Stripe error:', error.message);
+      logger.error('StripeAPI error', error.message, { action: 'confirm_payment' });
       const statusCode: StatusCode = (error.statusCode || 500) as StatusCode;
       return c.json({ error: error.message }, statusCode);
     }
 
-    console.error('Payment confirmation error:', error);
+    logger.error('Payment confirmation failed', error, { action: 'confirm_payment' });
     return c.json({ error: 'Failed to confirm payment' }, 500);
   }
 });
@@ -316,12 +317,12 @@ router.post('/cancel', async (c) => {
     });
   } catch (error) {
     if (error instanceof Stripe.errors.StripeError) {
-      console.error('Stripe error:', error.message);
+      logger.error('StripeAPI error', error.message, { action: 'cancel_payment' });
       const statusCode: StatusCode = (error.statusCode || 500) as StatusCode;
       return c.json({ error: error.message }, statusCode);
     }
 
-    console.error('Payment cancellation error:', error);
+    logger.error('Payment cancellation failed', error, { action: 'cancel_payment' });
     return c.json({ error: 'Failed to cancel payment' }, 500);
   }
 });
@@ -363,12 +364,12 @@ router.get('/intent/:id', async (c) => {
     });
   } catch (error) {
     if (error instanceof Stripe.errors.StripeError) {
-      console.error('Stripe error:', error.message);
+      logger.error('StripeAPI error', error.message, { action: 'get_intent' });
       const statusCode: StatusCode = (error.statusCode || 500) as StatusCode;
       return c.json({ error: error.message }, statusCode);
     }
 
-    console.error('PaymentIntent retrieval error:', error);
+    logger.error('PaymentIntent retrieval failed', error, { action: 'get_intent' });
     return c.json({ error: 'Failed to retrieve PaymentIntent' }, 500);
   }
 });

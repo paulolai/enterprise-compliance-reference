@@ -1,5 +1,6 @@
 // Simple auth context for React components
 import React from 'react';
+import { logger } from './logger';
 
 export interface User {
   name: string;
@@ -124,7 +125,7 @@ export class AuthClient {
         };
       }
     } catch (e) {
-      console.warn('Failed to load auth from storage:', e);
+      logger.warn('Auth storage load failed', { component: 'auth-provider', error: e });
     }
   }
 

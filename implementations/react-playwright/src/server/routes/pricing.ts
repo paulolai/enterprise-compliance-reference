@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { logger } from '../../lib/logger';
 import { PricingEngine, CartItemSchema, UserSchema, ShippingMethodSchema } from '../../../../shared/src';
 
 const router = new Hono();
@@ -13,7 +14,7 @@ router.post('/calculate', async (c) => {
     const result = PricingEngine.calculate(items, user, method);
     return c.json(result);
   } catch (error) {
-    console.error('Pricing calculation error:', error);
+    logger.error('Pricing calculation failed', error, { action: 'calculate' });
     return c.json({ error: 'Invalid request or calculation failed' }, 400);
   }
 });

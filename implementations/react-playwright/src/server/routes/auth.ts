@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { logger } from '../../lib/logger';
 
 /**
  * Mock Authentication Routes
@@ -35,7 +36,7 @@ router.post('/login', async (c) => {
 
     return c.json({ error: 'Invalid credentials' }, 401);
   } catch (error) {
-    console.error('Auth error:', error);
+    logger.error('Auth error', error, { action: 'login' });
     return c.json({ error: 'Login failed' }, 400);
   }
 });
@@ -62,7 +63,7 @@ router.post('/register', async (c) => {
       accessToken: 'mock-token-' + Math.random().toString(36).substr(2),
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration failed', error, { action: 'register' });
     return c.json({ error: 'Registration failed' }, 400);
   }
 });

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { logger } from '../../lib/logger';
 import { db, seedProducts } from '../../../../shared/src/index-server';
 import { products } from '../../../../shared/src/index-server';
 import { eq } from 'drizzle-orm';
@@ -28,7 +29,7 @@ router.get('/', async (c) => {
       })),
     });
   } catch (error) {
-    console.error('Products retrieval error:', error);
+    logger.error('Products retrieval failed', error, { action: 'list_products' });
     return c.json({ error: 'Failed to retrieve products' }, 500);
   }
 });
@@ -59,7 +60,7 @@ router.get('/:sku', async (c) => {
       imageUrl: product.imageUrl,
     });
   } catch (error) {
-    console.error('Product retrieval error:', error);
+    logger.error('Product retrieval failed', error, { action: 'get_product' });
     return c.json({ error: 'Failed to retrieve product' }, 500);
   }
 });
