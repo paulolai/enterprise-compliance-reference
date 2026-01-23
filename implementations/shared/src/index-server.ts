@@ -15,9 +15,9 @@
  */
 
 // Re-export all browser-safe exports for convenience
-export * from './index';
+export * from './index.ts';
 
 // Database exports (server-only - require Node.js)
-export * from './db/schema';
-export { db, sqlite, connect, close } from './db';
-export { seedProducts, reseedProducts, productsToSeed } from './db/seed';
+export * from './db/schema.ts';
+export { db, sqlite, connect, close } from './db/index.ts';
+export { seedProducts, reseedProducts, productsToSeed } from './db/seed.ts';

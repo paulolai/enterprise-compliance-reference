@@ -109,9 +109,9 @@ export class AuthClient {
   /**
    * For debug/testing purposes ONLY. Sets the user state directly.
    */
-  debugSetUser(user: any): void {
+  debugSetUser(user: User | null): void {
     this.state = {
-      user: user,
+      user,
       token: 'debug-token',
       isAuthenticated: !!user,
     };

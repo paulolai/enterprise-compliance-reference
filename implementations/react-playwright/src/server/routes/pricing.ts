@@ -1,21 +1,20 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
-import { PricingEngine, CartItemSchema, UserSchema, ShippingMethodSchema } from '../../../../shared/src';
+import { PricingEngine } from '../../../../shared/src';
+import { validateBody } from '../../lib/validation/middleware';
+import { requestSchemas } from '../../lib/validation/schemas';
 
 const router = new Hono();
 
-router.post('/calculate', async (c) => {
-  try {
-    const body = await c.req.json();
-    const items = CartItemSchema.array().parse(body.items);
-    const user = UserSchema.parse(body.user);
-    const method = ShippingMethodSchema.parse(body.method);
+router.post('/calculate', validateBody(requestSchemas.calculatePricing), async (c) => {
+  const { items, user, method } = c.get('validatedBody');
 
-    const result = PricingEngine.calculate(items, user, method);
+  try {
+    const result = PricingEngine.calculate(items, user || undefined, method);
     return c.json(result);
   } catch (error) {
     logger.error('Pricing calculation failed', error, { action: 'calculate' });
-    return c.json({ error: 'Invalid request or calculation failed' }, 400);
+    return c.json({ error: 'Calculation failed' }, 500);
   }
 });
 

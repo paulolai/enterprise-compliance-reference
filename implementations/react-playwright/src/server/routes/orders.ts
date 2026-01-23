@@ -4,6 +4,10 @@ import { randomUUID } from 'crypto';
 import { db, OrderStatus } from '../../../../shared/src/index-server';
 import { orders, orderItems } from '../../../../shared/src/index-server';
 import { eq } from 'drizzle-orm';
+import { validateBody, validateParams, validateQuery } from '../../lib/validation/middleware';
+import { requestSchemas, paramSchemas, querySchemas } from '../../lib/validation/schemas';
+import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
+import { isFailure } from '../../../../shared/src/result.ts';
 
 const router = new Hono();
 
@@ -11,20 +15,14 @@ const router = new Hono();
  * POST /api/orders
  * Create a new order from cart state
  */
-router.post('/', async (c) => {
+router.post('/', validateBody(requestSchemas.createOrder), async (c) => {
   try {
-    const body = await c.req.json();
-    const { userId, items, total, pricingResult, shippingAddress, stripePaymentIntentId } = body;
+    const { userId, items, total, pricingResult, shippingAddress, stripePaymentIntentId } = c.get('validatedBody');
 
-    // Validation
-    if (!userId) {
-      return c.json({ error: 'userId is required' }, 400);
-    }
-    if (!Array.isArray(items) || items.length === 0) {
-      return c.json({ error: 'Cart must have at least one item' }, 400);
-    }
-    if (!stripePaymentIntentId) {
-      return c.json({ error: 'stripePaymentIntentId is required' }, 400);
+    // Domain Invariant Check
+    const invariantResult = validateOrderInvariants(total, items);
+    if (isFailure(invariantResult)) {
+      return c.json({ error: invariantResult.error }, 400);
     }
 
     // Check if order already exists for this payment intent (idempotency)
@@ -57,20 +55,21 @@ router.post('/', async (c) => {
 
     await db.insert(orders).values(newOrder);
 
+    // Map cart items to line items using domain logic
+    const lineItems = mapCartToLineItems(items, pricingResult);
+
     // Create order item records
-    for (const item of items) {
+    for (const item of lineItems) {
       const orderItemId = `order_item_${randomUUID()}`;
-      const lineItemResult = pricingResult.lineItems?.find(li => li.sku === item.sku);
-      const discount = lineItemResult?.bulkDiscount || 0;
 
       const newOrderItem = {
         id: orderItemId,
         orderId,
         sku: item.sku,
         quantity: item.quantity,
-        price: item.priceInCents, // Use priceInCents from cart
+        price: item.priceInCents,
         weightInKg: Math.round(item.weightInKg * 100), // Store as int * 100
-        discount,
+        discount: item.bulkDiscount,
         createdAt: now,
       };
 
@@ -89,12 +88,12 @@ router.post('/', async (c) => {
 });
 
 /**
- * GET /api/orders/:id
+ * GET /api/orders/:orderId
  * Get order by ID with items
  */
-router.get('/:id', async (c) => {
+router.get('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   try {
-    const orderId = c.req.param('id');
+    const { orderId } = c.get('validatedParams');
 
     const orderResults = await db.select().from(orders).where(eq(orders.id, orderId));
 
@@ -140,17 +139,21 @@ router.get('/:id', async (c) => {
 });
 
 /**
- * GET /api/orders/user/:userId
- * Get all orders for a user
+ * GET /api/orders
+ * List orders with optional filtering
  */
-router.get('/user/:userId', async (c) => {
+router.get('/', validateQuery(querySchemas.listOrders), async (c) => {
   try {
-    const userId = c.req.param('userId');
+    const { userId } = c.get('validatedQuery');
 
-    const userOrders = await db.select().from(orders).where(eq(orders.userId, userId));
+    const query = db.select().from(orders).$dynamic();
+    if (userId) {
+      query.where(eq(orders.userId, userId));
+    }
+
+    const userOrders = await query;
 
     return c.json({
-      userId,
       orders: userOrders.map((order) => ({
         id: order.id,
         userId: order.userId,
@@ -161,18 +164,18 @@ router.get('/user/:userId', async (c) => {
       })),
     });
   } catch (error) {
-    logger.error('User orders retrieval failed', error, { action: 'get_user_orders' });
-    return c.json({ error: 'Failed to retrieve user orders' }, 500);
+    logger.error('Orders retrieval failed', error, { action: 'list_orders' });
+    return c.json({ error: 'Failed to retrieve orders' }, 500);
   }
 });
 
 /**
- * DELETE /api/orders/:id
+ * DELETE /api/orders/:orderId
  * Delete order and cascade delete order items
  */
-router.delete('/:id', async (c) => {
+router.delete('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   try {
-    const orderId = c.req.param('id');
+    const { orderId } = c.get('validatedParams');
 
     const orderResults = await db.select().from(orders).where(eq(orders.id, orderId));
 

@@ -14,6 +14,8 @@
  * @see PRODUCTION_READY_PLAN.md Part 3.1: Structured Logging
  */
 
+import type { Context, Next } from 'hono';
+
 /**
  * Check if running in browser
  */
@@ -78,14 +80,15 @@ let requestIdStore: {
 /**
  * Initialize async context for request IDs
  */
-export function initAsyncContext(): void {
+export async function initAsyncContext(): Promise<void> {
   // Lazy load async_hooks only in Node.js
   if (typeof process === 'undefined' || requestIdStore) {
     return;
   }
 
   try {
-    const { AsyncLocalStorage } = require('node:async_hooks');
+    // Dynamically import async_hooks to avoid bundle issues in browser
+    const { AsyncLocalStorage } = await import('node:async_hooks');
     const context = new AsyncLocalStorage<string>();
 
     requestIdStore = {
@@ -93,7 +96,7 @@ export function initAsyncContext(): void {
       setId: (id: string) => context.run(id, () => {}),
       clear: () => context.run('', () => {}),
     };
-  } catch (e) {
+  } catch {
     // Silently fail in environments where node:async_hooks is not available
     // (e.g., Vite bundler, browser, etc.)
   }
@@ -379,7 +382,7 @@ logger.withRequest = function (requestId: string): Logger {
  *
  * Logs all incoming HTTP requests with timing information.
  */
-export async function requestLogger(c: any, next: any) {
+export async function requestLogger(c: Context, next: Next) {
   const startTime = performance.now();
   const requestId = c.get('requestId') || generateRequestId();
 
@@ -423,7 +426,7 @@ export async function requestLogger(c: any, next: any) {
  *
  * Generates and adds a request ID to each request.
  */
-export function requestIdMiddleware(c: any, next: any) {
+export function requestIdMiddleware(c: Context, next: Next) {
   const requestId = c.header('x-request-id') || generateRequestId();
   c.set('requestId', requestId);
   c.header('x-request-id', requestId);
@@ -512,5 +515,5 @@ if (getEnvVar('NODE_ENV', 'development') === 'development') {
 
 // Initialize async context on module load for Node.js
 if (typeof process !== 'undefined') {
-  initAsyncContext();
+  void initAsyncContext();
 }

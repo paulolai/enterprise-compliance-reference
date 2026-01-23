@@ -1,4 +1,4 @@
-import { test, expect, APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
 import { CartItem } from '../../../../shared/src';

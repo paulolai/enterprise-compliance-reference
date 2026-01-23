@@ -120,7 +120,6 @@ invariant('Links to existing debug pages work', {
 
   // Check for link to cart debug
   const cartDebugLink = page.getByRole('link', { name: /cart debug|cart-view/i });
-  const checkoutDebugLink = page.getByRole('link', { name: /checkout debug|checkout/i });
 
   // Navigate to one of the pages
   if (await cartDebugLink.isVisible()) {

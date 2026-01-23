@@ -2,11 +2,13 @@ import { z } from 'zod';
 
 // --- Domain Schemas (The Executable Specification) ---
 
-export enum ShippingMethod {
-  STANDARD = 'STANDARD',
-  EXPEDITED = 'EXPEDITED',
-  EXPRESS = 'EXPRESS'
-}
+export const ShippingMethod = {
+  STANDARD: 'STANDARD',
+  EXPEDITED: 'EXPEDITED',
+  EXPRESS: 'EXPRESS'
+} as const;
+
+export type ShippingMethod = typeof ShippingMethod[keyof typeof ShippingMethod];
 
 export const ShippingMethodSchema = z.nativeEnum(ShippingMethod);
 
@@ -44,15 +46,17 @@ export const UserSchema = z.object({
 });
 export type User = z.infer<typeof UserSchema>;
 
-// Order status enum
-export enum OrderStatus {
-  PENDING = 'pending',
-  PAID = 'paid',
-  PROCESSING = 'processing',
-  SHIPPED = 'shipped',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled'
-}
+// Order status constants
+export const OrderStatus = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delivered',
+  CANCELLED: 'cancelled'
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 export const OrderStatusSchema = z.nativeEnum(OrderStatus);
 

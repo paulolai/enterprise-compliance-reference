@@ -1,7 +1,15 @@
-import { test, expect, APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
 import { CartItem, PricingResult } from '../../../../shared/src';
+
+interface Product {
+  sku: string;
+  name: string;
+  priceInCents: number;
+  weightInKg: number;
+  category?: string;
+}
 
 // Helper to register Allure metadata with hierarchy
 function registerApiMetadata(
@@ -397,7 +405,7 @@ test.describe('Orders API Integration Tests', () => {
       expect(result.products.length).toBeGreaterThanOrEqual(11);
 
       // Each product should have required fields
-      result.products.forEach((product: any) => {
+      result.products.forEach((product: Product) => {
         expect(product).toHaveProperty('sku');
         expect(product).toHaveProperty('name');
         expect(product).toHaveProperty('priceInCents');
@@ -439,7 +447,7 @@ test.describe('Orders API Integration Tests', () => {
       ];
 
       // These should all exist in the returned catalog
-      const returnedSKUs = result.products.map((p: any) => p.sku);
+      const returnedSKUs = result.products.map((p: Product) => p.sku);
 
       knownSKUs.forEach((sku) => {
         expect(returnedSKUs).toContain(sku);

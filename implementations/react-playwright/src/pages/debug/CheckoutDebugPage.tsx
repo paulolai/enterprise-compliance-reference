@@ -28,9 +28,6 @@ export function CheckoutDebugPage() {
   const scenario = searchParams.get('scenario') || 'standard';
 
   useEffect(() => {
-    // We want to re-run this whenever scenario changes
-    setIsReady(false);
-    
     let items: CartItem[];
     let user: User;
     let shipping: ShippingMethod = ShippingMethod.STANDARD;
@@ -141,7 +138,7 @@ export function CheckoutDebugPage() {
       pricingResult: null
     });
 
-    setIsReady(true);
+    setTimeout(() => setIsReady(true), 0);
   }, [scenario]);
 
   if (!isReady) {

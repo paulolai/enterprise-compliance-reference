@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { CartPage } from '../CartPage';
 import { useCartStore } from '../../store/cartStore';
 import { authClient } from '../../lib/auth';
@@ -24,13 +24,10 @@ import type { CartItem, User } from '../../../../shared/src';
  */
 export function CartDebugPage() {
   const [isReady, setIsReady] = useState(false);
-  const searchParams = new URLSearchParams(window.location.search);
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const scenario = searchParams.get('scenario') || 'custom';
 
   useEffect(() => {
-    // We want to re-run this whenever scenario changes
-    setIsReady(false);
-
     let items: CartItem[];
     let user: User;
 
@@ -129,14 +126,14 @@ export function CartDebugPage() {
     // Override store for debug mode
     const now = Date.now();
     useCartStore.setState({
-      items: items.map((item: CartItem) => ({ ...item, addedAt: now })),
+      items: items.map((item) => ({ ...item, addedAt: now })),
       user,
       shippingMethod: ShippingMethod.STANDARD,
       pricingResult: null
     });
 
-    setIsReady(true);
-  }, [scenario]);
+    setTimeout(() => setIsReady(true), 0);
+  }, [scenario, searchParams]);
 
   if (!isReady) {
     return (

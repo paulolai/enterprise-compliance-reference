@@ -10,12 +10,14 @@ import { CartDebugPage } from './pages/debug/CartDebugPage';
 import { CheckoutDebugPage } from './pages/debug/CheckoutDebugPage';
 import { DebugIndexPage } from './pages/debug/DebugIndexPage';
 import { AuthProvider } from './providers/AuthProvider';
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Toaster position="bottom-right" />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />

@@ -1,7 +1,7 @@
-import { test, expect, APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
-import { CartItem, User, ShippingMethod } from '../../../../shared/src';
+import { CartItem, User } from '../../../../shared/src';
 
 // Helper to register Allure metadata with hierarchy
 function registerApiMetadata(

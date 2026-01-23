@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
+import { validateBody } from '../../lib/validation/middleware';
+import { requestSchemas } from '../../lib/validation/schemas';
 
 /**
  * Mock Authentication Routes
@@ -19,9 +21,9 @@ const USERS = new Map([
 
 const router = new Hono();
 
-router.post('/login', async (c) => {
+router.post('/login', validateBody(requestSchemas.login), async (c) => {
   try {
-    const { email, password } = await c.req.json();
+    const { email, password } = c.get('validatedBody');
 
     const user = USERS.get(email);
     if (user && password === 'password') {
@@ -43,6 +45,7 @@ router.post('/login', async (c) => {
 
 router.post('/register', async (c) => {
   try {
+    // Note: register schema not yet in centralized schemas, using manual for now or add it
     const { email, name } = await c.req.json();
 
     // Check if user already exists

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { productCatalog } from '../store/cartStore';
 import { CartBadge } from '../components/cart/CartBadge';
+import { toast } from 'react-hot-toast';
 
 export function ProductsPage() {
   const [searchParams] = useSearchParams();
@@ -17,7 +18,7 @@ export function ProductsPage() {
   // Listen for add to cart events
   React.useEffect(() => {
     const handleAddToCart = (e: CustomEvent) => {
-      window.alert(`Added ${e.detail.name} to cart!`);
+      toast.success(`Added ${e.detail.name} to cart!`);
     };
 
     window.addEventListener('addToCart', handleAddToCart as EventListener);

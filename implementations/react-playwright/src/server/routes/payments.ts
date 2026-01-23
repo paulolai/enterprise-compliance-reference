@@ -1,10 +1,14 @@
 import { Hono } from 'hono';
+import type { StatusCode as HonoStatusCode } from 'hono/utils/http-status';
 import { logger } from '../../lib/logger';
 import Stripe from 'stripe';
 import { db, OrderStatus } from '../../../../shared/src/index-server';
 import { orders, orderItems } from '../../../../shared/src/index-server';
 import { eq } from 'drizzle-orm';
-import type { CartItem } from '../../../../shared/src/types';
+import { validateBody, validateParams } from '../../lib/validation/middleware';
+import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
+import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
+import { isFailure } from '../../../../shared/src/result.ts';
 
 /**
  * Payments API Routes
@@ -14,14 +18,9 @@ import type { CartItem } from '../../../../shared/src/types';
 // Valid HTTP status codes for responses
 type StatusCode = 200 | 201 | 400 | 401 | 404 | 500 | 501;
 
-// Cart item as received from client (may use priceInCents instead of canonical `price`)
-type CartItemRequest = Omit<CartItem, 'price'> & { priceInCents: number };
-
 const router = new Hono();
 
 // Initialize Stripe - use test mode secret key from environment
-// NOTE: Using specific API version for Clover integration compatibility.
-// Verify this matches your Stripe account configuration.
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey
   ? new Stripe(stripeSecretKey, {
@@ -32,24 +31,8 @@ const stripe = stripeSecretKey
 /**
  * POST /api/payments/create-intent
  * Creates a Stripe PaymentIntent for the given cart
- *
- * Request body:
- * {
- *   amount: number (cents),
- *   cartId: string,
- *   userId: string,
- *   cartItems: Array<{ sku: string, priceInCents: number, quantity: number, weightInKg: number }>
- * }
- *
- * Response:
- * {
- *   paymentIntentId: string,
- *   clientSecret: string,
- *   amount: number,
- *   currency: string
- * }
  */
-router.post('/create-intent', async (c) => {
+router.post('/create-intent', validateBody(requestSchemas.createPaymentIntent), async (c) => {
   // Check if Stripe is configured
   if (!stripe) {
     return c.json(
@@ -59,24 +42,12 @@ router.post('/create-intent', async (c) => {
   }
 
   try {
-    const body = await c.req.json();
-    const { amount, cartId, userId, cartItems } = body;
+    const { amount, cartId, userId, cartItems } = c.get('validatedBody');
 
-    // Validation
-    if (typeof amount !== 'number' || amount <= 0) {
-      return c.json({ error: 'Amount must be a positive number in cents' }, 400);
-    }
-
-    if (!cartId || typeof cartId !== 'string') {
-      return c.json({ error: 'cartId is required' }, 400);
-    }
-
-    if (!userId || typeof userId !== 'string') {
-      return c.json({ error: 'userId is required' }, 400);
-    }
-
-    if (!Array.isArray(cartItems) || cartItems.length === 0) {
-      return c.json({ error: 'cartItems must be a non-empty array' }, 400);
+    // Domain Invariant Check
+    const invariantResult = validateOrderInvariants(amount, cartItems);
+    if (isFailure(invariantResult)) {
+      return c.json({ error: invariantResult.error }, 400);
     }
 
     // Create Stripe PaymentIntent with metadata
@@ -111,30 +82,8 @@ router.post('/create-intent', async (c) => {
 /**
  * POST /api/payments/confirm
  * Confirms a successful payment and creates the order
- *
- * Request body:
- * {
- *   paymentIntentId: string,
- *   cartItems: Array<{ sku: string, priceInCents: number, quantity: number, weightInKg: number }>,
- *   shippingAddress: {
- *     street: string,
- *     city: string,
- *     state: string,
- *     zip: string,
- *     country: string
- *   }
- * }
- *
- * Response:
- * {
- *   orderId: string,
- *   status: string,
- *   total: number,
- *   paymentIntentId: string,
- *   createdAt: number
- * }
  */
-router.post('/confirm', async (c) => {
+router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) => {
   // Check if Stripe is configured
   if (!stripe) {
     return c.json(
@@ -144,21 +93,7 @@ router.post('/confirm', async (c) => {
   }
 
   try {
-    const body = await c.req.json();
-    const { paymentIntentId, cartItems, shippingAddress } = body;
-
-    // Validation
-    if (!paymentIntentId || typeof paymentIntentId !== 'string') {
-      return c.json({ error: 'paymentIntentId is required' }, 400);
-    }
-
-    if (!Array.isArray(cartItems) || cartItems.length === 0) {
-      return c.json({ error: 'cartItems must be a non-empty array' }, 400);
-    }
-
-    if (!shippingAddress || typeof shippingAddress !== 'object') {
-      return c.json({ error: 'shippingAddress is required' }, 400);
-    }
+    const { paymentIntentId, cartItems, shippingAddress } = c.get('validatedBody');
 
     // Check if order already exists (idempotency)
     const existingOrders = await db
@@ -188,7 +123,7 @@ router.post('/confirm', async (c) => {
           return c.json({ error: 'PaymentIntent not found' }, 404);
         }
         const statusCode = (error.statusCode || 500);
-        return c.json({ error: error.message }, statusCode as any);
+        return c.json({ error: error.message }, statusCode as HonoStatusCode);
       }
       return c.json({ error: 'Failed to verify PaymentIntent' }, 500);
     }
@@ -212,15 +147,10 @@ router.post('/confirm', async (c) => {
     const orderId = `order_${randomUUID()}`;
     const now = Date.now();
 
-    // Determine pricing for line items
+    // Use domain function to map line items
     const pricingResult = {
       originalTotal: total,
-      lineItems: cartItems.map((item: CartItemRequest) => ({
-        sku: item.sku,
-        bulkDiscount: 0, // No discount calculation needed at this point
-        quantity: item.quantity,
-        priceInCents: item.priceInCents,
-      })),
+      lineItems: mapCartToLineItems(cartItems),
     };
 
     const newOrder = {
@@ -276,20 +206,8 @@ router.post('/confirm', async (c) => {
 /**
  * POST /api/payments/cancel
  * Cancels a Stripe PaymentIntent
- *
- * Request body:
- * {
- *   paymentIntentId: string,
- *   reason?: string
- * }
- *
- * Response:
- * {
- *   paymentIntentId: string,
- *   status: string
- * }
  */
-router.post('/cancel', async (c) => {
+router.post('/cancel', validateBody(requestSchemas.cancelPayment), async (c) => {
   // Check if Stripe is configured
   if (!stripe) {
     return c.json(
@@ -299,16 +217,11 @@ router.post('/cancel', async (c) => {
   }
 
   try {
-    const body = await c.req.json();
-    const { paymentIntentId, reason } = body;
-
-    if (!paymentIntentId || typeof paymentIntentId !== 'string') {
-      return c.json({ error: 'paymentIntentId is required' }, 400);
-    }
+    const { paymentIntentId, reason } = c.get('validatedBody');
 
     // Cancel the PaymentIntent
     const cancelledIntent = await stripe.paymentIntents.cancel(paymentIntentId, {
-      cancellation_reason: reason || 'requested_by_customer',
+      cancellation_reason: (reason as Stripe.PaymentIntentCancelParams.CancellationReason) || 'requested_by_customer',
     });
 
     return c.json({
@@ -330,17 +243,8 @@ router.post('/cancel', async (c) => {
 /**
  * GET /api/payments/intent/:id
  * Retrieves a PaymentIntent status from Stripe
- *
- * Response:
- * {
- *   paymentIntentId: string,
- *   status: string,
- *   amount: number,
- *   currency: string,
- *   createdAt: number
- * }
  */
-router.get('/intent/:id', async (c) => {
+router.get('/intent/:id', validateParams(paramSchemas.paymentIntentId), async (c) => {
   // Check if Stripe is configured
   if (!stripe) {
     return c.json(
@@ -350,7 +254,7 @@ router.get('/intent/:id', async (c) => {
   }
 
   try {
-    const paymentIntentId = c.req.param('id');
+    const { id: paymentIntentId } = c.get('validatedParams');
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 

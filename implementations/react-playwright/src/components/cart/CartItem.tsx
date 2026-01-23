@@ -4,10 +4,9 @@ import { DiscountBadge } from '../ui/DiscountBadge';
 
 interface CartItemProps {
   sku: string;
-  testId?: string;
 }
 
-export function CartItem({ sku, testId }: CartItemProps) {
+export function CartItem({ sku }: CartItemProps) {
   const item = useCartStore((state) => state.items.find((i) => i.sku === sku));
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);

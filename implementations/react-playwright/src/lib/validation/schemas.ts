@@ -15,12 +15,18 @@
 
 import { z } from 'zod';
 import {
-  CartItemSchema,
   CentsSchema,
   PricingResultSchema,
   ShippingMethodSchema,
   UserSchema,
 } from '@executable-specs/shared';
+import {
+  CartItemSchema,
+  CartItemRequestSchema,
+  AddToCartRequestSchema,
+  RemoveFromCartRequestSchema,
+  UpdateCartQuantitySchema,
+} from '../../domain/cart/schema.ts';
 
 // --------------------------------------------------------------------------
 // Base Schemas
@@ -91,50 +97,6 @@ export const LogoutRequestSchema = z.object({
 export type LogoutRequest = z.infer<typeof LogoutRequestSchema>;
 
 // --------------------------------------------------------------------------
-// Cart Schemas
-// --------------------------------------------------------------------------
-
-/**
- * Cart item request schema (with priceInCents instead of price)
- */
-export const CartItemRequestSchema = z.object({
-  sku: z.string().min(1),
-  priceInCents: CentsSchema,
-  quantity: PositiveIntSchema,
-  weightInKg: z.number().nonnegative(),
-});
-
-export type CartItemRequest = z.infer<typeof CartItemRequestSchema>;
-
-/**
- * Add to cart request schema
- */
-export const AddToCartRequestSchema = z.object({
-  item: CartItemRequestSchema,
-});
-
-export type AddToCartRequest = z.infer<typeof AddToCartRequestSchema>;
-
-/**
- * Remove from cart request schema
- */
-export const RemoveFromCartRequestSchema = z.object({
-  sku: z.string().min(1),
-});
-
-export type RemoveFromCartRequest = z.infer<typeof RemoveFromCartRequestSchema>;
-
-/**
- * Update cart quantity request schema
- */
-export const UpdateCartQuantitySchema = z.object({
-  sku: z.string().min(1),
-  quantity: PositiveIntSchema,
-});
-
-export type UpdateCartQuantity = z.infer<typeof UpdateCartQuantitySchema>;
-
-// --------------------------------------------------------------------------
 // Shipping Schemas
 // --------------------------------------------------------------------------
 
@@ -169,8 +131,8 @@ export type ShippingAddress = z.infer<typeof ShippingAddressSchema>;
  */
 export const CalculatePricingRequestSchema = z.object({
   items: z.array(CartItemSchema).min(1, 'Cart must have at least one item'),
-  user: UserSchema.optional(),
-  shippingMethod: ShippingMethodSchema.default('STANDARD'),
+  user: UserSchema.optional().nullable(),
+  method: ShippingMethodSchema.default('STANDARD'),
 });
 
 export type CalculatePricingRequest = z.infer<typeof CalculatePricingRequestSchema>;
@@ -468,6 +430,7 @@ export const requestSchemas = {
   updateCartQuantity: UpdateCartQuantitySchema,
   setShipping: SetShippingRequestSchema,
   calculatePricing: CalculatePricingRequestSchema,
+  createOrder: CreateOrderRequestSchema,
   createPaymentIntent: CreatePaymentIntentRequestSchema,
   confirmPayment: ConfirmPaymentRequestSchema,
   cancelPayment: CancelPaymentRequestSchema,

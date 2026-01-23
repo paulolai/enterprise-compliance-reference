@@ -1,6 +1,7 @@
 import { PriceDisplay } from '../ui/PriceDisplay';
 import { productCatalog } from '../../store/cartStore';
 import { useCartStore } from '../../store/cartStore';
+import { toast } from 'react-hot-toast';
 
 interface ProductDetailProps {
   sku: string;
@@ -20,6 +21,7 @@ export function ProductDetail({ sku }: ProductDetailProps) {
       quantity: 1,
       weightInKg: product.weightInKg,
     });
+    toast.success(`Added ${product.name} to cart!`);
   };
 
   return (

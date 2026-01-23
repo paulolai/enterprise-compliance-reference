@@ -3,6 +3,8 @@ import { logger } from '../../lib/logger';
 import { db, seedProducts } from '../../../../shared/src/index-server';
 import { products } from '../../../../shared/src/index-server';
 import { eq } from 'drizzle-orm';
+import { validateParams, validateQuery } from '../../lib/validation/middleware';
+import { paramSchemas, querySchemas } from '../../lib/validation/schemas';
 
 const router = new Hono();
 
@@ -10,7 +12,7 @@ const router = new Hono();
  * GET /api/products
  * Get all products in the catalog
  */
-router.get('/', async (c) => {
+router.get('/', validateQuery(querySchemas.listProducts), async (c) => {
   try {
     // Ensure products are seeded (idempotent)
     await seedProducts();
@@ -38,9 +40,9 @@ router.get('/', async (c) => {
  * GET /api/products/:sku
  * Get a single product by SKU
  */
-router.get('/:sku', async (c) => {
+router.get('/:sku', validateParams(paramSchemas.productSku), async (c) => {
   try {
-    const sku = c.req.param('sku');
+    const { sku } = c.get('validatedParams');
 
     const productResults = await db.select().from(products).where(eq(products.sku, sku));
 

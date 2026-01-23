@@ -44,7 +44,7 @@ export interface ValidationOptions {
  *   return c.json({ id: user.id });
  * });
  */
-export function validateBody<T extends ZodSchema<any>>(
+export function validateBody<T extends ZodSchema<unknown>>(
   schema: T,
   options: ValidationOptions = {}
 ) {
@@ -123,7 +123,7 @@ export function validateBody<T extends ZodSchema<any>>(
  *   return c.json({ users });
  * });
  */
-export function validateQuery<T extends ZodSchema<any>>(
+export function validateQuery<T extends ZodSchema<unknown>>(
   schema: T,
   options: ValidationOptions = {}
 ) {
@@ -199,7 +199,7 @@ export function validateQuery<T extends ZodSchema<any>>(
  *   return c.json({ user: await getUserById(id) });
  * });
  */
-export function validateParams<T extends ZodSchema<any>>(
+export function validateParams<T extends ZodSchema<unknown>>(
   schema: T,
   options: ValidationOptions = {}
 ) {
@@ -255,7 +255,7 @@ export function validateParams<T extends ZodSchema<any>>(
  * @param querySchema - Zod schema for query validation
  * @param options - Validation options
  */
-export function validateAll<T extends ZodSchema<any>, U extends ZodSchema<any>>(
+export function validateAll<T extends ZodSchema<unknown>, U extends ZodSchema<unknown>>(
   bodySchema: T,
   querySchema: U,
   options: ValidationOptions = {}
@@ -266,14 +266,14 @@ export function validateAll<T extends ZodSchema<any>, U extends ZodSchema<any>>(
 /**
  * Type helper to extract validated body type
  */
-export type ValidatedBody<T extends ZodSchema<any>> = z.infer<T>;
+export type ValidatedBody<T extends ZodSchema<unknown>> = z.infer<T>;
 
 /**
  * Type helper to extract validated query type
  */
-export type ValidatedQuery<T extends ZodSchema<any>> = z.infer<T>;
+export type ValidatedQuery<T extends ZodSchema<unknown>> = z.infer<T>;
 
 /**
  * Type helper to extract validated params type
  */
-export type ValidatedParams<T extends ZodSchema<any>> = z.infer<T>;
+export type ValidatedParams<T extends ZodSchema<unknown>> = z.infer<T>;
