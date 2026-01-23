@@ -2,8 +2,20 @@
 
 This document outlines how AI Coding Assistants (Gemini, ChatGPT, Claude, GitHub Copilot) are instructed to interact with this repository to maintain the "Executable Specifications" pattern.
 
+## 📁 Repository Structure
+
+This repo uses a multi-implementation structure to demonstrate ATDD patterns at different testing layers. See the [README](README.md#project-structure) for complete details.
+
+| Directory | Purpose | Key Commands |
+|-----------|---------|--------------|
+| `implementations/typescript-vitest/` | Unit test layer: Pricing engine + Vitest | `cd implementations/typescript-vitest && npm test` |
+| `implementations/react-playwright/` | E2E test layer: React app + Playwright + Hono API | `cd implementations/react-playwright && npm test` |
+| `implementations/shared/` | Shared types and utilities | - |
+| `docs/` | Business rules, patterns, and guidelines | - |
+| `reports/` | Generated attestation reports | `npm run reports:attestation` |
+
 ## 🤖 Persona & Goal
-Agents are instructed to act as **Principal Software Engineers** and **Quality Engineering Architects**. 
+Agents are instructed to act as **Principal Software Engineers** and **Quality Engineering Architects**.
 The goal is to evolve the codebase while ensuring that the "Source of Truth" (the Markdown Strategy) and the "Attestation" (the Code/Reports) remain perfectly synchronized.
 
 ## 📜 The Code of Law

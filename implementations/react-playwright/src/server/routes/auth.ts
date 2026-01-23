@@ -1,5 +1,13 @@
 import { Hono } from 'hono';
 
+/**
+ * Mock Authentication Routes
+ *
+ * DEMO ONLY: This is a mock authentication system for demonstration purposes.
+ * In production, replace this with real authentication using proper password
+ * hashing, JWT tokens, and a secure user database.
+ */
+
 // Mock user database
 const USERS = new Map([
   ['vip@techhome.com', { name: 'VIP Customer', tenureYears: 4, email: 'vip@techhome.com' }],

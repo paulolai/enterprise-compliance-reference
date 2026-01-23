@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import type { CartItem, User } from '../../../../shared/src';
-import { useCartStore } from '../../store/cartStore';
 import { ShippingMethod } from '../../../../shared/src';
 
 const router = new Hono();
@@ -12,14 +11,35 @@ const router = new Hono();
  * jump directly to specific application states instead of clicking through UI.
  *
  * IMPORTANT: These should only be enabled in development/test environments.
+ * Debug endpoints are disabled in production.
  */
+
+// Add production guard to all debug routes
+router.all('/*', async (c, next) => {
+  if (process.env.NODE_ENV === 'production') {
+    return c.json({ error: 'Debug endpoints disabled in production' }, 404);
+  }
+  await next();
+});
 
 /**
  * POST /api/debug/seed-session
  * Seed a cart session for test isolation
  *
- * This is the primary "teleport" endpoint that allows tests to establish
- * preconditions in ~100ms instead of ~30s of UI clicking.
+ * This endpoint returns the data that tests should use to directly set
+ * localStorage since server-side code cannot access browser Zustand store.
+ *
+ * Usage in tests:
+ *   const response = await fetch('/api/debug/seed-session', {
+ *     method: 'POST',
+ *     headers: { 'Content-Type': 'application/json' },
+ *     body: JSON.stringify({ cart, user, shippingMethod })
+ *   });
+ *   const data = await response.json();
+ *   localStorage.setItem('cart-storage', JSON.stringify({
+ *     state: { items: data.items, user: data.user, shippingMethod: data.shippingMethod, pricingResult: null },
+ *     version: 0
+ *   }));
  */
 router.post('/seed-session', async (c) => {
   const { cart, user, shippingMethod } = await c.req.json();
@@ -35,20 +55,26 @@ router.post('/seed-session', async (c) => {
     addedAt: Date.now()
   }));
 
-  // Directly set the store state for tests
-  useCartStore.setState({
+  // Handle shippingMethod - it could be the enum string or the value
+  const method = shippingMethod
+    ? (shippingMethod in ShippingMethod ? ShippingMethod[shippingMethod as keyof typeof ShippingMethod] : shippingMethod)
+    : ShippingMethod.STANDARD;
+
+  // Return the data for client to set in localStorage
+  return c.json({
+    success: true,
+    itemCount: cart.length,
     items: cartWithMetadata,
     user: user || null,
-    shippingMethod: shippingMethod ? ShippingMethod[shippingMethod] : ShippingMethod.STANDARD,
-    pricingResult: null // Reset pricing so it recalculates
+    shippingMethod: method
   });
-
-  return c.json({ success: true, itemCount: cart.length });
 });
 
 /**
  * POST /api/debug/seed-auth
  * Seed an authenticated session for tests
+ *
+ * Returns the user data for client to set in localStorage.
  */
 router.post('/seed-auth', async (c) => {
   const { email } = await c.req.json();
@@ -60,7 +86,6 @@ router.post('/seed-auth', async (c) => {
   // Create a mock user based on email
   const mockUser: User = {
     email,
-    name: 'Test User',
     // Auto-determine VIP status from email
     tenureYears: email.startsWith('vip') || email.includes('vip')
       ? 4
@@ -69,46 +94,31 @@ router.post('/seed-auth', async (c) => {
       : 0
   };
 
-  useCartStore.setState({ user: mockUser });
-
   return c.json({ success: true, user: mockUser });
 });
 
 /**
  * POST /api/debug/reset
- * Reset store to initial state
+ * Returns reset state data for client to clear localStorage.
  */
 router.post('/reset', async (c) => {
-  useCartStore.setState({
+  return c.json({
+    success: true,
     items: [],
     user: null,
     shippingMethod: ShippingMethod.STANDARD,
     pricingResult: null
   });
-
-  return c.json({ success: true });
 });
 
 /**
  * GET /api/debug/state
- * Get current store state (useful for debugging)
+ * Get current store state from localStorage for debugging
+ * This endpoint can't access the actual browser state since it runs on server.
  */
 router.get('/state', async (c) => {
-  const state = useCartStore.getState();
-
-  // Omit addedAt from items for cleaner response
-  const itemsWithoutMetadata = state.items.map((item) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { addedAt: _unused, ...rest } = item;
-    return rest;
-  });
-
   return c.json({
-    items: itemsWithoutMetadata,
-    user: state.user,
-    shippingMethod: state.shippingMethod,
-    hasPricingResult: state.pricingResult !== null,
-    itemCount: state.items.length
+    error: 'This endpoint runs in server context and cannot access browser state. Use window.__cartStore.getState() in browser console instead.'
   });
 });
 

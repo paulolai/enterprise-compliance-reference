@@ -25,16 +25,36 @@ export type Dollars = number;
 export const CartItemSchema = z.object({
   sku: z.string().min(1),
   name: z.string(),
-  price: CentsSchema,
+  price: CentsSchema, // The canonical property
   quantity: z.number().int().positive(),
   weightInKg: z.number().nonnegative()
 });
 export type CartItem = z.infer<typeof CartItemSchema>;
 
+/**
+ * Extended CartItem for compatibility with existing code that uses 'priceInCents'
+ * This is used in tests and some internal code. For internal use, prefer 'price'.
+ */
+export type CartItemWithPriceInCents = Omit<CartItem, 'price'> & { priceInCents: Cents };
+
 export const UserSchema = z.object({
-  tenureYears: z.number().nonnegative()
+  tenureYears: z.number().nonnegative(),
+  email: z.string().email().optional(),
+  name: z.string().optional(), // Optional name for display/debug purposes
 });
 export type User = z.infer<typeof UserSchema>;
+
+// Order status enum
+export enum OrderStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled'
+}
+
+export const OrderStatusSchema = z.nativeEnum(OrderStatus);
 
 export const LineItemResultSchema = z.object({
   sku: z.string(),

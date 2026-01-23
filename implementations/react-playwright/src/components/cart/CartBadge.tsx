@@ -6,7 +6,7 @@ export function CartBadge() {
 
   return (
     <span className="cart-badge" data-testid="cart-badge">
-      {count > 0 ? `${count}` : 'Cart'}
+      {count}
     </span>
   );
 }

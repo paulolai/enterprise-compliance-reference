@@ -14,7 +14,16 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'zod', 'zustand', 'hono'],
-    exclude: ['@executable-specs/shared', 'fast-check'],
+    exclude: [
+      '@executable-specs/shared',
+      'fast-check',
+      'better-sqlite3',
+      'drizzle-orm',
+      'stripe',
+    ],
+  },
+  ssr: {
+    noExternal: ['react', 'react-dom'],
   },
   plugins: [
     react(),

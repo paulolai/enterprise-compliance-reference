@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CartDebugPage } from './pages/debug/CartDebugPage';
 import { CheckoutDebugPage } from './pages/debug/CheckoutDebugPage';
+import { DebugIndexPage } from './pages/debug/DebugIndexPage';
 import { AuthProvider } from './providers/AuthProvider';
 import './App.css';
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
 
           {/* Debug routes for visual debugging and QA */}
+          <Route path="/debug" element={<DebugIndexPage />} />
           <Route path="/debug/cart-view" element={<CartDebugPage />} />
           <Route path="/debug/checkout" element={<CheckoutDebugPage />} />
 

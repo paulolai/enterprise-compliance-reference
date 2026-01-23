@@ -70,6 +70,11 @@ export function CheckoutPage() {
       <main>
         <div className="page-header">
           <h1>Checkout</h1>
+          {user?.tenureYears && user.tenureYears > 2 && (
+            <span className="vip-badge" data-testid="vip-user-label">
+              VIP Member ({user.tenureYears} years)
+            </span>
+          )}
         </div>
 
         <div className="checkout-content">
