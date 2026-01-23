@@ -1,0 +1,57 @@
+# =============================================================================
+# Docker Compose for Executable Specs Demo
+#
+# Services:
+#   - app: React frontend + API server (dev mode)
+#
+# Usage:
+#   docker compose up              # Start all services
+#   docker compose up --build      # Rebuild and start
+#   docker compose down            # Stop and remove containers
+#   docker compose logs -f app     # Follow app logs
+#   docker compose exec app sh     # Debug into a running container
+# =============================================================================
+
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+    container_name: es-demo-app
+    ports:
+      - "${PORT:-5173}:5173"
+    environment:
+      NODE_ENV: development
+      PORT: 5173
+      VITE_HOST: 0.0.0.0
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      LOG_LEVEL: info
+      DATABASE_PATH: /app/data/shop.db
+      ENABLE_DEBUG_ENDPOINTS: "true"
+      ENABLE_PAYMENTS: "true"
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+    volumes:
+      # Mount implementation source for hot-reload
+      - ./implementations/react-playwright/:/app/implementations/react-playwright/
+      - ./shared/:/app/shared/
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+      # Persist SQLite database
+      - es-demo-data:/app/data
+      # Prevent node_modules from being overwritten by mount
+      - /app/node_modules
+      - /app/implementations/react-playwright/node_modules
+    command: pnpm run dev:with-server
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  es-demo-data:
+    driver: local

@@ -26,7 +26,7 @@ export default defineConfig({
   globalSetup: './playwright.global-setup.ts',
 
   webServer: {
-    command: 'vite',
+    command: 'pnpm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore',
