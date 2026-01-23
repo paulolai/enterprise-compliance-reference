@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { CartPage } from '../CartPage';
 import { useCartStore } from '../../store/cartStore';
+import { authClient } from '../../lib/auth';
 import { CartBuilder } from '../../../../shared/fixtures';
 import { ShippingMethod } from '../../../../shared/src';
 import type { CartItem, User } from '../../../../shared/src';
@@ -22,14 +23,13 @@ import type { CartItem, User } from '../../../../shared/src';
  * - Quick verification of UI components
  */
 export function CartDebugPage() {
-  const initializedRef = useRef(false);
+  const [isReady, setIsReady] = useState(false);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = searchParams.get('scenario') || 'custom';
 
   useEffect(() => {
-    // Only initialize once
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    // We want to re-run this whenever scenario changes
+    setIsReady(false);
 
     let items: CartItem[];
     let user: User;
@@ -123,6 +123,9 @@ export function CartDebugPage() {
       }
     }
 
+    // Update auth client first to sync with AuthProvider
+    authClient.debugSetUser(user);
+
     // Override store for debug mode
     const now = Date.now();
     useCartStore.setState({
@@ -131,8 +134,20 @@ export function CartDebugPage() {
       shippingMethod: ShippingMethod.STANDARD,
       pricingResult: null
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    setIsReady(true);
   }, [scenario]);
+
+  if (!isReady) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Initializing debug scenario: <span className="font-mono font-bold">{scenario}</span>...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="debug-page">

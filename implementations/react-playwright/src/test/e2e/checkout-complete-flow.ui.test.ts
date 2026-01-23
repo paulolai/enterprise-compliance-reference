@@ -301,6 +301,7 @@ test.describe('VIP Checkout Tests', () => {
     await expect(vipBadge).toBeVisible();
 
     // Verify discount is shown in the order summary
-    await expect(page.getByText(/discount/i)).toBeVisible();
+    // Use a more specific test ID for the VIP discount to avoid ambiguity
+    await expect(page.getByTestId('discount-badge-vip')).toBeVisible();
   });
 });

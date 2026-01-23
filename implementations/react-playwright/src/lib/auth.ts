@@ -106,6 +106,19 @@ export class AuthClient {
     this.notify();
   }
 
+  /**
+   * For debug/testing purposes ONLY. Sets the user state directly.
+   */
+  debugSetUser(user: any): void {
+    this.state = {
+      user: user,
+      token: 'debug-token',
+      isAuthenticated: !!user,
+    };
+    this.saveToStorage();
+    this.notify();
+  }
+
   private saveToStorage() {
     localStorage.setItem('auth_user', JSON.stringify(this.state.user));
     localStorage.setItem('auth_token', this.state.token || '');
