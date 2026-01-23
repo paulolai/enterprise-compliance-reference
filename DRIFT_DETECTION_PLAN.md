@@ -3,12 +3,12 @@
 ## Goal
 Transform the "Domain Coverage" system from a manual maintenance burden into an automated quality gate. We will implement "Drift Detection" to ensure the **Requirements (Markdown)** and **Verification (Code)** never diverge.
 
-## 1. Documentation (The "Why" & "How")
+## 1. Documentation (The "Why" & "How") (COMPLETED)
 Before building the tool, we define the contract.
-*   **Update `docs/ARCHITECTURE_DECISIONS.md`**:
+*   [x] **Update `docs/ARCHITECTURE_DECISIONS.md`**:
     *   Add **ADR 13: Drift Detection Strategy**.
     *   Explicitly decide: "We treat Documentation Bugs (typos, stale rules) as Build Failures."
-*   **Update `docs/TESTING_FRAMEWORK.md`**:
+*   [x] **Update `docs/TESTING_FRAMEWORK.md`**:
     *   Add "Managing Drift" section.
     *   Explain the `drift:check` command.
 
