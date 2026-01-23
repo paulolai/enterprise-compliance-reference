@@ -174,7 +174,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });
@@ -213,7 +213,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });
@@ -254,7 +254,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });
@@ -292,7 +292,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });
@@ -326,7 +326,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });
@@ -367,7 +367,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });
@@ -392,7 +392,7 @@ test.describe('Payments API Integration Tests', () => {
             city: 'Test City',
             state: 'NSW',
             zip: '2000',
-            country: 'Australia',
+            country: 'AU',
           },
         },
       });

@@ -130,7 +130,7 @@ export type ShippingAddress = z.infer<typeof ShippingAddressSchema>;
  * Calculate pricing request schema
  */
 export const CalculatePricingRequestSchema = z.object({
-  items: z.array(CartItemSchema).min(1, 'Cart must have at least one item'),
+  items: z.array(CartItemSchema),
   user: UserSchema.optional().nullable(),
   method: ShippingMethodSchema.default('STANDARD'),
 });
@@ -140,10 +140,7 @@ export type CalculatePricingRequest = z.infer<typeof CalculatePricingRequestSche
 /**
  * Calculate pricing response schema
  */
-export const CalculatePricingResponseSchema = z.object({
-  success: z.literal(true),
-  result: PricingResultSchema,
-});
+export const CalculatePricingResponseSchema = PricingResultSchema;
 
 export type CalculatePricingResponse = z.infer<typeof CalculatePricingResponseSchema>;
 
@@ -339,7 +336,7 @@ export type ListProductsQuery = z.infer<typeof ListProductsQuerySchema>;
  * Seed session request schema
  */
 export const SeedSessionRequestSchema = z.object({
-  cart: z.array(CartItemSchema).min(1),
+  cart: z.array(CartItemSchema),
   user: UserSchema.optional(),
   shippingMethod: ShippingMethodSchema.optional(),
 });

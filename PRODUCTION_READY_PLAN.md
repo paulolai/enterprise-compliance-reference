@@ -462,40 +462,34 @@ Each endpoint documented with:
 
 ## Implementation Roadmap
 
-### Sprint 1 (IN PROGRESS): E2E Tests + Quick Wins
-- [ ] Fix 8 failing E2E tests (including localStorage seeding issue)
+### Sprint 2 (COMPLETED): E2E Tests + Foundations
+- [x] Fix 39 passing E2E tests
 - [x] Add convenience scripts to root `package.json`
-- [ ] Add `.env.example`
 - [x] Connect "Add to Cart" to Zustand store
-- [ ] Remove `window.alert()`, add toast
-- [ ] Clean up `console.log` -> logger
-- [x] Update README and Plan documents
+- [x] Implement `lib/logger.ts` (Structured logging)
+- [x] Implement `lib/errors.ts` (Error hierarchy)
+- [x] Implement `lib/env.ts` (Zod-validated env)
+- [x] Centralize all schemas in `lib/validation/schemas.ts`
+- [x] Refactor `pricing.ts` to use `validateBody(requestSchemas.calculatePricing)`
+- [x] Refactor `orders.ts` to use validation middleware and domain functions
+- [x] Refactor `payments.ts` to use validation middleware and domain functions
+- [x] Extract domain logic to `src/domain/cart/`
+- [x] Replace `window.alert()` with custom toast component
+- [x] Add `.env.example`
 
-### Sprint 2: SRE Foundation
-- [ ] Structured logging (`lib/logger.ts`)
-- [ ] Health check endpoints
-- [ ] Security headers middleware
-- [ ] CORS configuration
-- [ ] Environment validation
+### Sprint 3: Quality Engineering (COMPLETED)
+- [x] Test data builders (`test/builders/page-builder.ts`)
+- [x] Property-based tests (`test/properties/cart-invariants.test.ts`)
+- [x] Contract tests (`test/api/contract/pricing-contract.spec.ts`)
 
-### Sprint 3: Quality Foundation
-- [ ] Error hierarchy (`lib/errors.ts`)
-- [ ] Test utilities (`test/setup/`)
-- [ ] Test data builders (`test/builders/`)
-- [ ] Property-based test invariants doc
-
-### Sprint 4: Observability
-- [ ] Metrics framework (`lib/metrics.ts`)
-- [ ] Request tracing (request IDs)
-- [ ] Error boundary integration
-- [ ] API contract tests
-
-### Sprint 5: Documentation & Deployment
-- [ ] Additional ADRs (optional)
-- [ ] Onboarding guide
-- [ ] API documentation
-- [ ] Runbooks folder
-- [ ] Dockerfile, docker-compose.yml
+### Sprint 4: SRE & Reliability (NEXT)
+- [ ] Implement `lib/metrics.ts`
+- [ ] Implement graceful shutdown logic
+- [ ] Detailed health checks (`/readyz`, `/livez`)
+- [ ] Security headers middleware (CSP, HSTS)
+- [ ] Dockerfile and docker-compose.yml
+- [ ] Onboarding guide (`docs/ONBOARDING.md`)
+- [ ] API documentation (`docs/API.md`)
 
 ---
 

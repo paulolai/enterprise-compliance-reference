@@ -10,7 +10,7 @@ router.post('/calculate', validateBody(requestSchemas.calculatePricing), async (
   const { items, user, method } = c.get('validatedBody');
 
   try {
-    const result = PricingEngine.calculate(items, user || undefined, method);
+    const result = PricingEngine.calculate(items, user || { tenureYears: 0 }, method);
     return c.json(result);
   } catch (error) {
     logger.error('Pricing calculation failed', error, { action: 'calculate' });

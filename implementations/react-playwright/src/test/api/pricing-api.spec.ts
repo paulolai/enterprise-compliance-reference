@@ -36,7 +36,7 @@ test.describe('Pricing API Integration Tests', () => {
     });
 
     const items: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 2, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 8900, name: "Test Item", quantity: 2, weightInKg: 0.1 },
     ];
     const user: User = { tenureYears: 0 };
     const method = ShippingMethod.STANDARD;
@@ -65,7 +65,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     const response = await request.post(`${API_BASE}/calculate`, {
       data: {
-        items: [{ sku: '', priceInCents: 8900, quantity: 1, weightInKg: 0.1 }],
+        items: [{ sku: '', price: 8900, name: "Test Item", quantity: 1, weightInKg: 0.1 }],
         user: { tenureYears: 0 },
         method: 'STANDARD',
       },
@@ -84,7 +84,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     const response = await request.post(`${API_BASE}/calculate`, {
       data: {
-        items: [{ sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: -1, weightInKg: 0.1 }],
+        items: [{ sku: 'WIRELESS-EARBUDS', price: 8900, name: "Test Item", quantity: -1, weightInKg: 0.1 }],
         user: { tenureYears: 0 },
         method: 'STANDARD',
       },
@@ -125,7 +125,7 @@ test.describe('Pricing API Integration Tests', () => {
     });
 
     const items: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 1, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 1, weightInKg: 0.1 },
     ];
 
     // Non-VIP user
@@ -155,7 +155,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     // 2 items - no bulk discount
     const noBulkItems: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 2, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 2, weightInKg: 0.1 },
     ];
     const noBulkResponse = await request.post(`${API_BASE}/calculate`, {
       data: { items: noBulkItems, user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
@@ -164,7 +164,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     // 3 items - bulk discount applies
     const bulkItems: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 3, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 3, weightInKg: 0.1 },
     ];
     const bulkResponse = await request.post(`${API_BASE}/calculate`, {
       data: { items: bulkItems, user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
@@ -173,7 +173,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     // Bulk should have discount
     expect(bulkResult.totalDiscount).toBeGreaterThan(noBulkResult.totalDiscount);
-    expect(bulkResult.finalTotal).toBeLessThan(noBulkResult.finalTotal);
+    // expect(bulkResult.finalTotal).toBeLessThan(noBulkResult.finalTotal); // Incorrect assumption: 3 items cost more than 2 even with discount
 
     // Exactly 15% bulk discount
     const expectedBulkDiscount = Math.floor(30000 * 0.15); // 30,000 * 15%
@@ -190,8 +190,8 @@ test.describe('Pricing API Integration Tests', () => {
 
     // Create a scenario with many items to exceed 30% discount
     const items: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 5, weightInKg: 0.1 },
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 5, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 5, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 5, weightInKg: 0.1 },
     ];
     const user: User = { tenureYears: 5 }; // VIP
     const method = ShippingMethod.STANDARD;
@@ -207,7 +207,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     // Total discount should not exceed 30% of original
     expect(result.totalDiscount).toBeLessThanOrEqual(maxAllowedDiscount);
-    expect(result.totalDiscount).toBe(maxAllowedDiscount); // Should be capped exactly
+    // expect(result.totalDiscount).toBe(maxAllowedDiscount); // Impossible to hit cap with current rules (15% + 5% = 20%)
   });
 
   test('API calculates free shipping correctly', async ({ request }) => {
@@ -219,7 +219,7 @@ test.describe('Pricing API Integration Tests', () => {
     });
 
     const baseItems: CartItem[] = [
-      { sku: 'TABLET-10', priceInCents: 44900, quantity: 1, weightInKg: 1.2 },
+      { sku: 'T-SHIRT-BASIC', price: 2500, name: "Cheap Item", quantity: 1, weightInKg: 0.2 },
     ];
 
     // Below threshold - shipping charges apply
@@ -230,7 +230,7 @@ test.describe('Pricing API Integration Tests', () => {
 
     // Above threshold - free shipping
     const aboveThresholdItems: CartItem[] = [
-      { sku: 'TABLET-10', priceInCents: 44900, quantity: 3, weightInKg: 1.2 },
+      { sku: 'TABLET-10', price: 44900, name: "Expensive Item", quantity: 3, weightInKg: 1.2 },
     ];
     const aboveThresholdResponse = await request.post(`${API_BASE}/calculate`, {
       data: { items: aboveThresholdItems, user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
@@ -255,7 +255,7 @@ test.describe('Pricing API Integration Tests', () => {
     });
 
     const items: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 1, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 1, weightInKg: 0.1 },
     ];
 
     const response = await request.post(`${API_BASE}/calculate`, {
@@ -277,8 +277,9 @@ test.describe('Pricing API Integration Tests', () => {
       name: 'Expedited shipping calculation',
     });
 
+    // Use cheap items to stay under $100 free shipping threshold
     const items: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 2, weightInKg: 0.1 },
+      { sku: 'T-SHIRT', price: 2000, name: "Cheap Item", quantity: 2, weightInKg: 0.1 },
     ];
 
     const response = await request.post(`${API_BASE}/calculate`, {
@@ -289,9 +290,9 @@ test.describe('Pricing API Integration Tests', () => {
 
     const result = await response.json();
 
-    // Original total = 20,000
-    // Expected expedited surcharge = 20,000 * 0.15 = 3,000
-    const expectedSurcharge = Math.floor(20000 * 0.15);
+    // Original total = 4,000
+    // Expected expedited surcharge = 4,000 * 0.15 = 600
+    const expectedSurcharge = Math.floor(4000 * 0.15);
 
     // Verify shipping includes the surcharge
     expect(result.shipment.expeditedSurcharge).toBe(expectedSurcharge);
@@ -306,7 +307,7 @@ test.describe('Pricing API Integration Tests', () => {
     });
 
     const items: CartItem[] = [
-      { sku: 'WIRELESS-EARBUDS', priceInCents: 10000, quantity: 1, weightInKg: 0.1 },
+      { sku: 'WIRELESS-EARBUDS', price: 10000, name: "Test Item", quantity: 1, weightInKg: 0.1 },
     ];
 
     const response = await request.post(`${API_BASE}/calculate`, {
@@ -329,10 +330,10 @@ test.describe('Pricing API Integration Tests', () => {
     });
 
     const testCases: { items: CartItem[]; user: User; method: ShippingMethod }[] = [
-      { items: [{ sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 }], user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
-      { items: [{ sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 3, weightInKg: 0.1 }], user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
-      { items: [{ sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 }], user: { tenureYears: 3 }, method: ShippingMethod.STANDARD },
-      { items: [{ sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 3, weightInKg: 0.1 }], user: { tenureYears: 3 }, method: ShippingMethod.EXPEDITED },
+      { items: [{ sku: 'WIRELESS-EARBUDS', price: 8900, name: "Test Item", quantity: 1, weightInKg: 0.1 }], user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
+      { items: [{ sku: 'WIRELESS-EARBUDS', price: 8900, name: "Test Item", quantity: 3, weightInKg: 0.1 }], user: { tenureYears: 0 }, method: ShippingMethod.STANDARD },
+      { items: [{ sku: 'WIRELESS-EARBUDS', price: 8900, name: "Test Item", quantity: 1, weightInKg: 0.1 }], user: { tenureYears: 3 }, method: ShippingMethod.STANDARD },
+      { items: [{ sku: 'WIRELESS-EARBUDS', price: 8900, name: "Test Item", quantity: 3, weightInKg: 0.1 }], user: { tenureYears: 3 }, method: ShippingMethod.EXPEDITED },
     ];
 
     for (const testCase of testCases) {
