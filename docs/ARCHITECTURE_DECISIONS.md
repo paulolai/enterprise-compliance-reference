@@ -81,6 +81,10 @@ This document explains the *Why* behind these decisions, and what alternatives w
     + [Implementation](#implementation)
     + [Rule](#rule-6)
     + [Quality Gates](#quality-gates)
+  * [14. Package Manager: pnpm {#14-package-manager-pnpm}](#14-package-manager-pnpm-%2314-package-manager-pnpm)
+    + [The Decision {#the-decision-13}](#the-decision-%23the-decision-13)
+    + [Why? {#why-13}](#why-%23why-13)
+    + [Rule {#rule-7}](#rule-%23rule-7)
 
 <!-- tocstop -->
 
@@ -535,3 +539,22 @@ We verify quality using two distinct coverage metrics that must **both** pass qu
 - **80% domain coverage**: Core rules must be verified. Lower rules may be documentation-only or pending implementation.
 
 **Note on Domain Coverage:** A section with multiple invariants (e.g., "Bulk Discounts" with 3 invariant rules) counts as "covered" if ANY of its invariants have a passing test. This allows progressive discovery of edge cases.
+
+---
+
+### 14. Package Manager: pnpm {#14-package-manager-pnpm}
+**Status:** Accepted
+**Date:** 2026-01-24
+
+#### The Decision {#the-decision-13}
+We use **pnpm** as the package manager instead of npm or yarn.
+
+#### Why? {#why-13}
+*   **Disk Efficiency:** pnpm uses a content-addressable filesystem, storing dependencies only once on disk. With multiple packages in a monorepo, this saves significant space and install time.
+*   **Strict Dependency Handling:** pnpm creates symbolic links in `node_modules/.pnpm`, preventing a common issue where packages can accidentally access undeclared dependencies (phantom dependencies).
+*   **Monorepo Support:** Native workspace support via `workspace:*` protocol makes managing inter-package dependencies straightforward.
+*   **Fast Installations:** pnpm is generally faster than npm/yarn due to efficient caching and parallel installation.
+
+#### Rule {#rule-7}
+*   **Use `pnpm exec` for Running Binaries:** When executing CLI tools from `node_modules/.bin`, use `pnpm exec <command>` (or `pnpm exec -- <command>` for passing flags) instead of `npx` or direct node command invocation.
+*   **Workspace Protocol:** For monorepo internal dependencies, use `"workspace:*"` in package.json dependencies.

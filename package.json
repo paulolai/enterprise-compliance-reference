@@ -17,9 +17,11 @@
     "db:push": "drizzle-kit push",
     "db:seed": "node implementations/shared/src/db/seed.js",
     "docs:fix": "find docs -name '*.md' -exec markdown-toc -i {} \\;",
+    "adr:sync": "npx tsx@latest scripts/sync-agents-from-adr.ts",
     "prepare": "husky"
   },
   "lint-staged": {
+    "docs/ARCHITECTURE_DECISIONS.md": "pnpm run adr:sync",
     "docs/*.md": "bash -c 'for f in \"$@\"; do markdown-toc -i \"$f\"; done' --"
   },
   "dependencies": {
@@ -32,6 +34,7 @@
     "drizzle-kit": "^0.31.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "markdown-toc": "^1.2.0"
+    "markdown-toc": "^1.2.0",
+    "tsx": "^4.21.0"
   }
 }
