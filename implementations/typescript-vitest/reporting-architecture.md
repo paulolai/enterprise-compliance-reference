@@ -15,6 +15,32 @@ The Reference Architecture generates **two separate reports** from every test ru
 
 ---
 
+## Clean Room Reporting Strategy
+
+To ensure data integrity and prevent historical pollution, we use a **Clean Room** approach orchestrated by `scripts/test-runner.ts`.
+
+### The Workflow (`pnpm run test:all`)
+
+1.  **Generate Run ID**: Creates a unique timestamped folder: `reports/run-YYYY-MM-DD.../`
+2.  **Isolate Env**: Sets `ALLURE_RESULTS_DIR` to a subdirectory within that folder.
+3.  **Execute Tests**: Runs Vitest and Playwright, which write *only* to this isolated folder.
+4.  **Generate Report**: Reads *only* from the isolated results folder.
+
+### Directory Structure
+
+```
+reports/
+└── run-2026-01-27T10-30-00/
+    ├── raw-results/       # Raw JSON data from Vitest/Playwright
+    │   ├── api/
+    │   └── gui/
+    └── attestation/       # Generated HTML reports
+        ├── attestation-full.html
+        └── attestation.md
+```
+
+---
+
 ## Attestation Report (Primary Compliance Artifact)
 
 ### Purpose
@@ -28,11 +54,11 @@ Designed for auditors, compliance officers, and business stakeholders who need p
 
 ### Usage
 ```bash
-# Tests automatically generate attestation reports
-npm test
+# Run all tests in a clean environment
+pnpm run test:all
 
-# Open directly in browser - no server needed
-open reports/{timestamp}/attestation-full.html
+# Output location:
+# reports/run-{timestamp}/attestation/attestation-full.html
 ```
 
 ### Why It Works Offline

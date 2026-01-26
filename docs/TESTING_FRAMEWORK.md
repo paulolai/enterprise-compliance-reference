@@ -11,8 +11,9 @@ For layer-specific implementation patterns, see:
 - [Philosophy: Code as Specification](#philosophy-code-as-specification)
   * [Core Tenets](#core-tenets)
 - [Quick Start](#quick-start)
-  * [API Tests (Logic & Rules)](#api-tests-logic--rules)
-  * [GUI Tests (End-to-End)](#gui-tests-end-to-end)
+  * [Run All Tests (Clean Room Report)](#run-all-tests-clean-room-report)
+  * [API Tests (Dev Mode)](#api-tests-dev-mode)
+  * [GUI Tests (Dev Mode)](#gui-tests-dev-mode)
 - [Test Types & When to Use Each](#test-types--when-to-use-each)
 - [Core Philosophy](#core-philosophy)
   * [1. Invariants over Examples](#1-invariants-over-examples)
@@ -65,20 +66,26 @@ We reject the traditional "Translation Layer" (Gherkin/Cucumber) in favor of a *
 
 ## Quick Start
 
-### API Tests (Logic & Rules)
+### Run All Tests (Clean Room Report)
+This is the recommended way to verify the system. It creates a self-contained, timestamped report.
+
 ```bash
-cd implementations/typescript-vitest
-npm install
-npm test
-open reports/latest/attestation-full.html
+pnpm run test:all
+# Output: reports/run-<timestamp>/attestation/attestation-full.html
 ```
 
-### GUI Tests (End-to-End)
+### API Tests (Dev Mode)
+```bash
+cd implementations/typescript-vitest
+pnpm install
+pnpm test
+```
+
+### GUI Tests (Dev Mode)
 ```bash
 cd implementations/react-playwright
-npm install
-npx playwright test
-npx playwright show-report
+pnpm install
+pnpm exec playwright test
 ```
 
 ---
@@ -162,7 +169,7 @@ We enforce quality through a dual-coverage strategy (See [**ADR 13: Dual-Coverag
 - **Goal:** Ensure no "dead requirements" exist (features specified but not tested).
 
 **Verification:**
-Run `npm run test:coverage` to generate both reports. The Attestation Report (`attestation-full.html`) displays a consolidated view.
+Run `pnpm run test:coverage` to generate both reports. The Attestation Report (`attestation-full.html`) displays a consolidated view.
 
 ---
 
@@ -186,9 +193,9 @@ We treat the Test Report as a **Compliance Artifact**.
 - **Visual Evidence**: Screenshots for GUI tests as proof-of-compliance
 
 ### Accessing Reports
-- **Attestation**: `npm run reports:attestation` → opens `reports/latest/attestation-full.html`
-- **Allure**: `npm run reports:allure:serve` → live-reload server at localhost
-- **Coverage**: `npm run test:coverage` → generates in `coverage/` directory
+- **Attestation**: `pnpm run test:all` → generates `reports/run-<timestamp>/attestation/attestation-full.html`
+- **Allure**: `pnpm run reports:allure:serve` → live-reload server at localhost
+- **Coverage**: `pnpm run test:coverage` → generates in `coverage/` directory
 
 ---
 
@@ -280,7 +287,7 @@ it('Rule §1: Total is consistent', () => {
 Before submitting a PR, verify:
 
 1. **Traceability:** Every test has a valid `ruleReference` linking to `pricing-strategy.md`.
-2. **Observability:** The test appears in the **Attestation Report** (`npm run reports:attestation`) with captured Input/Output traces.
+2. **Observability:** The test appears in the **Attestation Report** (`pnpm run reports:attestation`) with captured Input/Output traces.
 3. **Hierarchy:** The test file follows the `domain.layer.type.test.ts` convention (e.g., `cart.api.properties.test.ts`) so it appears in the correct Report Section.
 4. **No Flakiness:** API tests run instantly; GUI tests use **Seams** (not UI clicks) for setup.
 5. **Visuals:** If a GUI test, does it verify the *Business State* (e.g., "Badge Visible") or just the *DOM*? (Prefer Business State).
@@ -290,11 +297,19 @@ Before submitting a PR, verify:
 
 ## How to Debug
 
+
+
 **If a test fails:**
 
-1. **Check the Dual Report:** Run `npm run reports:attestation` and open `reports/{latest}/attestation-full.html`.
+
+
+1.  **Check the Dual Report:** Run `pnpm run test:all` and open `reports/run-<timestamp>/attestation/attestation-full.html`.
+
    - **Technical View:** Is it an API logic bug or a GUI rendering bug?
+
    - **Business View:** Which Rule is broken?
+
+
 
 2. **Inspect the Trace:** Click "View Execution Trace" in the report.
    - Look at the JSON `Input` vs `Output`.

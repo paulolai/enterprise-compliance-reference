@@ -134,18 +134,15 @@ We use a modern stack designed for instant learning, prioritizing **Clone-and-Ru
 
 ```bash
 # 1. Install dependencies (runs from root)
-npm install
+pnpm install
 
-# 2. Run the Vitest unit tests (pricing engine layer)
-npm test
+# 2. Run All Tests (Unit + E2E + Attestation Report)
+# This uses the "Clean Room" runner for a self-contained verification
+pnpm run test:all
 
 # 3. Navigate to React app and start dev server
 cd implementations/react-playwright
-npm run dev
-
-# 4. Run Playwright E2E tests (from react-playwright dir)
-cd implementations/react-playwright
-npm test
+pnpm run dev
 ```
 
 ## 📁 Project Structure
@@ -190,7 +187,7 @@ npm run docs:fix
 - No manual TOC updates needed—stay focused on content
 
 ### Viewing the Artifacts
-- **Audit Evidence:** Open `reports/{timestamp}/attestation-full.html`
+- **Audit Evidence:** Open `reports/run-{timestamp}/attestation/attestation-full.html`
 - **Engineering Trends:** `npm run reports:allure:serve` (Requires Java)
 
 ---

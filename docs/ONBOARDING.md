@@ -120,7 +120,7 @@ executable-specs-demo/
 
 3. **Run Tests** (should fail initially)
    ```bash
-   cd implementations/typescript-vitest && npm test
+   cd implementations/typescript-vitest && pnpm test
    ```
 
 4. **Implement the Logic**
@@ -134,12 +134,12 @@ executable-specs-demo/
 
 5. **Verify All Tests Pass**
    ```bash
-   npm run test:all
+   pnpm run test:all
    ```
 
 6. **Generate Attestation Report**
    ```bash
-   npm run reports:attestation
+   pnpm run reports:attestation
    # Open reports/latest/attestation-full.html
    ```
 
@@ -151,27 +151,27 @@ executable-specs-demo/
 
 ```bash
 cd implementations/typescript-vitest
-npm test                    # Run all tests
-npm run test:watch          # Watch mode
-npm run test:coverage       # Coverage report
-npm run test:allure         # Generate Allure report
+pnpm test                    # Run all tests
+pnpm run test:watch          # Watch mode
+pnpm run test:coverage       # Coverage report
+pnpm run test:allure         # Generate Allure report
 ```
 
 ### E2E Tests (Playwright)
 
 ```bash
 cd implementations/react-playwright
-npm test                    # Run all tests (headless)
-npm run test:headed         # Run with visible browser
-npm run test:ui             # Playwright Test UI
+pnpm test                    # Run all tests (headless)
+pnpm run test:headed         # Run with visible browser
+pnpm run test:ui             # Playwright Test UI
 ```
 
 ### All Tests (Root)
 
 ```bash
-npm run test:unit            # Run unit tests
-npm run test:e2e             # Run E2E tests
-npm run test:all             # Run all test suites
+pnpm run test:unit            # Run unit tests
+pnpm run test:e2e             # Run E2E tests
+pnpm run test:all             # Run all test suites
 ```
 
 ---
@@ -234,7 +234,7 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 
 1. Read `docs/pricing-strategy.md` - understand the business domain
 2. Read `docs/TESTING_FRAMEWORK.md` - learn the testing patterns
-3. Try running `npm run test:all` - verify everything works
+3. Try running `pnpm run test:all` - verify everything works
 4. Explore the test code - see how property-based tests work
 5. Make a small change - modify a business rule and watch tests update
 

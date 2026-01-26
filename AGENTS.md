@@ -8,11 +8,11 @@ This repo uses a multi-implementation structure to demonstrate ATDD patterns at 
 
 | Directory | Purpose | Key Commands |
 |-----------|---------|--------------|
-| `implementations/typescript-vitest/` | Unit test layer: Pricing engine + Vitest | `cd implementations/typescript-vitest && npm test` |
-| `implementations/react-playwright/` | E2E test layer: React app + Playwright + Hono API | `cd implementations/react-playwright && npm test` |
+| `implementations/typescript-vitest/` | Unit test layer: Pricing engine + Vitest | `cd implementations/typescript-vitest && pnpm test` |
+| `implementations/react-playwright/` | E2E test layer: React app + Playwright + Hono API | `cd implementations/react-playwright && pnpm test` |
 | `implementations/shared/` | Shared types and utilities | - |
 | `docs/` | Business rules, patterns, and guidelines | - |
-| `reports/` | Generated attestation reports | `npm run reports:attestation` |
+| `reports/` | Generated attestation reports | `pnpm run test:all` |
 
 ## 🤖 Persona & Goal
 Agents are instructed to act as **Principal Software Engineers** and **Quality Engineering Architects**.
@@ -35,7 +35,7 @@ AI Agents must ingest the following context before making changes:
 ### 1. Implementing Business Logic
 *   **Pattern:** Property-Based Testing (PBT) First.
 *   **Method:** define the **Invariant** first, write the test, then implement the logic.
-*   **Verification:** Always run `npm test` and verify the generated attestation reports.
+*   **Verification:** Always run `pnpm run test:all` and verify the generated attestation reports.
 
 ### 2. Modifying Tests
 *   **Style:** Fluent Interface using **Test Data Builders**.
@@ -74,7 +74,7 @@ Test files MUST follow the `domain.layer.type.test.ts` convention to enable this
 - **API Tests:** Use `tracer.log(testName, input, output)`.
 - **GUI Tests:** The `invariant` helper automatically handles basic logging, but ensure critical state changes are captured.
 
-**Verification Rule:** After running tests, check `reports/{latest}/attestation-full.html`. If a test is listed but has no "Input/Output" trace, it is considered **incomplete**.
+**Verification Rule:** After running tests, check `reports/run-{timestamp}/attestation/attestation-full.html`. If a test is listed but has no "Input/Output" trace, it is considered **incomplete**.
 
 ### Network Mocking Strategy (The Split Brain)
 
