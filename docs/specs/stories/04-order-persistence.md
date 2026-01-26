@@ -173,7 +173,7 @@ cancelled
 
 ## Test Specifications
 
-### Unit Tests (To Be Created)
+### Unit Tests (Already Exists)
 
 **Location:** `implementations/typescript-vitest/test/database/schema.spec.ts`
 
@@ -185,7 +185,7 @@ cancelled
 | Foreign key constraints | OrderItem -> Order FK enforced |
 | Cascade delete works | Delete order → items deleted |
 
-### Migration Tests (To Be Created)
+### Migration Tests (Already Exists)
 
 **Location:** `implementations/typescript-vitest/test/database/migrations.spec.ts`
 
@@ -195,7 +195,7 @@ cancelled
 | Migration is idempotent | Running twice doesn't fail |
 | Seed data consistent | Same products seeded each time |
 
-### API Integration Tests (To Be Created)
+### API Integration Tests (Already Exists)
 
 **Location:** `implementations/react-playwright/src/test/api/orders-api.spec.ts`
 
@@ -219,14 +219,14 @@ cancelled
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Database Schema | `implementations/shared/src/db/schema.ts` | ❌ To be created |
-| Database Connection | `implementations/shared/src/db/index.ts` | ❌ To be created |
-| Seed Script | `implementations/shared/src/db/seed.ts` | ❌ To be created |
-| Orders Route | `implementations/react-playwright/src/server/routes/orders.ts` | ❌ To be created |
-| Products Route | `implementations/react-playwright/src/server/routes/products.ts` | ❌ To be created |
-| Drizzle Config | `drizzle.config.ts` | ❌ To be created |
-| Unit Tests | `implementations/typescript-vitest/test/database/` | ❌ To be created |
-| API Tests | `implementations/react-playwright/src/test/api/orders-api.spec.ts` | ❌ To be created |
+| Database Schema | `implementations/shared/src/db/schema.ts` | ✅ Complete |
+| Database Connection | `implementations/shared/src/db/index.ts` | ✅ Complete |
+| Seed Script | `implementations/shared/src/db/seed.ts` | ✅ Complete |
+| Orders Route | `implementations/react-playwright/src/server/routes/orders.ts` | ✅ Complete |
+| Products Route | `implementations/react-playwright/src/server/routes/products.ts` | ✅ Complete |
+| Drizzle Config | `drizzle.config.ts` | ✅ Complete |
+| Unit Tests | `implementations/typescript-vitest/test/database/` | ✅ Complete |
+| API Tests | `implementations/react-playwright/src/test/api/orders-api.spec.ts` | ✅ Complete |
 
 ### Database Schema (Drizzle)
 

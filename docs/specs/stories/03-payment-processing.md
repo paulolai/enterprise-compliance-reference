@@ -207,7 +207,7 @@ Frontend                         Backend                          Stripe
 
 ## Test Specifications
 
-### API Integration Tests (To Be Created)
+### API Integration Tests (Already Exists)
 
 **Location:** `implementations/react-playwright/src/test/api/payments-api.spec.ts`
 
@@ -224,9 +224,9 @@ Frontend                         Backend                          Stripe
 | Stripe error propagated | Card declined = Stripe error message | @integration |
 | Idempotent confirm | Confirming twice returns same order | @robustness |
 
-### E2E Tests (To Be Created)
+### E2E Tests (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/e2e/payment-flow.ui.test.ts`
+**Location:** `implementations/react-playwright/src/test/e2e/checkout-complete-flow.ui.test.ts`
 
 | Test | Description |
 |------|-------------|
@@ -244,11 +244,11 @@ Frontend                         Backend                          Stripe
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Payments Route | `implementations/react-playwright/src/server/routes/payments.ts` | ❌ To be created |
-| Database Orders | `implementations/shared/src/db/schema.ts` | ❌ To be created |
-| API Tests | `implementations/react-playwright/src/test/api/payments-api.spec.ts` | ❌ To be created |
-| E2E Flow Tests | `implementations/react-playwright/src/test/e2e/payment-flow.ui.test.ts` | ❌ To be created |
-| Checkout Page | `implementations/react-playwright/src/pages/CheckoutPage.tsx` | ⚠️ Needs Stripe integration |
+| Payments Route | `implementations/react-playwright/src/server/routes/payments.ts` | ✅ Complete |
+| Database Orders | `implementations/shared/src/db/schema.ts` | ✅ Complete |
+| API Tests | `implementations/react-playwright/src/test/api/payments-api.spec.ts` | ✅ Complete |
+| E2E Flow Tests | `implementations/react-playwright/src/test/e2e/checkout-complete-flow.ui.test.ts` | ✅ Complete (Mocked) |
+| Checkout Page | `implementations/react-playwright/src/pages/CheckoutPage.tsx` | ✅ Complete |
 
 ### API Endpoints
 

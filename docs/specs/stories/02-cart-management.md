@@ -182,18 +182,18 @@ On Every Change:
 
 ## Test Specifications
 
-### E2E Tests (Needs Update)
+### E2E Tests (Already Exists)
 
 **Location:** `implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts`
 
 | Test | Current Status | Required Update |
 |------|----------------|-----------------|
-| Cart badge shows correct count | ✅ Exists | Verify store actually updates |
-| Cart allows removing items | ✅ Exists | Verify state consistency |
-| Cart allows quantity updates | ✅ Exists | Verify localStorage persist |
-| Add to cart preserves price | ❌ Missing | Add new test |
-| Multiple adds merge correctly | ❌ Missing | Add new test |
-| Cart survives page reload | ❌ Missing | Add new test |
+| Cart badge shows correct count | ✅ Exists | |
+| Cart allows removing items | ✅ Exists | |
+| Cart allows quantity updates | ✅ Exists | |
+| Add to cart preserves price | ✅ Exists | |
+| Multiple adds merge correctly | ✅ Exists | |
+| Cart survives page reload | ✅ Exists | |
 
 ### Unit Tests (To Be Created)
 
@@ -231,8 +231,8 @@ On Every Change:
 |-----------|----------|--------|
 | Cart Store | `implementations/react-playwright/src/store/cartStore.ts` | ✅ Exists, complete |
 | Cart Components | `implementations/react-playwright/src/components/cart/` | ✅ Exists |
-| Product Detail Page | `implementations/react-playwright/src/pages/ProductDetailPage.tsx` | ⚠️ Broken (alert only) |
-| E2E Tests | `implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts` | ✅ Exists |
+| Product Detail Page | `implementations/react-playwright/src/pages/ProductDetailPage.tsx` | ✅ Complete |
+| E2E Tests | `implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts` | ✅ Complete |
 | Unit Tests | `implementations/typescript-vitest/test/cart-store.spec.ts` | ❌ To be created |
 
 ### Store Interface
