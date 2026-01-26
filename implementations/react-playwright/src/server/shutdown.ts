@@ -1,6 +1,6 @@
 import { Server } from 'node:http';
 import { logger } from '../lib/logger';
-import { close as closeDb } from '../../../../shared/src/index-server';
+import { close as closeDb } from '@executable-specs/shared/index-server';
 
 /**
  * Setup graceful shutdown handlers for the server.

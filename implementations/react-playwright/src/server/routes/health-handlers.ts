@@ -1,31 +1,50 @@
-import { Hono } from 'hono';
-import { logger } from '../../lib/logger';
-import { metrics } from '../../lib/metrics';
+import type { Context } from 'hono';
 import { isStripeConfigured } from '../../lib/env';
 import { db } from '@executable-specs/shared/index-server';
 import Stripe from 'stripe';
 
-const router = new Hono();
-
 /**
- * GET /health
- * Simple liveness probe - returns 200 if the app is running.
- * Used by Kubernetes/proxies to check if the pod is alive.
+ * Latency tracking for detailed health metrics
  */
-router.get('/health', (c) => {
-  return c.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
+interface LatencyBucket {
+  count: number;
+  totalMs: number;
+  maxMs: number;
+  minMs: number;
+}
+const latencyBuckets = new Map<string, LatencyBucket>();
+
+function recordLatency(action: string, durationMs: number): void {
+  const bucket = latencyBuckets.get(action) || {
+    count: 0,
+    totalMs: 0,
+    maxMs: -Infinity,
+    minMs: Infinity,
+  };
+  bucket.count++;
+  bucket.totalMs += durationMs;
+  bucket.maxMs = Math.max(bucket.maxMs, durationMs);
+  bucket.minMs = Math.min(bucket.minMs, durationMs);
+  latencyBuckets.set(action, bucket);
+}
+
+function getLatencySummary(action: string): { count: number; avgMs: number; maxMs: number; minMs: number } | null {
+  const bucket = latencyBuckets.get(action);
+  if (!bucket || bucket.count === 0) return null;
+  return {
+    count: bucket.count,
+    avgMs: bucket.totalMs / bucket.count,
+    maxMs: bucket.maxMs === -Infinity ? 0 : bucket.maxMs,
+    minMs: bucket.minMs === Infinity ? 0 : bucket.minMs,
+  };
+}
 
 /**
  * GET /readyz
  * Readiness probe with dependency checks.
  * Used by Kubernetes to determine if the pod can receive traffic.
  */
-router.get('/readyz', async (c) => {
+export const getReadyzHandler = async (c: Context) => {
   const checks: Record<string, { status: 'healthy' | 'unhealthy'; message?: string }> = {};
 
   // Database connectivity check
@@ -88,55 +107,42 @@ router.get('/readyz', async (c) => {
     timestamp: new Date().toISOString(),
     checks,
   }, statusCode);
-});
-
-/**
- * Latency tracking for detailed health metrics
- */
-interface LatencyBucket {
-  count: number;
-  totalMs: number;
-  maxMs: number;
-  minMs: number;
-}
-const latencyBuckets = new Map<string, LatencyBucket>();
-
-function recordLatency(action: string, durationMs: number): void {
-  const bucket = latencyBuckets.get(action) || {
-    count: 0,
-    totalMs: 0,
-    maxMs: -Infinity,
-    minMs: Infinity,
-  };
-  bucket.count++;
-  bucket.totalMs += durationMs;
-  bucket.maxMs = Math.max(bucket.maxMs, durationMs);
-  bucket.minMs = Math.min(bucket.minMs, durationMs);
-  latencyBuckets.set(action, bucket);
-}
-
-function getLatencySummary(action: string): { count: number; avgMs: number; maxMs: number; minMs: number } | null {
-  const bucket = latencyBuckets.get(action);
-  if (!bucket || bucket.count === 0) return null;
-  return {
-    count: bucket.count,
-    avgMs: bucket.totalMs / bucket.count,
-    maxMs: bucket.maxMs === -Infinity ? 0 : bucket.maxMs,
-    minMs: bucket.minMs === Infinity ? 0 : bucket.minMs,
-  };
-}
+};
 
 /**
  * GET /livez
  * Detailed health status including latency bucketing and resource metrics.
  * Provides comprehensive health information for monitoring dashboards.
  */
-router.get('/livez', async (c) => {
-  const startTime = Date.now();
+export const getLivezHandler = async (c: Context) => {
+  // Inline the readiness checks instead of making a self-referential fetch
+  const checks: Record<string, { status: 'healthy' | 'unhealthy'; message?: string }> = {};
 
-  // Reuse readyz checks
-  const readyzResponse = await fetch(new Request(new URL('/readyz', c.req.url)));
-  const readyzData = (await readyzResponse.json()) as { checks?: Record<string, unknown> };
+  // Database connectivity check
+  try {
+    await db.select({ _: 1 });
+    checks.database = { status: 'healthy' };
+  } catch (error) {
+    checks.database = {
+      status: 'unhealthy',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+
+  // Stripe API check
+  if (isStripeConfigured) {
+    checks.stripe = { status: 'healthy', message: 'Configured' };
+  } else {
+    checks.stripe = { status: 'healthy', message: 'Not configured' };
+  }
+
+  // Memory check
+  const memoryUsage = process.memoryUsage();
+  const memoryRatio = memoryUsage.heapUsed / memoryUsage.heapTotal;
+  checks.memory = {
+    status: memoryRatio > 0.9 ? 'unhealthy' : 'healthy',
+    message: `${(memoryRatio * 100).toFixed(1)}% used`,
+  };
 
   // Request latency metrics
   const actions = ['calculate_pricing', 'create_order', 'get_products', 'create_payment_intent'];
@@ -145,8 +151,7 @@ router.get('/livez', async (c) => {
     latencies[action] = getLatencySummary(action);
   }
 
-  // Resource metrics
-  const memoryUsage = process.memoryUsage();
+  // CPU metrics
   const cpuUsage = process.cpuUsage();
 
   return c.json({
@@ -171,19 +176,16 @@ router.get('/livez', async (c) => {
         pid: process.pid,
       },
     },
-    dependencies: readyzData.checks,
+    dependencies: checks,
     latency: latencies,
     metrics: {
-      // Sample of metrics from the metrics framework
       note: 'Full metrics available via metrics export endpoint (not implemented in this demo)',
     },
   }, 200);
-});
+};
 
 /**
  * Helper function to record latency for API routes.
  * This can be imported and used in route handlers.
  */
 export { recordLatency };
-
-export { router as healthRouter };

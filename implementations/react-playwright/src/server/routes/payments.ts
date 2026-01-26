@@ -2,13 +2,13 @@ import { Hono } from 'hono';
 import type { StatusCode as HonoStatusCode } from 'hono/utils/http-status';
 import { logger } from '../../lib/logger';
 import Stripe from 'stripe';
-import { db, OrderStatus } from '../../../../shared/src/index-server';
-import { orders, orderItems } from '../../../../shared/src/index-server';
+import { db, OrderStatus } from '@executable-specs/shared/index-server';
+import { orders, orderItems } from '@executable-specs/shared/index-server';
 import { eq } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
 import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
-import { isFailure } from '../../../../shared/src/result.ts';
+import { isFailure } from '@executable-specs/shared/result';
 
 /**
  * Payments API Routes

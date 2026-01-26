@@ -5,7 +5,7 @@
  * These functions are highly testable and independent of framework/IO.
  */
 
-import { Result, success } from '../../../../shared/src/result.ts';
+import { Result, success } from '@executable-specs/shared/result';
 import {
   CartItem,
   CartItemRequest,

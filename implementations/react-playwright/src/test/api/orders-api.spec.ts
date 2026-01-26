@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
-import { CartItem, PricingResult } from '../../../../shared/src';
+import { CartItem, PricingResult, CartItemWithPriceInCents } from '../../../../shared/src';
 
 interface Product {
   sku: string;
@@ -17,6 +17,7 @@ function registerApiMetadata(
     ruleReference: string;
     rule: string;
     tags: string[];
+    name?: string;
   }
 ) {
   const finalMetadata = {
@@ -47,9 +48,9 @@ test.describe('Orders API Integration Tests', () => {
         name: 'Order creation',
       });
 
-      const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
-        { sku: 'SMART-WATCH', priceInCents: 19900, quantity: 1, weightInKg: 0.2 },
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'SMART-WATCH', name: 'Smart Watch', priceInCents: 19900, quantity: 1, weightInKg: 0.2 },
       ];
 
       const pricingResult: PricingResult = {
@@ -93,7 +94,12 @@ test.describe('Orders API Integration Tests', () => {
 
       expect(response.status()).toBe(200);
 
-      const result = await response.json();
+      // Verify response is JSON, not HTML
+      const text = await response.text();
+      expect(text).not.toMatch(/<!doctype/i);
+      expect(text).not.toMatch(/<html/i);
+
+      const result = JSON.parse(text) as { orderId: string; status: string; total: number };
       expect(result.orderId).toBeTruthy();
       expect(result.status).toBe('paid');
       expect(result.total).toBe(28060);
@@ -107,8 +113,8 @@ test.describe('Orders API Integration Tests', () => {
         name: 'Order ID in response',
       });
 
-      const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
       ];
 
       const response = await request.post(`${API_BASE}`, {
@@ -211,8 +217,8 @@ test.describe('Orders API Integration Tests', () => {
         name: 'Invalid SKU rejection',
       });
 
-      const items: CartItem[] = [
-        { sku: 'INVALID-SKU-999', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'INVALID-SKU-999', name: 'Invalid SKU', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
       ];
 
       const response = await request.post(`${API_BASE}`, {
@@ -345,7 +351,7 @@ test.describe('Orders API Integration Tests', () => {
           for (let i = 0; i < result.orders.length - 1; i++) {
             const current = new Date(result.orders[i].createdAt);
             const next = new Date(result.orders[i + 1].createdAt);
-            expect(current).toBeGreaterThanOrEqual(next);
+            expect(current.getTime()).toBeGreaterThanOrEqual(next.getTime());
           }
         }
       }

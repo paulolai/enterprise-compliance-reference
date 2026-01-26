@@ -1,4 +1,4 @@
-import { MiddlewareHandler } from 'hono';
+import type { MiddlewareHandler } from 'hono';
 import { isDevelopment, isProduction } from '../../lib/env';
 
 /**

@@ -1,13 +1,13 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
 import { randomUUID } from 'crypto';
-import { db, OrderStatus } from '../../../../shared/src/index-server';
-import { orders, orderItems } from '../../../../shared/src/index-server';
-import { eq } from 'drizzle-orm';
-import { validateBody, validateParams, validateQuery } from '../../lib/validation/middleware';
-import { requestSchemas, paramSchemas, querySchemas } from '../../lib/validation/schemas';
+import { db, OrderStatus, products } from '@executable-specs/shared/index-server';
+import { orders, orderItems } from '@executable-specs/shared/index-server';
+import { eq, inArray } from 'drizzle-orm';
+import { validateBody, validateParams } from '../../lib/validation/middleware';
+import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
 import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
-import { isFailure } from '../../../../shared/src/result.ts';
+import { isFailure } from '@executable-specs/shared/result';
 
 const router = new Hono();
 
@@ -23,6 +23,22 @@ router.post('/', validateBody(requestSchemas.createOrder), async (c) => {
     const invariantResult = validateOrderInvariants(total, items);
     if (isFailure(invariantResult)) {
       return c.json({ error: invariantResult.error }, 400);
+    }
+
+    // SKU Validation: Ensure all SKUs exist in the database
+    const skus = items.map(item => item.sku);
+    const existingProducts = await db.select({ sku: products.sku })
+      .from(products)
+      .where(inArray(products.sku, skus));
+    
+    const existingSkus = new Set(existingProducts.map(p => p.sku));
+    const invalidSkus = skus.filter(sku => !existingSkus.has(sku));
+
+    if (invalidSkus.length > 0) {
+      return c.json({ 
+        error: 'Invalid SKU(s) provided', 
+        invalidSkus 
+      }, 400);
     }
 
     // Check if order already exists for this payment intent (idempotency)
@@ -82,8 +98,63 @@ router.post('/', validateBody(requestSchemas.createOrder), async (c) => {
       total,
     });
   } catch (error) {
+    // Log with console.error for debugging - the logger has issues in dev mode
+    console.error('[DEBUG] Order creation failed:', error);
     logger.error('Order creation failed', error, { action: 'create_order' });
-    return c.json({ error: 'Failed to create order' }, 500);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
+    return c.json({ error: errorMessage }, 500);
+  }
+});
+
+/**
+ * GET /api/orders
+ * List all orders
+ */
+router.get('/', async (c) => {
+  try {
+    const allOrders = await db.select().from(orders);
+
+    return c.json({
+      orders: allOrders.map((order) => ({
+        id: order.id,
+        userId: order.userId,
+        status: order.status,
+        total: order.total,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+      })),
+    });
+  } catch (error) {
+    logger.error('Orders retrieval failed', error, { action: 'list_orders' });
+    return c.json({ error: 'Failed to retrieve orders' }, 500);
+  }
+});
+
+/**
+ * GET /api/orders/user/:userId
+ * Get orders for a specific user
+ * NOTE: This MUST come BEFORE /:orderId to avoid matching orders that start with "user"
+ */
+router.get('/user/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId');
+
+    const userOrders = await db.select().from(orders).where(eq(orders.userId, userId));
+
+    return c.json({
+      userId,
+      orders: userOrders.map((order) => ({
+        id: order.id,
+        userId: order.userId,
+        status: order.status,
+        total: order.total,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+      })),
+    });
+  } catch (error) {
+    logger.error('User orders retrieval failed', error, { action: 'get_user_orders' });
+    return c.json({ error: 'Failed to retrieve user orders' }, 500);
   }
 });
 
@@ -135,37 +206,6 @@ router.get('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   } catch (error) {
     logger.error('Order retrieval failed', error, { action: 'get_order' });
     return c.json({ error: 'Failed to retrieve order' }, 500);
-  }
-});
-
-/**
- * GET /api/orders
- * List orders with optional filtering
- */
-router.get('/', validateQuery(querySchemas.listOrders), async (c) => {
-  try {
-    const { userId } = c.get('validatedQuery');
-
-    const query = db.select().from(orders).$dynamic();
-    if (userId) {
-      query.where(eq(orders.userId, userId));
-    }
-
-    const userOrders = await query;
-
-    return c.json({
-      orders: userOrders.map((order) => ({
-        id: order.id,
-        userId: order.userId,
-        status: order.status,
-        total: order.total,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-      })),
-    });
-  } catch (error) {
-    logger.error('Orders retrieval failed', error, { action: 'list_orders' });
-    return c.json({ error: 'Failed to retrieve orders' }, 500);
   }
 });
 
