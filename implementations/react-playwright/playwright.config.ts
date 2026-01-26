@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'reports/html-report', open: 'never' }],
     ['list'],
-    ['allure-playwright', { resultsDir: '../../allure-results/gui' }],
+    ['allure-playwright', { resultsDir: process.env.ALLURE_RESULTS_DIR ? `${process.env.ALLURE_RESULTS_DIR}/gui` : '../../allure-results/gui' }],
   ],
   use: {
     baseURL: 'http://localhost:5173',
@@ -29,8 +29,9 @@ export default defineConfig({
     command: 'pnpm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
-    stdout: 'ignore',
+    stdout: 'pipe',
     stderr: 'pipe',
+    env: process.env.DEBUG_HONO ? { DEBUG_HONO: 'true', DEBUG_ROUTES: 'true' } : {},
   },
 
   projects: [

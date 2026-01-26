@@ -10,21 +10,35 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const ROOT_DIR = path.resolve(__dirname, '../../../');
 const REPORT_DIR = path.join(ROOT_DIR, 'reports');
-const ALLURE_DIRS = [
-  path.join(ROOT_DIR, 'allure-results/api'),
-  path.join(ROOT_DIR, 'allure-results/gui')
-];
+
+// Allow overriding input/output via env vars for the "Clean Room" runner
+const ENV_RESULTS_DIR = process.env.ALLURE_RESULTS_DIR;
+const ENV_REPORT_DIR = process.env.REPORT_OUTPUT_DIR;
+
+const ALLURE_DIRS = ENV_RESULTS_DIR
+  ? [path.join(ENV_RESULTS_DIR, 'api'), path.join(ENV_RESULTS_DIR, 'gui')]
+  : [
+      path.join(ROOT_DIR, 'allure-results/api'),
+      path.join(ROOT_DIR, 'allure-results/gui')
+    ];
 
 function main() {
   console.log('[Attestation] Generating report from Allure results...');
+  if (ENV_RESULTS_DIR) console.log(`[Attestation] Reading results from: ${ENV_RESULTS_DIR}`);
 
   // 1. Load Allure Data
   const tasks = loadAllureData();
   console.log(`[Attestation] Loaded ${tasks.length} test results.`);
 
   // 2. Prepare Output Directory
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const outDir = path.join(REPORT_DIR, timestamp);
+  let outDir;
+  if (ENV_REPORT_DIR) {
+    outDir = ENV_REPORT_DIR;
+  } else {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    outDir = path.join(REPORT_DIR, timestamp);
+  }
+  
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
   // 3. Get Git Info

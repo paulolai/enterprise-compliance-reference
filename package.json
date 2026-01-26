@@ -13,6 +13,8 @@
     "reports:allure:open": "allure open allure-report/",
     "reports:allure:serve": "allure serve allure-results/",
     "reports:attestation": "node implementations/typescript-vitest/scripts/generate-attestation.js",
+    "test:all": "npx tsx scripts/test-runner.ts",
+    "test:ci": "npx tsx scripts/test-runner.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "node implementations/shared/src/db/seed.js",

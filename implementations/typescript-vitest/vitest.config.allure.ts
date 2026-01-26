@@ -14,7 +14,9 @@ export default defineConfig({
       [
         'allure-vitest/reporter',  // Allure reporter for historical trends/dashboards
         {
-          resultsDir: 'allure-results',
+          resultsDir: process.env.ALLURE_RESULTS_DIR 
+            ? resolve(process.env.ALLURE_RESULTS_DIR, 'api') 
+            : 'allure-results',
           environmentInfo: {
             os_platform: os.platform(),
             os_release: os.release(),
