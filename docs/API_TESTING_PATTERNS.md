@@ -4,6 +4,11 @@ This document defines the canonical patterns for API/Unit testing using **Vitest
 
 <!-- toc -->
 
+- [When to Use Unit Tests](#when-to-use-unit-tests)
+  * [What Unit Tests Are Good For](#what-unit-tests-are-good-for)
+  * [What Unit Tests Are NOT For](#what-unit-tests-are-not-for)
+  * [The "Side Effect" Rule](#the-side-effect-rule)
+  * [Unit Tests as Documentation](#unit-tests-as-documentation)
 - [The "API Invariant" Pattern](#the-api-invariant-pattern)
   * [Property-Based Test (Level 3 - High Rigor)](#property-based-test-level-3---high-rigor)
   * [The Anatomy of `verifyInvariant`](#the-anatomy-of-verifyinvariant)
@@ -17,6 +22,12 @@ This document defines the canonical patterns for API/Unit testing using **Vitest
   * [Filtering](#filtering)
   * [Mapping (Transformation)](#mapping-transformation)
 - [Integration Tests (Multi-Rule)](#integration-tests-multi-rule)
+- [Testing Component Interactions](#testing-component-interactions)
+  * [The Principle: Test Interfaces, Not Internals](#the-principle-test-interfaces-not-internals)
+  * [What Makes an Interface Worth Testing?](#what-makes-an-interface-worth-testing)
+  * [Isolation Enables Refactoring](#isolation-enables-refactoring)
+  * [The Interaction is the Promise](#the-interaction-is-the-promise)
+  * [Guardrails vs Golden Paths](#guardrails-vs-golden-paths)
 - [Anti-Patterns to Reject](#anti-patterns-to-reject)
   * [❌ Manual Rounding](#%E2%9D%8C-manual-rounding)
   * [❌ Brittle Step Definitions](#%E2%9D%8C-brittle-step-definitions)
@@ -30,6 +41,73 @@ This document defines the canonical patterns for API/Unit testing using **Vitest
 - [Debugging Failed Property Tests](#debugging-failed-property-tests)
 
 <!-- tocstop -->
+
+---
+
+## When to Use Unit Tests
+
+Unit tests verify **behavior that can be tested in isolation**—without external dependencies, network calls, or full system startup.
+
+### What Unit Tests Are Good For
+
+| Use Case | Example | Why Unit Test |
+|----------|---------|---------------|
+| **Pure business logic** | Pricing calculations, validation rules | Fast, deterministic, no external state |
+| **Data transformations** | Cart → Order mapping, DTO conversions | Clear input → output relationship |
+| **Stringent invariants** | "Final Total ≤ Original Total" | Can prove with PBT (property-based testing) |
+| **Guardrail conditions** | API routes never return HTML | Focused contract verification |
+| **Complex implementation details** | Custom algorithms, edge case handling | Easier to debug in isolation than in full system |
+
+### What Unit Tests Are NOT For
+
+| Don't Unit Test | Better Alternative |
+|-----------------|-------------------|
+| File I/O | Integration test with real file system |
+| Database calls | Contract test with real DB (or test database) |
+| HTTP requests | Contract test with real server |
+| Component wiring | Integration test at the interface boundary |
+
+### The "Side Effect" Rule
+
+If a function has side effects or depends on external state, it's not a good candidate for isolated unit testing. Test it at the integration layer where the side effects happen.
+
+```typescript
+// Good for unit testing: pure function
+function calculateDiscount(cart: Cart, user: User): number {
+  if (user.tenureYears > 2) return cart.total * 0.05;
+  return 0;
+}
+
+// Not good for unit testing: depends on external state
+async function getOrder(orderId: string): Promise<Order> {
+  // Database call, network, etc.
+  return await db.select().from(orders).where(eq(orders.id, orderId));
+}
+```
+
+### Unit Tests as Documentation
+
+A well-written unit test explains the promise a function makes:
+
+```typescript
+describe('calculateDiscount', () => {
+  it('returns 5% for VIP members (tenure > 2 years)', () => {
+    expect(calculateDiscount(
+      { total: 1000 },
+      { tenureYears: 3 }
+    )).toBe(50);
+  });
+
+  it('returns 0 for non-VIP members', () => {
+    expect(calculateDiscount(
+      { total: 1000 },
+      { tenureYears: 1 }
+    )).toBe(0);
+  });
+});
+```
+
+**Principle**: If reading the test doesn't make the promise clear, the test isn't serving its documentation purpose.
 
 ---
 
@@ -245,6 +323,82 @@ it('Pricing + Shipping + VIP all apply correctly', () => {
   });
 });
 ```
+
+---
+
+## Testing Component Interactions
+
+Focus on **interfaces** between components, not their internals. Every interface defines a **promise** to its consumers—test the promise, not how it's fulfilled.
+
+### The Principle: Test Interfaces, Not Internals
+
+| Interface Between | Test the Handshake | Don't Test Internals |
+|-------------------|-------------------|----------------------|
+| Frontend → Pricing API | POST request with items → gets back PricingResult | How PricingEngine calculates internally |
+| Hono Router → Products DB | Router fetch returns Product[] | How Drizzle builds the SQL |
+| Vite Middleware → Hono App | Node Request → Web Request conversion | How Hono routes internally |
+| Playwright → Running Server | HTTP request → JSON response | Server startup code |
+
+The interaction is the promise. Tests verify that the contract holds, regardless of implementation.
+
+### What Makes an Interface Worth Testing?
+
+An interface is worth testing when **someone relies on it**:
+
+1. **Business Rules** → Invariants proving the rule holds for all inputs
+2. **API Contracts** → Scenarios verifying the agreed-upon request/response shape
+3. **Architecture Guarantees** → Format consistency, error conventions, "never HTML fallback"
+4. **Value to Users** → End-to-end scenarios for critical paths
+
+**Guideline**: Use the fastest test that meaningfully verifies the promise.
+- Can test the function directly? Do it.
+- Need to verify the wire format? Test the contract.
+- Critical user journey? Test the full path.
+
+### Isolation Enables Refactoring
+
+When components are tested through their interfaces, you can change internals freely:
+
+```typescript
+// Good: Tests the contract between client and server
+test('Pricing API contract: request with items returns PricingResult', async () => {
+  const request = createTestRequest('/api/pricing/calculate', {
+    method: 'POST',
+    body: { items, user }
+  });
+  const response = await pricingRouter.fetch(request);
+
+  // Verify the contract: these fields MUST exist
+  const result = await response.json();
+  expect(result).toHaveProperty('originalTotal');
+  expect(result).toHaveProperty('finalTotal');
+  expect(result).toHaveProperty('shipment');
+});
+
+// Bad: Tests internal implementation—couples to how pricing works
+test('PricingEngine applies VIP discount internally', () => {
+  expect(mockDb.calculateDiscount).toHaveBeenCalledWith(5);
+});
+```
+
+Tests care about the interface. Rename functions, change algorithms—but keep the contract.
+
+### The Interaction is the Promise
+
+Every interface defines a promise:
+
+- **Pricing API**: "Give me items and user, I'll give you prices"
+- **Products Router**: "Ask for /api/products, I'll give you Product[]"
+- **Orders API**: "POST with order data, I'll create and return an orderId"
+
+**Test the promise, not how it's fulfilled.** The only things worth enforcing are the promises components make to each other.
+
+### Guardrails vs Golden Paths
+
+- **Golden path tests**: Verify happy paths work correctly (business logic, success cases)
+- **Guardrail tests**: Verify the system prevents failure modes (format consistency, error handling)
+
+Missing guardrails is a common gap. For example: "API routes must never return HTML fallback." This isn't a feature—it's an architectural promise that enables client-side code to work reliably.
 
 ---
 
