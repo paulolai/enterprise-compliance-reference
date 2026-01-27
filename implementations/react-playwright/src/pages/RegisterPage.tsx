@@ -32,8 +32,9 @@ export function RegisterPage() {
 
         <form onSubmit={handleSubmit}>
           <div>
-            <label>Name</label>
+            <label htmlFor="register-name">Name</label>
             <input
+              id="register-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -43,8 +44,9 @@ export function RegisterPage() {
           </div>
 
           <div>
-            <label>Email</label>
+            <label htmlFor="register-email">Email</label>
             <input
+              id="register-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -54,8 +56,9 @@ export function RegisterPage() {
           </div>
 
           <div>
-            <label>Password</label>
+            <label htmlFor="register-password">Password</label>
             <input
+              id="register-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

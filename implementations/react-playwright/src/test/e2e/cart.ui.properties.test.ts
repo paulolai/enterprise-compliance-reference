@@ -12,7 +12,7 @@ invariant('Cart total matches calculation result', {
   await page.goto(`/products/${product.sku}`);
 
   // Add item to cart
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for cart badge to update, ensuring state is persisted
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
@@ -39,7 +39,7 @@ invariant('Cart badge shows correct item count', {
   await page.goto(`/products/${productCatalog[0].sku}`);
 
   // Add items to cart
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   let badgeText = await page.getByTestId('cart-badge').textContent();
@@ -47,7 +47,7 @@ invariant('Cart badge shows correct item count', {
 
   // Add another item
   await page.goto('/products/WIRELESS-EARBUDS');
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for badge to reflect the updated count
   await page.waitForTimeout(100);
 
@@ -77,7 +77,7 @@ invariant('VIP badge shown for VIP users', {
 
   // Navigate to products and add item
   await page.goto(`/products/${productCatalog[0].sku}`);
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for cart badge to update, ensuring state is persisted
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
@@ -111,7 +111,7 @@ invariant('VIP badge NOT shown for non-VIP users', {
 
   // Navigate to products and add item
   await page.goto(`/products/${productCatalog[0].sku}`);
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
 
   // Navigate to cart
   await page.goto('/cart');
@@ -129,7 +129,7 @@ invariant('Cart allows removing items', {
   await page.goto(`/products/${productCatalog[0].sku}`);
 
   // Add item to cart
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for cart badge to update, ensuring state is persisted
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
@@ -144,7 +144,7 @@ invariant('Cart allows removing items', {
   await expect(cartItem).toBeVisible();
 
   // Remove the item
-  await page.getByTestId(`remove-cart-item-${productCatalog[0].sku}`).click();
+  await page.getByTestId(`cart-item-${productCatalog[0].sku}`).getByRole('button', { name: 'Remove' }).click();
 
   // Cart should be empty
   const emptyCartMessage = page.getByText('Your cart is empty');
@@ -159,7 +159,7 @@ invariant('Cart allows quantity updates', {
   await page.goto(`/products/${productCatalog[0].sku}`);
 
   // Add item to cart
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for cart badge to update, ensuring state is persisted
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
@@ -192,7 +192,7 @@ invariant('Add to cart preserves price at time of add', {
   await page.goto(`/products/${product.sku}`);
 
   // Add item to cart
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Navigate to cart
@@ -219,7 +219,7 @@ invariant('Adding same SKU merges quantity, does not duplicate', {
   await page.goto(`/products/${product.sku}`);
 
   // Add item once
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   let badgeText = await page.getByTestId('cart-badge').textContent();
@@ -252,7 +252,7 @@ invariant('Cart persists across page reload', {
   await page.goto(`/products/${product.sku}`);
 
   // Add item to cart
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   let badgeText = await page.getByTestId('cart-badge').textContent();
@@ -284,12 +284,12 @@ invariant('Clearing cart removes all items', {
 
   // Add first item
   await page.goto(`/products/${product1.sku}`);
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
   // Add second item
   await page.goto(`/products/${product2.sku}`);
-  await page.getByTestId('add-to-cart').click();
+  await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.waitForTimeout(100);
 
   // Navigate to cart
@@ -308,8 +308,8 @@ invariant('Clearing cart removes all items', {
     await clearButton.click();
   } else {
     // Remove items individually as fallback
-    await page.getByTestId(`remove-cart-item-${product1.sku}`).click();
-    await page.getByTestId(`remove-cart-item-${product2.sku}`).click();
+    await page.getByTestId(`cart-item-${product1.sku}`).getByRole('button', { name: 'Remove' }).click();
+    await page.getByTestId(`cart-item-${product2.sku}`).getByRole('button', { name: 'Remove' }).click();
   }
 
   // Verify cart is empty

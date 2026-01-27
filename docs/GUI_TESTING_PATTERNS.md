@@ -9,6 +9,10 @@ This document defines the canonical patterns for GUI/E2E testing using **Playwri
   * [1. The UI is a Projection of State](#1-the-ui-is-a-projection-of-state)
   * [2. Tests are "User Intent" Specifications](#2-tests-are-user-intent-specifications)
   * [3. Velocity over Ceremony](#3-velocity-over-ceremony)
+- [Selector Strategy & Accessibility](#selector-strategy--accessibility)
+  * [Hierarchy of Selectors](#hierarchy-of-selectors)
+  * [The "Hybrid" Approach for Internationalization](#the-hybrid-approach-for-internationalization)
+  * [Best Practice: `aria-labelledby` over `data-testid`](#best-practice-aria-labelledby-over-data-testid)
 - [Fixture Route Pattern](#fixture-route-pattern)
   * [Avoiding Hardcoded Routes](#avoiding-hardcoded-routes)
   * [Security: Development-Only Routes](#security-development-only-routes)
@@ -88,6 +92,54 @@ We verify **Business Capabilities**, not DOM structures.
 - **Dev-Native:** Tests should run fast against your local dev server.
 - **No Gherkin:** Write TypeScript.
 - **Fluent Builders:** Use the shared `CartBuilder` to define scenarios concisely.
+
+---
+
+## Selector Strategy & Accessibility
+
+We prioritize selectors that resemble how users (including those using Assistive Technology) perceive the page. This "Accessibility-First" approach ensures our tests verify not just the logic, but the usability of the application.
+
+### Hierarchy of Selectors
+
+| Priority | Selector | Use Case | L10n Strategy |
+| :--- | :--- | :--- | :--- |
+| **1. Gold** | **`getByRole(role, { name: '...' })`** | **Interactive Elements** (Buttons, Links, Inputs). <br> *Why:* Verifies the element is accessible AND has the correct label. | Use translation keys for the `name` prop (e.g., `t('submit')`). |
+| **2. Silver** | **`getByLabel('...')`** | **Form Inputs** where Role is ambiguous or verbose. <br> *Why:* Verifies the input is properly associated with a `<label>`. | Use translation keys for the label text. |
+| **3. Bronze** | **`getByRole(...).filter({ hasText: '...' })`** | **Complex Components** (Cards, List Items) needing text filtering. | Use translation keys for the filter text. |
+| **4. Iron** | **`getByTestId('...')`** | **Data Values** (Prices, IDs) or **Layout Containers** where no semantic role exists. <br> *Why:* Text is volatile (formats change). DOM is volatile (redesigns). | **Language Agnostic.** Safe to use hardcoded IDs (e.g., `data-testid="grand-total"`). |
+
+### The "Hybrid" Approach for Internationalization
+
+Even if the project does not yet use i18n, using `getByRole` prepares you for it without overhead.
+
+**Phase 1: English Only (Current)**
+You write tests against the visible text. This acts as a "Copy Verification".
+```typescript
+await page.getByRole('button', { name: 'Checkout' }).click();
+```
+
+**Phase 2: Internationalized (Future)**
+When translation libraries are added, you replace the string with a variable. The selector logic remains identical.
+```typescript
+// The selector structure stays; only the string source changes.
+await page.getByRole('button', { name: t('actions.checkout') }).click();
+```
+
+### Best Practice: `aria-labelledby` over `data-testid`
+
+Instead of adding `data-testid` to a value, link it to its label. This creates a stable, accessible relationship.
+
+**React Code:**
+```tsx
+<div id="label-total">Grand Total</div>
+<div role="status" aria-labelledby="label-total">$105.00</div>
+```
+
+**Test Code:**
+```typescript
+// Finds the element semantically linked to "Grand Total"
+await expect(page.getByRole('status', { name: 'Grand Total' })).toHaveText('$105.00');
+```
 
 ---
 
