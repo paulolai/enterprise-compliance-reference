@@ -115,16 +115,15 @@ It solves a specific, painful problem found in enterprises:
 ### The "Clean Room" Teaching Stack
 We use a modern stack designed for instant learning, prioritizing **Clone-and-Run** simplicity.
 
-<!-- TODO: Update this table with current state. Remove shadcn/ui, SQLite, Drizzle references (not installed). Document actual UI library and state management (Zustand). -->
 | Layer | Technology | Rationale |
 | --- | --- | --- |
 | **Frontend** | **Vite + React** | Instant feedback loops. No "Server Component" confusion. |
-| **UI Lib** | **[TODO: Document actual UI library]** | <!-- TODO: shadcn/ui not currently installed --> |
+| **UI Lib** | **CSS Modules** | Standard, maintainable CSS without complex framework overhead. |
+| **State** | **Zustand** | Minimalist state management that simplifies testing. |
 | **Backend** | **Hono** | The "Feynman" of Backends. Ultra-light, standards-based replacement for Express. |
-| **Database** | **[TODO: Document actual DB layer]** | <!-- TODO: SQLite + Drizzle not currently installed --> |
+| **Database** | **SQLite + Drizzle** | Zero-config SQL database with full TypeScript schema validation. |
 | **Testing** | **Vitest + Playwright** | The "Double Loop" engines for ATDD. |
 
-<!-- TODO: Update rationale section after tech stack is finalized -->
 #### Why this specific stack?
 *   **Hono:** Removes boilerplate. Lets you teach "API Concepts" without fighting the framework.
 *   **SQLite:** Removes the "DevOps Wall". Committable "seed" databases ensure every student starts with the same state.
@@ -160,12 +159,12 @@ implementations/
 │   ├── src/
 │   │   ├── components/    # Cart, checkout, product components
 │   │   ├── pages/         # Home, Products, Cart, Checkout, Login, Register
-│   │   ├── server/        # Hono backend API (pricing, auth)
-│   │   ├── store/         # Zustand state management
+│   │   ├── server/        # Hono backend API (pricing, auth, orders)
+│   │   ├── store/         # Zustand state management (cart logic)
 │   │   └── providers/     # React context providers
 │   └── test-results/      # Playwright test output
 │
-├── shared/                # Shared types and utilities
+├── shared/                # Shared types, DB schema, and utilities
 └── typescript-cucumber/   # Cucumber implementation (documentation/contrast only)
 
 reports/                   # Generated attestation reports
