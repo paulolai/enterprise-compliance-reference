@@ -285,14 +285,14 @@ These tests verify all domains work together:
 
 This domain is complete when:
 
-- [ ] All domain specs documented
-- [ ] Complete E2E flow from products to confirmation works
-- [ ] Payment declined handled gracefully
+- [x] All domain specs documented
+- [x] Complete E2E flow from products to confirmation works
+- [x] Payment declined handled gracefully
 - [ ] Order confirmation page shows order details
-- [ ] Back button after payment works
-- [ ] All end-to-end tests pass
-- [ ] Pricing displayed matches pricing engine
-- [ ] Orders created only on successful payment
+- [x] Back button after payment works
+- [x] All end-to-end tests pass
+- [x] Pricing displayed matches pricing engine
+- [x] Orders created only on successful payment
 - [ ] Attestation reports show coverage across all domains
 
 ---

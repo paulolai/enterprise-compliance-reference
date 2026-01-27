@@ -355,18 +355,18 @@ DATABASE_PATH=./data/shop.db
 
 This domain is complete when:
 
-- [ ] All domain specs documented
-- [ ] Drizzle schema defined
-- [ ] Database migrations run successfully
-- [ ] Products seeded (11 products)
-- [ ] POST /api/orders creates orders with items
-- [ ] GET /api/orders/:id returns order details
-- [ ] GET /api/orders/user/:userId returns user's orders
-- [ ] GET /api/products returns product catalog
-- [ ] Cascade delete working
-- [ ] All unit tests pass
-- [ ] All API tests pass
-- [ ] Attestation reports show full coverage
+- [x] All domain specs documented
+- [x] Drizzle schema defined
+- [x] Database migrations run successfully
+- [x] Products seeded (11 products)
+- [x] POST /api/orders creates orders with items
+- [x] GET /api/orders/:id returns order details
+- [x] GET /api/orders/user/:userId returns user's orders
+- [x] GET /api/products returns product catalog
+- [x] Cascade delete working
+- [x] All unit tests pass
+- [x] All API tests pass
+- [x] Attestation reports show full coverage
 
 ---
 

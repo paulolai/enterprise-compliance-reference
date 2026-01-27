@@ -288,14 +288,14 @@ const handleAddToCart = () => {
 
 This domain is complete when:
 
-- [ ] All domain specs documented
-- [ ] Add to Cart actually updates store (not just alert)
-- [ ] Cart badge always reflects accurate count
-- [ ] Add identical SKUs merges (quantity increment)
-- [ ] Price preserved at add-time
-- [ ] Cart persists across page reloads
-- [ ] All E2E tests pass with real store mutations
-- [ ] Unit tests for cart store written and passing
+- [x] All domain specs documented
+- [x] Add to Cart actually updates store (not just alert)
+- [x] Cart badge always reflects accurate count
+- [x] Add identical SKUs merges (quantity increment)
+- [x] Price preserved at add-time
+- [x] Cart persists across page reloads
+- [x] All E2E tests pass with real store mutations
+- [x] Unit tests for cart store written and passing
 - [ ] Attestation reports show full coverage
 
 ---

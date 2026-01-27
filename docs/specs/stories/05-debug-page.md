@@ -278,14 +278,14 @@ Response:
 
 This domain is complete when:
 
-- [ ] Debug index page created at `/debug`
-- [ ] All debug scenarios listed with descriptions
-- [ ] "Apply Scenario" buttons work for each scenario
-- [ ] Reset button clears all state
-- [ ] Links to existing debug pages (Cart, Checkout)
-- [ ] E2E tests for debug index page pass
-- [ ] Attestation reports show coverage
-- [ ] Page clearly marked as "Debug/Development Only"
+- [x] Debug index page created at `/debug`
+- [x] All debug scenarios listed with descriptions
+- [x] "Apply Scenario" buttons work for each scenario
+- [x] Reset button clears all state
+- [x] Links to existing debug pages (Cart, Checkout)
+- [x] E2E tests for debug index page pass
+- [x] Attestation reports show coverage
+- [x] Page clearly marked as "Debug/Development Only"
 
 ---
 

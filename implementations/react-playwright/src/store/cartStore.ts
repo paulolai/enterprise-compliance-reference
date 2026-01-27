@@ -76,6 +76,7 @@ export const useCartStore = create<CartState>()(
       clear: () =>
         set({
           items: [],
+          user: null,
           pricingResult: null,
           shippingMethod: ShippingMethod.STANDARD,
         }),

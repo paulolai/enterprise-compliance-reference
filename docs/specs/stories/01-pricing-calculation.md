@@ -252,11 +252,11 @@
 
 This domain is complete when:
 
-- [ ] All domain specs documented
-- [ ] API integration tests written and passing
-- [ ] API endpoint verified to use same PricingEngine as unit tests
-- [ ] Attestation reports show full coverage
-- [ ] All invariants verified across unit, API, and E2E layers
+- [x] All domain specs documented
+- [x] API integration tests written and passing
+- [x] API endpoint verified to use same PricingEngine as unit tests
+- [x] Attestation reports show full coverage
+- [x] All invariants verified across unit, API, and E2E layers
 
 ---
 
