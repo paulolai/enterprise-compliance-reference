@@ -3,19 +3,22 @@
 ## Goal
 Transform the "Domain Coverage" system from a manual maintenance burden into an automated quality gate. We will implement "Drift Detection" to ensure the **Requirements (Markdown)** and **Verification (Code)** never diverge.
 
-## 1. Documentation (The "Why" & "How") (COMPLETED)
+## 1. Documentation (The "Why" & "How")
 Before building the tool, we define the contract.
-*   [x] **Update `docs/ARCHITECTURE_DECISIONS.md`**:
+*   [ ] **Update `docs/ARCHITECTURE_DECISIONS.md`**:
     *   Add **ADR 13: Drift Detection Strategy**.
     *   Explicitly decide: "We treat Documentation Bugs (typos, stale rules) as Build Failures."
-*   [x] **Update `docs/TESTING_FRAMEWORK.md`**:
+*   [ ] **Update `docs/TESTING_FRAMEWORK.md`**:
     *   Add "Managing Drift" section.
     *   Explain the `drift:check` command.
 
 ## 2. Tooling: The Drift Detector & Fixer
+*   [ ] **Create directory**: `implementations/shared/scripts/` (if not exists)
+*   [ ] **Create directory**: `implementations/shared/src/modules/domain-coverage/` (for shared types)
 Create a suite of scripts in `implementations/shared/scripts/`.
 
 ### A. The Detective (`check-drift.ts`)
+*   [ ] **Implement** `implementations/shared/scripts/check-drift.ts`
 *   **Inputs:** `pricing-strategy.md` and `**/*.test.ts`.
 *   **Logic:**
     1.  Leverage existing `DomainCoverageParser` from `implementations/typescript-vitest/test/domain-coverage/`
@@ -25,14 +28,14 @@ Create a suite of scripts in `implementations/shared/scripts/`.
         - **Orphaned Tests:** Tests referencing rules that don't exist in MD
         - **Missing Tests:** Rules in MD not referenced by any test
         - **Typos:** Rules with similar names (fuzzy match suggestion)
+*   **[ ] Add npm scripts** (`drift:check`, `drift:fix`) to root `package.json`
 *   **Outputs:**
     *   **Error (Exit 1):** Orphaned Tests exist (prevents misleading reporting)
     *   **Warning (Exit 0):** Missing Tests exist (alerts to unverified features)
     *   **Suggestion:** "Found 'Rule §5' in tests, but MD has 'Rule § 5'. Did you mean...?"
 
-**Note:** The ` implementations/shared/scripts/` directory should be created if it does not exist. The implementation should validate directory existence and provide a helpful error message.
-
 ### B. The Fixer (`scaffold-tests.ts`)
+*   [ ] **Implement** `implementations/shared/scripts/scaffold-tests.ts`
 *   **Trigger:** `npm run drift:fix` or interactive CLI.
 *   **Action:** For every "Missing Test":
     1.  Identify the Domain (e.g., "Pricing", "Shipping") based on the rule section.
@@ -45,16 +48,27 @@ Create a suite of scripts in `implementations/shared/scripts/`.
 
 ## 3. Automation: Git Hooks
 Make it impossible to commit "Lying Tests."
-*   **Install `husky`**: Standard tool for Git hooks.
-*   **Pre-Commit Hook**:
+*   [ ] **Install `husky`**: Standard tool for Git hooks. ✅ **ALREADY INSTALLED** (`.husky/` exists)
+*   [ ] **Update `.husky/pre-commit`**:
     *   Run `npm run drift:check`.
     *   (Optional) Run `npm run test:types` (fast check).
     *   If `drift:check` fails (Orphaned Test), the commit is rejected with: *"Error: Test references deleted rule. Run `npm run drift:fix` to resolve."*
 
 ## 4. Workflows (Future State)
-*   **VS Code Task:** "Scaffold Missing Tests" (Auto-generate `.test.ts` file for untracked rules).
+*   [ ] **VS Code Task:** "Scaffold Missing Tests" (Auto-generate `.test.ts` file for untracked rules).
 
-## Implementation Order
-1.  **Docs:** Define the standard first.
-2.  **Script:** Build the `drift-checker` logic.
-3.  **Hook:** Enforce it via Husky.
+---
+
+## Status Summary
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Documentation (ADR 13 + Framework Docs) | ❌ Not Started | Sections marked as complete but files don't contain required content |
+| `DomainCoverageParser` | ✅ Exists | Located at `implementations/typescript-vitest/test/domain-coverage/domain-coverage-parser.ts` |
+| `check-drift.ts` (Detective) | ❌ Not Implemented | Scripts directory doesn't exist |
+| `scaffold-tests.ts` (Fixer) | ❌ Not Implemented | Scripts directory doesn't exist |
+| Husky (Git Hooks) | ⚠️ Partial | Installed, but pre-commit only runs `lint-staged`, not `drift:check` |
+| npm scripts (`drift:check`, `drift:fix`) | ❌ Missing | Not in root `package.json` |
+| VS Code Task | ❌ Not Implemented | N/A |
+
+**Good News:** The foundational `DomainCoverageParser` already exists with exactly the methods referenced in the plan (`parseBusinessRules()`, `extractRuleReferences()`, `calculateCoverage()`).
