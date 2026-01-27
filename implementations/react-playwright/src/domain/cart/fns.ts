@@ -5,11 +5,12 @@
  * These functions are highly testable and independent of framework/IO.
  */
 
-import { Result, success } from '@executable-specs/shared/result';
-import {
+import type { Result } from '@executable-specs/shared/result';
+import { success } from '@executable-specs/shared/result';
+import type {
   CartItem,
   CartItemRequest,
-  type PricingResult,
+  PricingResult,
 } from './schema.ts';
 
 /**

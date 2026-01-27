@@ -28,7 +28,8 @@ router.get('/readyz', async (c) => {
 
   // Database connectivity check
   try {
-    await db.select({ _: 1 }); // Simple query to test connection
+    // Use a simple SELECT 1 via raw query for connection test
+    await db.$client.prepare('SELECT 1').get();
     checks.database = { status: 'healthy' };
   } catch (error) {
     checks.database = {

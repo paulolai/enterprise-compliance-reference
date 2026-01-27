@@ -18,6 +18,13 @@ import { ValidationError } from '../errors';
 import { logger } from '../logger';
 
 /**
+ * Hono Context extension keys for validated data
+ */
+export const VALIDATED_BODY_KEY = 'validatedBody' as const;
+export const VALIDATED_PARAMS_KEY = 'validatedParams' as const;
+export const VALIDATED_QUERY_KEY = 'validatedQuery' as const;
+
+/**
  * Validation options
  */
 export interface ValidationOptions {

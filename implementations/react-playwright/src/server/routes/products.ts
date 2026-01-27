@@ -5,7 +5,6 @@ import { products } from '@executable-specs/shared/index-server';
 import { eq } from 'drizzle-orm';
 import { validateParams, validateQuery } from '../../lib/validation/middleware';
 import { paramSchemas, querySchemas } from '../../lib/validation/schemas';
-import type { GetProductRequest } from '../../lib/validation/schemas';
 
 const router = new Hono();
 // ... (omitted GET / as it doesn't use query)
@@ -46,7 +45,7 @@ router.get('/', validateQuery(querySchemas.listProducts), async (c) => {
  */
 router.get('/:sku', validateParams(paramSchemas.productSku), async (c) => {
   try {
-    const { sku } = c.get('validatedParams') as GetProductRequest;
+    const { sku } = (c.get('validatedParams' as never) as unknown) as { sku: string };
 
     // Ensure products are seeded (idempotent)
     await seedProducts();

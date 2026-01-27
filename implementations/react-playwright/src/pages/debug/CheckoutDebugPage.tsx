@@ -127,7 +127,12 @@ export function CheckoutDebugPage() {
     }
 
     // Update auth client first to sync with AuthProvider
-    authClient.debugSetUser(user);
+    // Ensure user has required name property
+    authClient.debugSetUser({
+      tenureYears: user.tenureYears,
+      name: user.name || 'Debug User',
+      email: user.email || 'debug@test.com',
+    });
 
     // Override store for debug mode
     const now = Date.now();

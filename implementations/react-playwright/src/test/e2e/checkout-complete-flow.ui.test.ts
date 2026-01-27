@@ -36,7 +36,7 @@ function registerE2EMetadata(
 // Helper to seed localStorage before page load
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function seedLocalStorage(page: any, cartState: Record<string, unknown>) {
-  await page.addInitScript((state) => {
+  await page.addInitScript((state: Record<string, unknown>) => {
     localStorage.setItem('cart-storage', JSON.stringify(state));
   }, cartState);
 }

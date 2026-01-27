@@ -320,8 +320,15 @@ export function fromNullable<T, E>(value: T | null | undefined, error: E): Resul
   return value !== null && value !== undefined ? success(value) : failure(error);
 }
 
+// Import Zod types locally for the fromZod function
+import type { ZodError } from 'zod';
+
 /**
  * Convert a Zod validation result to a Result.
+ *
+ * Note: Zod's SafeParseResult returns { success: true, data: T } on success,
+ * but our Result type expects { success: true, value: T }. This function
+ * converts between the two structures.
  *
  * @param parseResult - The Zod parse result
  * @param errorMessage - Error message if validation fails
@@ -335,8 +342,14 @@ export function fromNullable<T, E>(value: T | null | undefined, error: E): Resul
  * const result = fromZod(ItemSchema.safeParse(input), 'Invalid item data');
  * ```
  */
-export function fromZod<T, E = Error>(parseResult: { success: true; data: T } | { success: false; error: z.ZodError }, errorMessage?: string): Result<T, E> {
-  return isSuccess(parseResult)
-    ? success(parseResult.data)
-    : failure((errorMessage ? new Error(errorMessage) : parseResult.error) as E);
+export function fromZod<T, E = Error>(
+  parseResult: { success: true; data: T } | { success: false; error: ZodError },
+  errorMessage?: string
+): Result<T, E> {
+  if (parseResult.success) {
+    // Zod returns { success: true, data: T }, convert to { success: true, value: T }
+    return success(parseResult.data);
+  }
+  // Zod returns { success: false, error: ZodError }, keep as is
+  return failure((errorMessage ? new Error(errorMessage) : parseResult.error) as E);
 }

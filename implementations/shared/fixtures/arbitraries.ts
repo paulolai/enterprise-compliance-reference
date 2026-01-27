@@ -1,5 +1,6 @@
 import * as fc from 'fast-check';
-import { CartItem, User, ShippingMethod, Cents } from '../src/types';
+import type { CartItem, User } from '../src/types';
+import { ShippingMethod } from '../src/types';
 
 // Generator for a single CartItem
 export const itemArb = fc.record<CartItem>({

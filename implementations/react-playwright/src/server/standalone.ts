@@ -41,4 +41,5 @@ const server = await serve({
 });
 
 // Setup graceful shutdown handlers
-setupGracefulShutdown(server);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+setupGracefulShutdown(server as any);

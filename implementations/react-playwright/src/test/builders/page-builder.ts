@@ -1,6 +1,7 @@
-import { Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { CartBuilder } from '@executable-specs/shared/fixtures';
-import { ShippingMethod, PricingEngine } from '@executable-specs/shared';
+import { PricingEngine } from '@executable-specs/shared';
+import { ShippingMethod } from '@executable-specs/shared';
 
 /**
  * PageBuilder

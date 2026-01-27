@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import type { StatusCode as HonoStatusCode } from 'hono/utils/http-status';
 import { logger } from '../../lib/logger';
 import Stripe from 'stripe';
 import { MockStripe } from '../services/stripe-mock';
@@ -8,16 +7,17 @@ import { orders, orderItems } from '@executable-specs/shared/index-server';
 import { eq } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
+import type { CreatePaymentIntentRequest, ConfirmPaymentRequest, CancelPaymentRequest, GetPaymentIntentRequest } from '../../lib/validation/schemas';
 import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
 import { isFailure } from '@executable-specs/shared/result';
+
+// Valid HTTP status codes for responses
+type StatusCode = 200 | 201 | 400 | 401 | 404 | 500 | 501 | 502;
 
 /**
  * Payments API Routes
  * Handles Stripe PaymentIntent creation and order confirmation
  */
-
-// Valid HTTP status codes for responses
-type StatusCode = 200 | 201 | 400 | 401 | 404 | 500 | 501;
 
 const router = new Hono();
 
@@ -50,7 +50,7 @@ router.post('/create-intent', validateBody(requestSchemas.createPaymentIntent), 
   }
 
   try {
-    const { amount, cartId, userId, cartItems } = c.get('validatedBody');
+    const { amount, cartId, userId, cartItems } = (c.get('validatedBody' as never) as unknown) as CreatePaymentIntentRequest;
 
     // Domain Invariant Check
     const invariantResult = validateOrderInvariants(amount, cartItems);
@@ -101,7 +101,7 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
   }
 
   try {
-    const { paymentIntentId, cartItems, shippingAddress } = c.get('validatedBody');
+    const { paymentIntentId, cartItems, shippingAddress } = (c.get('validatedBody' as never) as unknown) as ConfirmPaymentRequest;
 
     // Check if order already exists (idempotency)
     const existingOrders = await db
@@ -131,7 +131,7 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
           return c.json({ error: 'PaymentIntent not found' }, 404);
         }
         const statusCode = (error.statusCode || 500);
-        return c.json({ error: error.message }, statusCode as HonoStatusCode);
+        return c.json({ error: error.message }, statusCode as StatusCode);
       }
       return c.json({ error: 'Failed to verify PaymentIntent' }, 500);
     }
@@ -225,7 +225,7 @@ router.post('/cancel', validateBody(requestSchemas.cancelPayment), async (c) => 
   }
 
   try {
-    const { paymentIntentId, reason } = c.get('validatedBody');
+    const { paymentIntentId, reason } = (c.get('validatedBody' as never) as unknown) as CancelPaymentRequest;
 
     // Cancel the PaymentIntent
     const cancelledIntent = await stripe.paymentIntents.cancel(paymentIntentId, {
@@ -262,7 +262,7 @@ router.get('/intent/:id', validateParams(paramSchemas.paymentIntentId), async (c
   }
 
   try {
-    const { id: paymentIntentId } = c.get('validatedParams');
+    const { id: paymentIntentId } = (c.get('validatedParams' as never) as unknown) as GetPaymentIntentRequest;
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 

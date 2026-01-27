@@ -8,15 +8,16 @@ export interface AllureAdapter {
 }
 
 export interface RuleMetadata {
+  name?: string;       // Test name identifier
   ruleReference: string;
   rule: string;
   tags?: string[];
-  
+
   // Hierarchical Metadata
   epic?: string;        // Business Goal (e.g., "Revenue Protection")
   feature?: string;     // Domain (e.g., "Pricing", "Cart")
   story?: string;       // Rule/Story (e.g., "Bulk Discounts apply > 3")
-  
+
   // Technical Hierarchy
   parentSuite?: string; // Layer (e.g., "API Verification")
   suite?: string;       // Domain (e.g., "Pricing")

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';
+import type { LoginRequest } from '../../lib/validation/schemas';
 
 /**
  * Mock Authentication Routes
@@ -23,7 +24,7 @@ const router = new Hono();
 
 router.post('/login', validateBody(requestSchemas.login), async (c) => {
   try {
-    const { email, password } = c.get('validatedBody');
+    const { email, password } = (c.get('validatedBody' as never) as unknown) as LoginRequest;
 
     const user = USERS.get(email);
     if (user && password === 'password') {

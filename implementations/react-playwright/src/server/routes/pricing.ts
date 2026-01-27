@@ -3,11 +3,12 @@ import { logger } from '../../lib/logger';
 import { PricingEngine } from '../../../../shared/src';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';
+import type { CalculatePricingRequest } from '../../lib/validation/schemas';
 
 const router = new Hono();
 
 router.post('/calculate', validateBody(requestSchemas.calculatePricing), async (c) => {
-  const { items, user, method } = c.get('validatedBody');
+  const { items, user, method } = (c.get('validatedBody' as never) as unknown) as CalculatePricingRequest;
 
   try {
     const result = PricingEngine.calculate(items, user || { tenureYears: 0 }, method);

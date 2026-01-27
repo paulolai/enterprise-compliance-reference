@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { ShippingMethod } from '../../../../../shared/src';
+import { ShippingMethod } from '../../../../../shared/src';
 
 /**
  * Intent-Based Checkout Driver

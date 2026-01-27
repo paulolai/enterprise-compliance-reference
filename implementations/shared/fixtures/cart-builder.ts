@@ -1,5 +1,6 @@
-import { CartItem, User, PricingResult, ShippingMethod, Cents } from '../src/types';
+import type { CartItem, User, PricingResult, Cents } from '../src/types';
 import { PricingEngine } from '../src/pricing-engine';
+import { ShippingMethod } from '../src/types';
 
 // Simple tracer interface for optional logging
 export interface Tracer {

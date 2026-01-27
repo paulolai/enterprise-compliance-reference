@@ -118,16 +118,16 @@ export class AppError extends Error {
   toResponse(): ErrorResponse {
     return {
       error: this.code,
-      message: this.userMessage || this.getDefaultUserMessage(),
+      message: this.userMessage || this.getDefaultUserMessageValue(),
       statusCode: this.statusCode,
       requestId: this.getRequestId?.(),
     };
   }
 
   /**
-   * Get default user-facing message for this error code
+   * Get default user-facing message for this error code (protected)
    */
-  private getDefaultUserMessage(): string {
+  protected getDefaultUserMessageValue(): string {
     const messages: Record<ErrorCode, string> = {
       [ErrorCode.VALIDATION_ERROR]: 'Invalid input provided',
       [ErrorCode.INVALID_INPUT]: 'Invalid input provided',
@@ -189,7 +189,7 @@ export class ValidationError extends AppError {
   toResponse(): ValidationErrorResponse {
     return {
       error: this.code,
-      message: this.userMessage || this.getDefaultUserMessage(),
+      message: this.userMessage || this.getDefaultUserMessageValue(),
       statusCode: this.statusCode,
       fields: this.fields,
       requestId: this.getRequestId?.(),
@@ -330,17 +330,47 @@ export class RateLimitedError extends AppError {
       ErrorCode.RATE_LIMITED,
       429,
       undefined,
-      userMessage
+      userMessage ||
+        getDefaultUserMessageForCode(ErrorCode.RATE_LIMITED)
     );
   }
 
   toResponse(): RateLimitedErrorResponse {
-    const base = super.toResponse();
     return {
-      ...base,
+      error: this.code,
+      message: this.userMessage || getDefaultUserMessageForCode(ErrorCode.RATE_LIMITED),
+      statusCode: this.statusCode,
       retryAfter: this.retryAfter,
+      requestId: this.getRequestId?.(),
     };
   }
+}
+
+/**
+ * Get default user-facing message for an error code
+ */
+function getDefaultUserMessageForCode(code: ErrorCode): string {
+  const messages: Record<ErrorCode, string> = {
+    [ErrorCode.VALIDATION_ERROR]: 'Invalid input provided',
+    [ErrorCode.INVALID_INPUT]: 'Invalid input provided',
+    [ErrorCode.MISSING_FIELD]: 'Required field is missing',
+    [ErrorCode.UNAUTHORIZED]: 'Authentication required',
+    [ErrorCode.FORBIDDEN]: 'You do not have permission to perform this action',
+    [ErrorCode.NOT_FOUND]: 'Resource not found',
+    [ErrorCode.USER_NOT_FOUND]: 'User not found',
+    [ErrorCode.PRODUCT_NOT_FOUND]: 'Product not found',
+    [ErrorCode.ORDER_NOT_FOUND]: 'Order not found',
+    [ErrorCode.PAYMENT_FAILED]: 'Payment processing failed',
+    [ErrorCode.PAYMENT_REQUIRED]: 'Payment is required',
+    [ErrorCode.INSUFFICIENT_STOCK]: 'Not enough items in stock',
+    [ErrorCode.INVALID_STATE]: 'Invalid operation for current state',
+    [ErrorCode.RATE_LIMITED]: 'Too many requests, please try again later',
+    [ErrorCode.STRIPE_ERROR]: 'Payment service error',
+    [ErrorCode.DATABASE_ERROR]: 'Database error',
+    [ErrorCode.INTERNAL_ERROR]: 'An unexpected error occurred',
+    [ErrorCode.SERVICE_UNAVAILABLE]: 'Service temporarily unavailable',
+  };
+  return messages[code] || 'An error occurred';
 }
 
 /**

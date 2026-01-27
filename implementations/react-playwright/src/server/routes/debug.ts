@@ -4,6 +4,8 @@ import { ShippingMethod } from '../../../../shared/src';
 import { isProduction } from '../../lib/env';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';
+import type { SeedAuthRequest } from '../../lib/validation/schemas';
+import type { SeedSessionRequest } from '../../lib/validation/schemas';
 
 const router = new Hono();
 
@@ -30,7 +32,7 @@ router.all('/*', async (c, next) => {
  * Seed a cart session for test isolation
  */
 router.post('/seed-session', validateBody(requestSchemas.seedSession), async (c) => {
-  const { cart, user, shippingMethod } = c.get('validatedBody');
+  const { cart, user, shippingMethod } = (c.get('validatedBody' as never) as unknown) as SeedSessionRequest;
 
   // Add metadata timestamps to each item
   const cartWithMetadata = cart.map((item: CartItem) => ({
@@ -53,7 +55,7 @@ router.post('/seed-session', validateBody(requestSchemas.seedSession), async (c)
  * Seed an authenticated session for tests
  */
 router.post('/seed-auth', validateBody(requestSchemas.seedAuth), async (c) => {
-  const { email } = c.get('validatedBody');
+  const { email } = (c.get('validatedBody' as never) as unknown) as SeedAuthRequest;
 
   // Create a mock user based on email
   const mockUser = {

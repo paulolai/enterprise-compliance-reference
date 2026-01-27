@@ -18,7 +18,7 @@ const router = new Hono();
  */
 router.post('/', validateBody(requestSchemas.createOrder), async (c) => {
   try {
-    const { userId, items, total, pricingResult, shippingAddress, stripePaymentIntentId } = c.get('validatedBody') as CreateOrderRequest;
+    const { userId, items, total, pricingResult, shippingAddress, stripePaymentIntentId } = (c.get('validatedBody' as never) as unknown) as CreateOrderRequest;
 
 
     // Ensure products are seeded (idempotent)
@@ -169,7 +169,7 @@ router.get('/user/:userId', async (c) => {
  */
 router.get('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   try {
-    const { orderId } = c.get('validatedParams') as GetOrderRequest;
+    const { orderId } = (c.get('validatedParams' as never) as unknown) as GetOrderRequest;
 
     const orderResults = await db.select().from(orders).where(eq(orders.id, orderId));
 
@@ -220,7 +220,7 @@ router.get('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
  */
 router.delete('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   try {
-    const { orderId } = c.get('validatedParams') as GetOrderRequest;
+    const { orderId } = (c.get('validatedParams' as never) as unknown) as GetOrderRequest;
 
     const orderResults = await db.select().from(orders).where(eq(orders.id, orderId));
 

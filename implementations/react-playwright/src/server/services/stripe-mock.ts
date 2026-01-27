@@ -30,22 +30,22 @@ export class MockStripe {
 
       retrieve: async (id: string) => {
         if (id === 'pi_nonexistent') {
-          // @ts-expect-error - StripeError constructor is protected but we need it for mock
+          // StripeError constructor is protected but we need it for mock
           const error = new Stripe.errors.StripeInvalidRequestError({
              message: 'No such payment_intent: ' + id,
              type: 'invalid_request_error'
-          });
+          }) as Stripe.errors.StripeInvalidRequestError;
           throw error;
         }
 
         if (id === 'pi_card_declined') {
-             // @ts-expect-error: StripeError constructor is protected but we need it for mock
-             const error = new Stripe.errors.StripeCardError({
-                message: 'Your card was declined.',
-                type: 'card_error',
-                code: 'card_declined'
-             });
-             throw error;
+           // StripeError constructor is protected but we need it for mock
+           const error = new Stripe.errors.StripeCardError({
+              message: 'Your card was declined.',
+              type: 'card_error',
+              code: 'card_declined'
+           }) as Stripe.errors.StripeCardError;
+           throw error;
         }
 
         // Default success for other IDs unless specified

@@ -208,6 +208,21 @@ export interface Logger {
   child(context: Partial<LogContext>): Logger;
 
   /**
+   * Create a logger for a specific action
+   */
+  forAction(action: string): Logger;
+
+  /**
+   * Create a logger for a specific user
+   */
+  forUser(userId: string): Logger;
+
+  /**
+   * Create a logger with request ID
+   */
+  withRequest(requestId: string): Logger;
+
+  /**
    * Log a debug message
    */
   debug(message: string, context?: Partial<LogContext>): void;
@@ -251,6 +266,18 @@ class LoggerImpl implements Logger {
 
   child(childContext: Partial<LogContext>): Logger {
     return new LoggerImpl({ ...this.context, ...childContext, request_id: this.context.request_id || getRequestId() });
+  }
+
+  forAction(action: string): Logger {
+    return this.child({ action });
+  }
+
+  forUser(userId: string): Logger {
+    return this.child({ user_id: userId });
+  }
+
+  withRequest(requestId: string): Logger {
+    return this.child({ request_id: requestId });
   }
 
   debug(message: string, context?: Partial<LogContext>): void {
@@ -311,12 +338,16 @@ class LoggerImpl implements Logger {
 
   private serializeError(error: unknown): LogEntry['error'] {
     if (error instanceof Error) {
-      return {
+      const result: LogEntry['error'] = {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        ...(error as { code?: string }).code,
       };
+      const errorWithCode = error as { code?: string };
+      if (errorWithCode.code) {
+        result.code = errorWithCode.code;
+      }
+      return result;
     }
 
     if (typeof error === 'string') {
@@ -324,11 +355,15 @@ class LoggerImpl implements Logger {
     }
 
     if (error && typeof error === 'object') {
-      return {
+      const result: LogEntry['error'] = {
         name: (error as { name?: string }).name,
         message: String(error),
-        ...(error as { code?: string }).code,
       };
+      const errorWithCode = error as { code?: string };
+      if (errorWithCode.code) {
+        result.code = errorWithCode.code;
+      }
+      return result;
     }
 
     return { message: 'Unknown error' };
@@ -339,39 +374,6 @@ class LoggerImpl implements Logger {
  * Root logger instance
  */
 export const logger: Logger = new LoggerImpl();
-
-/**
- * Create a logger for a specific action
- *
- * Example:
- * const actionLogger = logger.forAction('checkout');
- * actionLogger.info('Starting checkout process', { userId });
- */
-logger.forAction = function (action: string): Logger {
-  return this.child({ action });
-} as Logger['child'];
-
-/**
- * Create a logger for a specific user
- *
- * Example:
- * const userLogger = logger.forUser(userId);
- * userLogger.info('User login');
- */
-logger.forUser = function (userId: string): Logger {
-  return this.child({ user_id: userId });
-} as Logger['child'];
-
-/**
- * Create a logger with request ID
- *
- * Example:
- * const requestLogger = logger.withRequest(requestId);
- * requestLogger.info('Processing request');
- */
-logger.withRequest = function (requestId: string): Logger {
-  return this.child({ request_id: requestId });
-} as Logger['child'];
 
 // --------------------------------------------------------------------------
 // Hono Middleware
@@ -427,7 +429,7 @@ export async function requestLogger(c: Context, next: Next) {
  * Generates and adds a request ID to each request.
  */
 export function requestIdMiddleware(c: Context, next: Next) {
-  const requestId = c.header('x-request-id') || generateRequestId();
+  const requestId = c.header('x-request-id') ?? generateRequestId();
   c.set('requestId', requestId);
   c.header('x-request-id', requestId);
   return next();
@@ -479,6 +481,7 @@ export function prettyPrint(entry: LogEntry): string {
  */
 if (getEnvVar('NODE_ENV', 'development') === 'development') {
   const originalConsole = { ...console };
+  const instance = logger as LoggerImpl;
   logger.log = function (level: LogLevel, message: string, context?: LogContext) {
     if (level < currentLogLevel) {
       return;
@@ -489,9 +492,9 @@ if (getEnvVar('NODE_ENV', 'development') === 'development') {
       timestamp: new Date().toISOString(),
       message,
       context: {
-        ...this.getContext(),
+        ...instance.getContext(),
         ...context,
-        request_id: this.getContext().request_id || context?.request_id || getRequestId(),
+        request_id: instance.getContext().request_id || context?.request_id || getRequestId(),
       },
     };
 
@@ -510,7 +513,7 @@ if (getEnvVar('NODE_ENV', 'development') === 'development') {
         originalConsole.error(pretty);
         break;
     }
-  } as Logger['log'];
+  };
 }
 
 // Initialize async context on module load for Node.js

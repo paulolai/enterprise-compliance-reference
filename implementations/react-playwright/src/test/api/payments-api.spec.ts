@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
-import { CartItem } from '../../../../shared/src';
+import type { CartItem } from '../../../../shared/src';
 
 // Helper to register Allure metadata with hierarchy
 function registerApiMetadata(
   metadata: {
+    name?: string;
     ruleReference: string;
     rule: string;
     tags: string[];
@@ -41,7 +42,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/create-intent`, {
@@ -127,7 +128,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/create-intent`, {
@@ -162,7 +163,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/confirm`, {
@@ -201,7 +202,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/confirm`, {
@@ -242,7 +243,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/confirm`, {
@@ -280,7 +281,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/confirm`, {
@@ -314,7 +315,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const response = await request.post(`${API_BASE}/confirm`, {
@@ -352,7 +353,7 @@ test.describe('Payments API Integration Tests', () => {
       });
 
       const items: CartItem[] = [
-        { sku: 'WIRELESS-EARBUDS', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'WIRELESS-EARBUDS', price: 8900, quantity: 1, weightInKg: 0.1, name: 'Wireless Earbuds' },
       ];
 
       const paymentIntentId = 'pi_idempotent_test';

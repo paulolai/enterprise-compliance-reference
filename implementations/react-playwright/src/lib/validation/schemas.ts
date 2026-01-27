@@ -161,6 +161,17 @@ export const CreatePaymentIntentRequestSchema = z.object({
 export type CreatePaymentIntentRequest = z.infer<typeof CreatePaymentIntentRequestSchema>;
 
 /**
+ * Confirm payment request schema
+ */
+export const ConfirmPaymentRequestSchema = z.object({
+  paymentIntentId: NonEmptyStringSchema,
+  cartItems: z.array(CartItemRequestSchema).min(1),
+  shippingAddress: ShippingAddressSchema,
+});
+
+export type ConfirmPaymentRequest = z.infer<typeof ConfirmPaymentRequestSchema>;
+
+/**
  * Create payment intent response schema
  */
 export const CreatePaymentIntentResponseSchema = z.object({
@@ -171,17 +182,6 @@ export const CreatePaymentIntentResponseSchema = z.object({
 });
 
 export type CreatePaymentIntentResponse = z.infer<typeof CreatePaymentIntentResponseSchema>;
-
-/**
- * Confirm payment request schema
- */
-export const ConfirmPaymentRequestSchema = z.object({
-  paymentIntentId: NonEmptyStringSchema,
-  cartItems: z.array(CartItemRequestSchema).min(1),
-  shippingAddress: ShippingAddressSchema,
-});
-
-export type ConfirmPaymentRequest = z.infer<typeof ConfirmPaymentRequestSchema>;
 
 /**
  * Confirm payment response schema
@@ -479,5 +479,14 @@ export const querySchemas = {
 export const paramSchemas = {
   orderId: z.object({ orderId: NonEmptyStringSchema }),
   productSku: z.object({ sku: z.string().min(1) }),
-  paymentIntentId: z.object({ id: z.string() }),
+  paymentIntentId: z.object({ id: NonEmptyStringSchema }),
 } as const;
+
+/**
+ * Get payment intent param request schema
+ */
+export const GetPaymentIntentRequestSchema = z.object({
+  id: NonEmptyStringSchema,
+});
+
+export type GetPaymentIntentRequest = z.infer<typeof GetPaymentIntentRequestSchema>;

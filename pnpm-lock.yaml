@@ -13,7 +13,7 @@ importers:
         version: 12.6.2
       drizzle-orm:
         specifier: ^0.45.1
-        version: 0.45.1(better-sqlite3@12.6.2)
+        version: 0.45.1(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2)
       stripe:
         specifier: ^20.2.0
         version: 20.2.0(@types/node@24.10.9)
@@ -137,6 +137,9 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -1051,6 +1054,9 @@ packages:
 
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
+
+  '@types/better-sqlite3@7.6.13':
+    resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
 
   '@types/chai@4.3.20':
     resolution: {integrity: sha512-/pC9HAB5I/xMlc5FP77qjCnI16ChlJfW0tGa0IUcFn38VJrTV6DeZ60NU5KZBtaOZqjdpwTWohz5HU1RrhiYxQ==}
@@ -3781,6 +3787,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.28.6
 
+  '@types/better-sqlite3@7.6.13':
+    dependencies:
+      '@types/node': 24.10.9
+
   '@types/chai@4.3.20': {}
 
   '@types/chai@5.2.3':
@@ -4269,8 +4279,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.45.1(better-sqlite3@12.6.2):
+  drizzle-orm@0.45.1(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2):
     optionalDependencies:
+      '@types/better-sqlite3': 7.6.13
       better-sqlite3: 12.6.2
 
   dunder-proto@1.0.1:

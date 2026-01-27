@@ -1,7 +1,9 @@
-import { Page, test, APIRequestContext, TestInfo } from '@playwright/test';
+import type { Page, APIRequestContext, TestInfo } from '@playwright/test';
+import { test } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import * as fc from 'fast-check';
-import { CartItem, User, ShippingMethod } from '../../../../../shared/src';
+import type { CartItem, User } from '../../../../../shared/src';
+import { ShippingMethod } from '../../../../../shared/src';
 import { registerAllureMetadata } from '../../../../../shared/fixtures/allure-helpers';
 
 // Clear localStorage before the first test to ensure clean state
