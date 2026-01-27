@@ -24,7 +24,8 @@
   },
   "lint-staged": {
     "docs/ARCHITECTURE_DECISIONS.md": "pnpm run adr:sync",
-    "docs/*.md": "bash -c 'for f in \"$@\"; do markdown-toc -i \"$f\"; done' --"
+    "docs/*.md": "bash -c 'for f in \"$@\"; do markdown-toc -i \"$f\"; done' --",
+    "implementations/react-playwright/**/*.{ts,tsx}": "bash -c 'cd implementations/react-playwright && pnpm exec eslint --fix \"$@\"' --"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
