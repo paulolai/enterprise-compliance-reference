@@ -17,7 +17,13 @@ This document defines the canonical patterns for GUI/E2E testing using **Playwri
   * [Avoiding Hardcoded Routes](#avoiding-hardcoded-routes)
   * [Security: Development-Only Routes](#security-development-only-routes)
 - [The "Seam-Based" Setup Pattern](#the-seam-based-setup-pattern)
-  * [The "Teleport" Method](#the-teleport-method)
+  * [State Injection (Teleport)](#state-injection-teleport)
+    + [1. Server-Side Seams (Databases/Cookies)](#1-server-side-seams-databasescookies)
+    + [2. Client-Side Seams (LocalStorage/Zustand/Redux)](#2-client-side-seams-localstoragezustandredux)
+- [Common Pitfalls & Lessons Learned](#common-pitfalls--lessons-learned)
+  * [1. The "Ghost Seam" (API vs Browser)](#1-the-ghost-seam-api-vs-browser)
+  * [2. The InitScript Wipeout](#2-the-initscript-wipeout)
+  * [3. Waiting for Pricing](#3-waiting-for-pricing)
 - [Intent-Based Drivers](#intent-based-drivers)
 - [Visual Invariant Pattern](#visual-invariant-pattern)
 - [Visual Regression Testing](#visual-regression-testing)
@@ -227,28 +233,70 @@ if (import.meta.env.DEV) {
 
 ## The "Seam-Based" Setup Pattern
 
-To keep tests fast and non-flaky, we "cheat" during setup. We use **Backend Seams** to establish preconditions instantly.
+To keep tests fast and non-flaky, we "cheat" during setup. We use **Seams** to establish preconditions instantly.
 
-### The "Teleport" Method
+### State Injection (Teleport)
 
-If you are testing the **Checkout Logic**:
-1. **Don't** visit the home page, search, add to cart, then go to cart.
-2. **Do** POST a prepared cart to the API, then `page.goto('/checkout')`.
+We distinguish between two types of seams based on where the state lives:
 
+#### 1. Server-Side Seams (Databases/Cookies)
+For state managed by the backend (e.g., User Sessions, Orders DB), use API calls.
 ```typescript
-test('Invariant: Free shipping applies > $100', async ({ page, request }) => {
+// Teleport: Create order in DB
+await request.post('/api/debug/seed-order', { data: order });
+```
+
+#### 2. Client-Side Seams (LocalStorage/Zustand/Redux)
+For state managed by the browser (e.g., Shopping Cart in SPA), you **MUST** inject state directly into the browser context. Calling a server API won't update the browser's `localStorage`.
+
+**Helper: `injectCartState`**
+```typescript
+import { injectCartState } from './fixtures/api-seams';
+
+test('Invariant: Free shipping applies > $100', async ({ page }) => {
   // 1. Build State (Pure Logic)
   const cart = CartBuilder.new()
     .withItem('HighValueItem', 15000)
     .build();
 
-  // 2. Teleport (API Seam)
-  await request.post('/api/debug/seed-cart', { data: cart });
+  // 2. Teleport (Client-Side Seam)
+  // Writes to localStorage and reloads page
+  await injectCartState(page, cart.items, cart.user);
 
   // 3. Verify (UI)
   await page.goto('/checkout');
   await expect(page.getByRole('status')).toHaveText('Free Shipping');
 });
+```
+
+---
+
+## Common Pitfalls & Lessons Learned
+
+### 1. The "Ghost Seam" (API vs Browser)
+**Problem:** You call `await request.post('/api/seed-cart')` but the cart remains empty in the UI.
+**Cause:** The app is a SPA using LocalStorage. The API call updates the *server's* idea of a session (or just echoes data), but the *browser* (Page) has its own isolated storage that was never touched.
+**Fix:** Use `page.evaluate()` to write to `localStorage`.
+
+### 2. The InitScript Wipeout
+**Problem:** You inject state, but it disappears when you navigate.
+**Cause:** You have a `test.beforeEach` hook that clears storage using `addInitScript`.
+```typescript
+// ❌ This wipes your injected state on EVERY navigation
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => localStorage.clear());
+});
+```
+**Fix:** Only clear storage at the *start* of the test, or rely on your injection helper to overwrite previous state.
+
+### 3. Waiting for Pricing
+**Problem:** Assertions fail with "element not found" or "0" immediately after navigation.
+**Cause:** The UI renders "optimistically" or empty while fetching pricing asynchronously.
+**Fix:** Wait for a stable pricing element (e.g., `grand-total`) to appear before asserting on specific values.
+```typescript
+await page.goto('/checkout');
+await expect(page.getByTestId('grand-total')).toBeVisible(); // Wait for calculation
+// Now check details...
 ```
 
 ---

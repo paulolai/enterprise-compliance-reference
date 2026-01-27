@@ -27,7 +27,7 @@ import type { CartItem, User } from '../../../../../shared/src';
 export async function injectCartState(
   page: Page,
   cart: CartItem[],
-  user: User,
+  user: User | null,
   shippingMethod: string = 'STANDARD'
 ) {
   // Ensure we are on the app domain so we can access the correct localStorage

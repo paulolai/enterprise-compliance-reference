@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
+import { injectCartState } from './fixtures/api-seams';
+import type { CartItem } from '../../../../shared/src';
 
 /**
  * Complete Checkout Flow - End-to-End Tests
@@ -33,22 +35,14 @@ function registerE2EMetadata(
   });
 }
 
-// Helper to seed localStorage before page load
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function seedLocalStorage(page: any, cartState: Record<string, unknown>) {
-  await page.addInitScript((state: Record<string, unknown>) => {
-    localStorage.setItem('cart-storage', JSON.stringify(state));
-  }, cartState);
-}
-
 test.describe('Complete Checkout Flow E2E Tests', () => {
   // Note: VIP test has its own context management to avoid conflicts
   test.beforeEach(async ({ context }) => {
     // Clear localStorage and cookies before each test
     await context.clearCookies();
-    await context.addInitScript(() => {
-      localStorage.removeItem('cart-storage');
-    });
+    // We do NOT use addInitScript here because it would wipe out
+    // state injected by injectCartState on subsequent navigations.
+    // Instead, rely on tests to seed their own state or start fresh.
   });
 
   test('complete purchase flow from products to confirmation', async ({ page }) => {
@@ -59,15 +53,8 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed localStorage with cart item before loading pages
-    await seedLocalStorage(page, {
-      state: {
-        items: [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1, addedAt: Date.now() }],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 }];
+    await injectCartState(page, items, null);
 
     // Step 4: View cart (going directly to cart to verify seeded data)
     await page.goto('/cart');
@@ -96,15 +83,8 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed cart with 2 items before loading pages
-    await seedLocalStorage(page, {
-      state: {
-        items: [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 2, weightInKg: 0.1, addedAt: Date.now() }],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 2, weightInKg: 0.1 }];
+    await injectCartState(page, items, null);
 
     // Start at products page
     await page.goto('/products');
@@ -136,20 +116,16 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed cart with known products before loading pages
-    await seedLocalStorage(page, {
-      state: {
-        items: [
-          { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1, addedAt: Date.now() },
-          { sku: 'SMART-WATCH', name: 'Smart Watch', price: 19900, quantity: 1, weightInKg: 0.2, addedAt: Date.now() }
-        ],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    const items: CartItem[] = [
+      { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 },
+      { sku: 'SMART-WATCH', name: 'Smart Watch', price: 19900, quantity: 1, weightInKg: 0.2 }
+    ];
+    await injectCartState(page, items, null);
 
     await page.goto('/checkout');
+
+    // Wait for pricing calculation to complete
+    await expect(page.getByTestId('grand-total')).toBeVisible();
 
     // Verify pricing components are shown
     await expect(page.getByText(/product total/i)).toBeVisible();
@@ -172,25 +148,19 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed cart over $100
-    await seedLocalStorage(page, {
-      state: {
-        items: [
-          { sku: 'TABLET-10', name: '10" Tablet', price: 44900, quantity: 3, weightInKg: 1.2, addedAt: Date.now() }
-        ],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    const items: CartItem[] = [
+      { sku: 'TABLET-10', name: '10" Tablet', price: 44900, quantity: 3, weightInKg: 1.2 }
+    ];
+    await injectCartState(page, items, null);
 
     await page.goto('/checkout');
 
+    // Wait for pricing calculation to complete
+    await expect(page.getByTestId('grand-total')).toBeVisible();
+
     // Free shipping badge should be visible on standard shipping
-    const freeShippingBadge = page
-      .getByTestId('shipping-standard')
-      .getByTestId('free-shipping-badge');
-    await expect(freeShippingBadge).toBeVisible();
+    const standardOption = page.locator('.shipping-option').filter({ hasText: 'Standard' });
+    await expect(standardOption.getByTestId('free-shipping-badge')).toBeVisible();
   });
 
   test('express shipping fixed $25 rate', async ({ page }) => {
@@ -201,23 +171,21 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed cart with items
-    await seedLocalStorage(page, {
-      state: {
-        items: [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1, addedAt: Date.now() }],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    // Seed cart with items
+    const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 }];
+    await injectCartState(page, items, null);
 
     await page.goto('/checkout');
 
     // Select express shipping
-    await page.getByTestId('shipping-express').click();
+    await page.getByRole('radio', { name: 'Express' }).click({ force: true });
 
     // Get shipping cost
-    const shippingElement = page.getByText(/Shipping \(EXPRESS\)/).locator('..').locator('.price-value');
+    const shippingElement = page.getByTestId('cart-summary')
+      .locator('.summary-row')
+      .filter({ hasText: 'Shipping (EXPRESS)' })
+      .getByTestId('price-display-amount');
+    
     const shippingText = await shippingElement.textContent();
     const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
 
@@ -232,15 +200,9 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed cart
-    await seedLocalStorage(page, {
-      state: {
-        items: [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1, addedAt: Date.now() }],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    // Seed cart with items
+    const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 }];
+    await injectCartState(page, items, null);
 
     await page.goto('/checkout');
 
@@ -259,15 +221,9 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     });
 
     // Seed cart for guest checkout
-    await seedLocalStorage(page, {
-      state: {
-        items: [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1, addedAt: Date.now() }],
-        user: null,
-        shippingMethod: 'STANDARD',
-        pricingResult: null
-      },
-      version: 0
-    });
+    // Seed cart with items
+    const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 }];
+    await injectCartState(page, items, null);
 
     // Navigate to checkout - should work without login
     await page.goto('/checkout');
@@ -294,10 +250,8 @@ test.describe('VIP Checkout Tests', () => {
     // This scenario uses: user with tenureYears: 5, wireless earbuds quantity: 4
     await page.goto('/debug/checkout?scenario=heavy-cart');
 
-    // Wait for debug page to load
-    await page.waitForLoadState('networkidle');
-
     // VIP badge should be visible on the debug page (which renders CheckoutPage)
+    // Auto-retry will handle the waiting
     const vipBadge = page.getByTestId('vip-user-label');
     await expect(vipBadge).toBeVisible();
 
