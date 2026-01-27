@@ -9,7 +9,7 @@ import { Result, success } from '@executable-specs/shared/result';
 import {
   CartItem,
   CartItemRequest,
-  PricingResult,
+  type PricingResult,
 } from './schema.ts';
 
 /**

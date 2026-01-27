@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { logger } from '../lib/logger';
-import { formatCurrency, PricingResult } from '../../../shared/src/types';
+import { formatCurrency, type PricingResult } from '../../../shared/src/types';
 import { CartBadge } from '../components/cart/CartBadge';
 
 interface OrderItem {
