@@ -29,7 +29,7 @@ export function ShippingMethodSelector() {
 
         return (
           <div key={method} className={`shipping-option ${isSelected ? 'selected' : ''}`} 
-            onClick={() => setShippingMethod(method)} data-testid={`shipping-${method.toLowerCase()}`}>
+            onClick={() => setShippingMethod(method)}>
             <input type="radio" name="shipping" id={`shipping-${method}`} checked={isSelected}
               onChange={() => setShippingMethod(method)} />
             <label htmlFor={`shipping-${method}`}>
