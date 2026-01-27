@@ -73,6 +73,7 @@ const rawEnv = {
   // Transform boolean-like strings to actual booleans
   ENABLE_DEBUG_ENDPOINTS: parseBoolean(process.env.ENABLE_DEBUG_ENDPOINTS, true),
   ENABLE_PAYMENTS: parseBoolean(process.env.ENABLE_PAYMENTS, true),
+  CI: parseBoolean(process.env.CI, false),
 };
 
 /**
