@@ -487,6 +487,10 @@ Each endpoint documented with:
 - [ ] Implement graceful shutdown logic
 - [ ] Detailed health checks (`/readyz`, `/livez`)
 - [ ] Security headers middleware (CSP, HSTS)
+- [ ] Resolve latent TypeScript build errors (`DEBT_REPORT_TS.md`)
+  - [ ] Convert to type-only imports (`verbatimModuleSyntax`)
+  - [ ] Add explicit casting for Hono context getters
+  - [ ] Align Allure metadata with `RuleMetadata` schema
 - [ ] Dockerfile and docker-compose.yml
 - [ ] Onboarding guide (`docs/ONBOARDING.md`)
 - [ ] API documentation (`docs/API.md`)

@@ -5,8 +5,12 @@ import { products } from '@executable-specs/shared/index-server';
 import { eq } from 'drizzle-orm';
 import { validateParams, validateQuery } from '../../lib/validation/middleware';
 import { paramSchemas, querySchemas } from '../../lib/validation/schemas';
+import type { GetProductRequest } from '../../lib/validation/schemas';
 
 const router = new Hono();
+// ... (omitted GET / as it doesn't use query)
+// Wait, I should include enough context for replace.
+
 
 /**
  * GET /api/products
@@ -42,7 +46,10 @@ router.get('/', validateQuery(querySchemas.listProducts), async (c) => {
  */
 router.get('/:sku', validateParams(paramSchemas.productSku), async (c) => {
   try {
-    const { sku } = c.get('validatedParams');
+    const { sku } = c.get('validatedParams') as GetProductRequest;
+
+    // Ensure products are seeded (idempotent)
+    await seedProducts();
 
     const productResults = await db.select().from(products).where(eq(products.sku, sku));
 

@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
 import { randomUUID } from 'crypto';
-import { db, OrderStatus, products } from '@executable-specs/shared/index-server';
+import { db, OrderStatus, products, seedProducts } from '@executable-specs/shared/index-server';
 import { orders, orderItems } from '@executable-specs/shared/index-server';
 import { eq, inArray } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
+import type { CreateOrderRequest, GetOrderRequest } from '../../lib/validation/schemas';
 import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
 import { isFailure } from '@executable-specs/shared/result';
 
@@ -17,7 +18,11 @@ const router = new Hono();
  */
 router.post('/', validateBody(requestSchemas.createOrder), async (c) => {
   try {
-    const { userId, items, total, pricingResult, shippingAddress, stripePaymentIntentId } = c.get('validatedBody');
+    const { userId, items, total, pricingResult, shippingAddress, stripePaymentIntentId } = c.get('validatedBody') as CreateOrderRequest;
+
+
+    // Ensure products are seeded (idempotent)
+    await seedProducts();
 
     // Domain Invariant Check
     const invariantResult = validateOrderInvariants(total, items);
@@ -164,7 +169,7 @@ router.get('/user/:userId', async (c) => {
  */
 router.get('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   try {
-    const { orderId } = c.get('validatedParams');
+    const { orderId } = c.get('validatedParams') as GetOrderRequest;
 
     const orderResults = await db.select().from(orders).where(eq(orders.id, orderId));
 
@@ -215,7 +220,7 @@ router.get('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
  */
 router.delete('/:orderId', validateParams(paramSchemas.orderId), async (c) => {
   try {
-    const { orderId } = c.get('validatedParams');
+    const { orderId } = c.get('validatedParams') as GetOrderRequest;
 
     const orderResults = await db.select().from(orders).where(eq(orders.id, orderId));
 
