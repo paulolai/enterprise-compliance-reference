@@ -1,6 +1,4 @@
 import { Hono } from 'hono';
-import { logger } from '../../lib/logger';
-import { metrics } from '../../lib/metrics';
 import { isStripeConfigured } from '../../lib/env';
 import { db } from '@executable-specs/shared/index-server';
 import Stripe from 'stripe';
@@ -132,8 +130,6 @@ function getLatencySummary(action: string): { count: number; avgMs: number; maxM
  * Provides comprehensive health information for monitoring dashboards.
  */
 router.get('/livez', async (c) => {
-  const startTime = Date.now();
-
   // Reuse readyz checks
   const readyzResponse = await fetch(new Request(new URL('/readyz', c.req.url)));
   const readyzData = (await readyzResponse.json()) as { checks?: Record<string, unknown> };

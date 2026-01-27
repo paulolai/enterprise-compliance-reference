@@ -1,7 +1,11 @@
 import Stripe from 'stripe';
 
 export class MockStripe {
-  paymentIntents: any;
+  paymentIntents: {
+    create: (params: Stripe.PaymentIntentCreateParams) => Promise<unknown>;
+    retrieve: (id: string) => Promise<unknown>;
+    cancel: (id: string, params?: Stripe.PaymentIntentCancelParams) => Promise<unknown>;
+  };
 
   constructor() {
     this.paymentIntents = {
@@ -26,7 +30,7 @@ export class MockStripe {
 
       retrieve: async (id: string) => {
         if (id === 'pi_nonexistent') {
-          // @ts-ignore - StripeError constructor is protected but we need it for mock
+          // @ts-expect-error - StripeError constructor is protected but we need it for mock
           const error = new Stripe.errors.StripeInvalidRequestError({
              message: 'No such payment_intent: ' + id,
              type: 'invalid_request_error'
@@ -35,7 +39,7 @@ export class MockStripe {
         }
 
         if (id === 'pi_card_declined') {
-             // @ts-ignore
+             // @ts-expect-error: StripeError constructor is protected but we need it for mock
              const error = new Stripe.errors.StripeCardError({
                 message: 'Your card was declined.',
                 type: 'card_error',
@@ -62,7 +66,7 @@ export class MockStripe {
         };
       },
 
-      cancel: async (id: string, params?: Stripe.PaymentIntentCancelParams) => {
+      cancel: async (id: string) => {
          return {
             id: id,
             object: 'payment_intent',

@@ -25,11 +25,11 @@ const router = new Hono();
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const useMock = process.env.MOCK_STRIPE === 'true';
 
-let stripe: Stripe | any = null;
+let stripe: Stripe | null = null;
 
 if (useMock) {
   logger.info('Using Mock Stripe implementation', { component: 'PaymentsAPI' });
-  stripe = new MockStripe();
+  stripe = new MockStripe() as unknown as Stripe;
 } else if (stripeSecretKey) {
   stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2025-12-15.clover',
