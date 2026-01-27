@@ -1,0 +1,212 @@
+# =============================================================================
+# Docker Compose for Executable Specs Demo - Production
+#
+# Services:
+#   - app: React frontend + API server (production build)
+#   - app-replica: App replica for high availability (optional)
+#   - nginx: Reverse proxy for SSL termination and load balancing
+#   - db: SQLite database persistence (volume mounted)
+#
+# Production Features:
+#   - Optimized production build
+#   - Separate reverse proxy (nginx) for SSL termination
+#   - Multiple app replicas for high availability
+#   - Health checks and graceful shutdown
+#   - Resource limits to prevent runaway containers
+#   - Volume mounts for data persistence and backups
+#   - Separate network for inter-service communication
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml down
+#   docker compose -f docker-compose.prod.yml logs -f
+#   docker compose -f docker-compose.prod.yml exec nginx nginx -t
+# =============================================================================
+
+version: '3.9'
+
+networks:
+  es-network:
+    driver: bridge
+
+services:
+  # ===========================================================================
+  # Application Server (Primary)
+  # ===========================================================================
+  app:
+    build:
+      context: .
+      target: production
+    image: ${IMAGE_REGISTRY:-checkout-app}:${IMAGE_TAG:-latest}
+    container_name: es-demo-app-primary
+    restart: unless-stopped
+    networks:
+      - es-network
+    environment:
+      NODE_ENV: production
+      PORT: 5173
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://checkout.your-domain.com}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_PATH: /app/data/checkout.db
+      ENABLE_DEBUG_ENDPOINTS: "false"
+      ENABLE_PAYMENTS: "true"
+      STRICT_AUTH: "true"
+      RATE_LIMIT_ENABLED: "true"
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?Required: Set STRIPE_SECRET_KEY environment variable}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      METRICS_ENABLED: "true"
+    volumes:
+      # Persist SQLite database
+      - app-data:/app/data
+      # Mount backups directory
+      - app-backups:/app/backups
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    working_dir: /app
+
+  # ===========================================================================
+  # Application Server (Replica)
+  # ===========================================================================
+  app-replica:
+    image: ${IMAGE_REGISTRY:-checkout-app}:${IMAGE_TAG:-latest}
+    container_name: es-demo-app-replica
+    restart: unless-stopped
+    networks:
+      - es-network
+    environment:
+      NODE_ENV: production
+      PORT: 5173
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://checkout.your-domain.com}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_PATH: /app/data/checkout.db
+      ENABLE_DEBUG_ENDPOINTS: "false"
+      ENABLE_PAYMENTS: "true"
+      STRICT_AUTH: "true"
+      RATE_LIMIT_ENABLED: "true"
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?Required: Set STRIPE_SECRET_KEY environment variable}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      METRICS_ENABLED: "true"
+    volumes:
+      - app-data:/app/data
+      - app-backups:/app/backups
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    working_dir: /app
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # ===========================================================================
+  # Reverse Proxy (nginx)
+  # ===========================================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: es-demo-nginx
+    restart: unless-stopped
+    networks:
+      - es-network
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx-cache:/var/cache/nginx
+      - nginx-logs:/var/log/nginx
+      # SSL certificates (use certbot or mounted certificates)
+      - ${SSL_CERT_PATH:-./docker/nginx/ssl/cert.pem}:/etc/nginx/ssl/cert.pem:ro
+      - ${SSL_KEY_PATH:-./docker/nginx/ssl/key.pem}:/etc/nginx/ssl/key.pem:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    depends_on:
+      app:
+        condition: service_healthy
+      app-replica:
+        condition: service_healthy
+
+  # ===========================================================================
+  # Watchtower - Automatic container updates
+  # ===========================================================================
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: es-demo-watchtower
+    restart: unless-stopped
+    networks:
+      - es-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: 3600
+      WATCHTOWER_SCHEDULE: "0 2 * * *"
+      # Only watch specific images to avoid unnecessary pulls
+      WATCHTOWER_SCOPE: es-demo
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  # Persistent application data (SQLite database)
+  app-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR:-./data}
+
+  # Application backups
+  app-backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BACKUP_DIR:-./backups}
+
+  # nginx cache for static assets
+  nginx-cache:
+    driver: local
+
+  # nginx logs for troubleshooting
+  nginx-logs:
+    driver: local

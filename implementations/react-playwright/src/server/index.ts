@@ -7,12 +7,15 @@ import { ordersRouter } from './routes/orders';
 import { productsRouter } from './routes/products';
 import { paymentsRouter } from './routes/payments';
 import { securityHeaders } from './middleware/security';
+import { rateLimit } from './middleware/rate-limit';
+import { metrics } from '../lib/metrics';
 import { getReadyzHandler, getLivezHandler } from './routes/health-handlers';
 
 const app = new Hono();
 
 app.use('*', cors());
 app.use('*', securityHeaders());
+app.use('/api/*', rateLimit());
 
 // API routes - registered first to ensure priority
 app.route('/api/pricing', pricingRouter);
@@ -36,5 +39,11 @@ app.get('/health', (c) => c.json({
 }));
 app.get('/readyz', getReadyzHandler);
 app.get('/livez', getLivezHandler);
+
+// Prometheus metrics endpoint - for monitoring/scraping
+app.get('/metrics', (c) => {
+  c.header('Content-Type', 'text/plain; version=0.0.4');
+  return c.text(metrics.exportPrometheus());
+});
 
 export default app;
