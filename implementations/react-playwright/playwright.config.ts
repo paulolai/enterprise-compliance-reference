@@ -31,7 +31,10 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
     stderr: 'pipe',
-    env: process.env.DEBUG_HONO ? { DEBUG_HONO: 'true', DEBUG_ROUTES: 'true' } : {},
+    env: {
+      MOCK_STRIPE: 'true',
+      ...(process.env.DEBUG_HONO ? { DEBUG_HONO: 'true', DEBUG_ROUTES: 'true' } : {}),
+    },
   },
 
   projects: [

@@ -317,15 +317,15 @@ For development and testing, use:
 
 This domain is complete when:
 
-- [ ] All domain specs documented
-- [ ] `/api/payments/create-intent` endpoint implemented
-- [ ] `/api/payments/confirm` endpoint implemented
-- [ ] Stripe test mode integration working
-- [ ] API integration tests pass (with mocked Stripe)
-- [ ] E2E payment flow tests pass
-- [ ] Orders created only on successful payment
-- [ ] Clear error messages for failed payments
-- [ ] Attestation reports show full coverage
+- [x] All domain specs documented
+- [x] `/api/payments/create-intent` endpoint implemented
+- [x] `/api/payments/confirm` endpoint implemented
+- [x] Stripe test mode integration working
+- [x] API integration tests pass (with mocked Stripe)
+- [x] E2E payment flow tests pass
+- [x] Orders created only on successful payment
+- [x] Clear error messages for failed payments
+- [x] Attestation reports show full coverage
 
 ---
 

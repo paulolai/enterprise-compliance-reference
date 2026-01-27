@@ -6,6 +6,8 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./index-server": "./src/index-server.ts",
+    "./result": "./src/result.ts",
     "./fixtures": "./fixtures/index.ts"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { StatusCode as HonoStatusCode } from 'hono/utils/http-status';
 import { logger } from '../../lib/logger';
 import Stripe from 'stripe';
+import { MockStripe } from '../services/stripe-mock';
 import { db, OrderStatus } from '@executable-specs/shared/index-server';
 import { orders, orderItems } from '@executable-specs/shared/index-server';
 import { eq } from 'drizzle-orm';
@@ -20,13 +21,20 @@ type StatusCode = 200 | 201 | 400 | 401 | 404 | 500 | 501;
 
 const router = new Hono();
 
-// Initialize Stripe - use test mode secret key from environment
+// Initialize Stripe - use test mode secret key from environment or Mock
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey, {
+const useMock = process.env.MOCK_STRIPE === 'true';
+
+let stripe: Stripe | any = null;
+
+if (useMock) {
+  logger.info('Using Mock Stripe implementation', { component: 'PaymentsAPI' });
+  stripe = new MockStripe();
+} else if (stripeSecretKey) {
+  stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2025-12-15.clover',
-    })
-  : null;
+    });
+}
 
 /**
  * POST /api/payments/create-intent
