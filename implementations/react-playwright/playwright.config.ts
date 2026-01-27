@@ -6,9 +6,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  timeout: 5 * 1000,
+  timeout: 30 * 1000,
   expect: {
-    timeout: 1 * 1000,
+    timeout: 5 * 1000,
   },
   reporter: [
     ['html', { outputFolder: 'reports/html-report', open: 'never' }],

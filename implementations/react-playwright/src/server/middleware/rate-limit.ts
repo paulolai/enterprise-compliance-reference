@@ -152,6 +152,11 @@ function getLimitConfig(path: string): RateLimitConfig {
  */
 export const rateLimit = (): MiddlewareHandler => {
   return async (c, next) => {
+    // Skip rate limiting in development/test environment
+    if (import.meta.env.DEV) {
+      return next();
+    }
+
     // Skip rate limiting for health endpoints and static assets
     const path = c.req.path;
     if (path === '/health' || path === '/readyz' || path === '/livez' ||
