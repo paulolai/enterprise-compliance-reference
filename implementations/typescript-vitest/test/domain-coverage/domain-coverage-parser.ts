@@ -33,7 +33,7 @@ export class DomainCoverageParser {
             section: currentSection.section,
             title: currentSection.title,
             invariants: currentSection.invariants.map(desc => ({
-              id: this.generateId(currentSection.section, desc),
+              id: this.generateId(sectionMatch[2], desc),
               description: desc,
               required: !desc.toLowerCase().includes('example')
             }))

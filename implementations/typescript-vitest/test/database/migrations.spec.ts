@@ -20,7 +20,6 @@ function registerMigrationMetadata(
   const allure = (globalThis as any).allure;
   registerAllureMetadata(allure, {
     ...metadata,
-    epic: null, // No epic for these tests
     name: testId,
     parentSuite: 'Unit Tests',
     suite: 'Database',

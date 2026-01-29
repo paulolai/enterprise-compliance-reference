@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { tracer } from './modules/tracer';
 import AttestationReporter from './reporters/attestation-reporter';
-import { File } from 'vitest';
+import { RunnerTestFile } from 'vitest';
 import os from 'os';
 
 describe('Report Generation Validation', () => {
@@ -60,7 +60,7 @@ describe('Report Generation Validation', () => {
     process.env.ATTESTATION_REPORT_DIR = tempDir;
 
     const reporter = new AttestationReporter();
-    reporter.onInit();
+    reporter.onInit(null as any);
 
     // Create minimal mock file structure
     const mockFiles: any[] = [{
@@ -91,13 +91,13 @@ describe('Report Generation Validation', () => {
         duration: 123
       }
     };
-    
+
     // Link tasks
     mockFiles[0].tasks.push(mockTask.suite); // Suite at top level
     mockTask.suite.tasks.push(mockTask); // Test inside suite
 
-    // Trigger report generation
-    reporter.onFinished(mockFiles);
+    // Trigger report generation - use onTestRunEnd for vitest v4 API
+    (reporter as any).onTestRunEnd([], [], 'passed');
 
     // Validation
     // Get all report directories sorted by date (newest first)
@@ -114,7 +114,7 @@ describe('Report Generation Validation', () => {
 
     const latestReport = reportDirs[0];
     const attestationFull = path.join(latestReport, 'attestation-full.html');
-    
+
     expect(fs.existsSync(attestationFull)).toBe(true);
 
     const html = fs.readFileSync(attestationFull, 'utf-8');

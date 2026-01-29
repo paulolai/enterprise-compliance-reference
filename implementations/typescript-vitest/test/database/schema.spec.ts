@@ -17,7 +17,6 @@ function registerDbMetadata(
   const allure = (globalThis as any).allure;
   registerAllureMetadata(allure, {
     ...metadata,
-    epic: null, // No epic for these tests
     parentSuite: 'Unit Tests',
     suite: 'Database',
     feature: 'Schema Validation',

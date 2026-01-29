@@ -67,8 +67,8 @@ describe('Result Pattern: Error Handling', () => {
     });
 
     it('propagates Failure unchanged', () => {
-      const result = failure<string, string>('error');
-      const doubled = map(result, x => x * 2);
+      const result = failure('error');
+      const doubled = map(result, (x: number) => x * 2);
       expect(doubled).toEqual(failure('error'));
     });
 
@@ -89,8 +89,8 @@ describe('Result Pattern: Error Handling', () => {
 
     it('stops at first failure', () => {
       const step1 = success(5);
-      const step2 = chain(step1, _ => failure('error'));
-      const step3 = chain(step2, x => success(x + 1)); // Never called
+      const step2 = chain(step1, _ => failure<string>('error'));
+      const step3 = chain(step2, x => success((x as number) + 1)); // Never called
       expect(step3).toEqual(failure('error'));
     });
 
@@ -119,7 +119,7 @@ describe('Result Pattern: Error Handling', () => {
 
   describe('unwrap - Extract values with fallbacks', () => {
     it('unwrap throws on Failure', () => {
-      const result = failure<number, Error>(new Error('error'));
+      const result = failure<Error>(new Error('error'));
       expect(() => unwrap(result)).toThrow('error');
     });
 
@@ -129,7 +129,7 @@ describe('Result Pattern: Error Handling', () => {
     });
 
     it('unwrapOr returns default on Failure', () => {
-      const result = failure<number, string>('error');
+      const result = failure<string>('error');
       expect(unwrapOr(result, 0)).toBe(0);
     });
 
@@ -139,8 +139,8 @@ describe('Result Pattern: Error Handling', () => {
     });
 
     it('unwrapOrElse computes default from error', () => {
-      const result = failure<number, string>('error');
-      expect(unwrapOrElse(result, e => parseInt(e))).toBe(NaN);
+      const result = failure<string>('error');
+      expect(unwrapOrElse(result, e => parseInt(e, 10))).toBe(NaN);
     });
 
     it('unwrapOrElse returns value from Success', () => {
@@ -151,7 +151,7 @@ describe('Result Pattern: Error Handling', () => {
 
   describe('mapError - Transform error values', () => {
     it('transforms error in Failure', () => {
-      const result = failure<number, string>('error');
+      const result = failure<string>('error');
       const transformed = mapError(result, e => new Error(e));
       expect(isFailure(transformed)).toBe(true);
       if (isFailure(transformed)) {
@@ -179,10 +179,10 @@ describe('Result Pattern: Error Handling', () => {
     });
 
     it('executes onFailure for Failure', () => {
-      const result = failure<number, string>('error');
-      const calledWith = match(
+      const result = failure<string>('error');
+      const calledWith = match<never, string, string>(
         result,
-        _ => -1,
+        _ => -1 as unknown as string,
         error => `handled: ${error}`
       );
       expect(calledWith).toBe('handled: error');
@@ -214,17 +214,15 @@ describe('Result Pattern: Error Handling', () => {
     });
 
     it('handles empty array', () => {
-      const combined = all<Result<never, never>>([]);
+      const combined = all<[], never>([]);
       expect(combined).toEqual(success([]));
     });
 
     it('preserves type information', () => {
-      const results = [
-        success(42),
-        success('hello'),
-        success(true)
-      ] as const;
-      const combined = all([...results]);
+      const r1: Result<number, never> = success(42);
+      const r2: Result<string, never> = success('hello');
+      const r3: Result<boolean, never> = success(true);
+      const combined = all<any, never>([r1, r2, r3] as any[]);
       expect(combined).toEqual(success([42, 'hello', true]));
     });
   });
@@ -436,7 +434,7 @@ describe('Result Pattern: Error Handling', () => {
 
   describe('Integration with Pricing Engine (Example)', () => {
     it('Example: Safe calculation with Result pattern', () => {
-      function safeCalculate(items: CartItem[], user: User): Result<number, string> {
+      function safeCalculate(items: CartItem[], user: User): Result<number, Error> {
         return tryCatch(() => {
           const result = PricingEngine.calculate(items, user);
           return result.grandTotal;

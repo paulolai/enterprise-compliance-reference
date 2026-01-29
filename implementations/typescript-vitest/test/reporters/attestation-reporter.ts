@@ -1,13 +1,27 @@
-import { Reporter, File, Suite, Task } from 'vitest';
+import { Reporter, TestRunEndReason } from 'vitest/reporters';
+import { SerializedError } from '@vitest/utils';
+import { RunnerTask, RunnerTestCase, RunnerTestSuite } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { tracer } from '../modules/tracer';
 
+// Type alias for the old-style File type used in the implementation
+interface File {
+  filepath: string;
+  tasks: RunnerTask[];
+}
+
+// Vitest and TestModule are not directly exported in v4, use any
+interface TestModule {
+  moduleId: string;
+}
+
 export default class AttestationReporter implements Reporter {
   private startTime: number = 0;
+  private testModules: TestModule[] = [];
 
-  onInit() {
+  onInit(_vitest: unknown) {
     this.startTime = Date.now();
     const currentRunFile = '/tmp/vitest-current-run-id.txt';
     if (!fs.existsSync(currentRunFile)) {
@@ -15,7 +29,17 @@ export default class AttestationReporter implements Reporter {
     }
   }
 
-  onFinished(files: File[]) {
+  onTestModuleCollected(module: unknown) {
+    this.testModules.push(module as TestModule);
+  }
+
+  onTestRunEnd(_modules: ReadonlyArray<unknown>, _unhandledErrors: readonly SerializedError[], _reason: TestRunEndReason) {
+    // Convert new TestModule[] to old File[] format using the collected modules
+    const files: File[] = this.testModules.map(m => ({
+      filepath: m.moduleId,
+      tasks: this.flattenTasks(m)
+    }));
+
     const endTime = Date.now();
     const duration = ((endTime - this.startTime) / 1000).toFixed(2);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -29,11 +53,11 @@ export default class AttestationReporter implements Reporter {
       fs.unlinkSync(currentRunFile);
     }
 
-    const reportsRoot = process.env.ATTESTATION_REPORT_DIR 
+    const reportsRoot = process.env.ATTESTATION_REPORT_DIR
       ? path.resolve(process.env.ATTESTATION_REPORT_DIR)
       : path.resolve(process.cwd(), '../../reports');
     const reportDir = path.join(reportsRoot, timestamp);
-    
+
     if (!fs.existsSync(reportDir)) {
       fs.mkdirSync(reportDir, { recursive: true });
     }
@@ -53,6 +77,22 @@ export default class AttestationReporter implements Reporter {
     console.log(`  - Full:  attestation-full.html`);
   }
 
+  // Helper to flatten new Task structure to old File.tasks array
+  private flattenTasks(module: TestModule): RunnerTask[] {
+    const tasks: RunnerTask[] = [];
+    const traverse = (task: RunnerTask) => {
+      if (task.type === 'suite' || task.type === 'module') {
+        const suite = task as RunnerTestSuite;
+        tasks.push(suite);
+        suite.tasks?.forEach(traverse);
+      } else if (task.type === 'test') {
+        tasks.push(task as RunnerTestCase);
+      }
+    };
+    traverse(module as RunnerTask);
+    return tasks;
+  }
+
   private getGitInfo() {
     try {
       const hash = execSync('git rev-parse --short HEAD').toString().trim();
@@ -64,22 +104,19 @@ export default class AttestationReporter implements Reporter {
   }
 
   private getCoverageStats() {
-    let stats = { 
-      code: 0, 
-      domain: 0, 
-      coveredRules: 0, 
-      totalRules: 0, 
-      statements: 0, 
-      branches: 0, 
-      functions: 0 
+    let stats = {
+      code: 0,
+      domain: 0,
+      coveredRules: 0,
+      totalRules: 0,
+      statements: 0,
+      branches: 0,
+      functions: 0
     };
 
     try {
-      // Project root is 4 levels up from this file
-      // implementations/typescript-vitest/test/reporters/attestation-reporter.ts
       const rootDir = path.resolve(__dirname, '../../../../');
-      
-      // Domain Coverage
+
       const domainPath = path.join(rootDir, 'reports/coverage/domain-coverage.json');
       if (fs.existsSync(domainPath)) {
         const domain = JSON.parse(fs.readFileSync(domainPath, 'utf-8'));
@@ -88,7 +125,6 @@ export default class AttestationReporter implements Reporter {
         stats.totalRules = domain.summary.totalRules;
       }
 
-      // Code Coverage
       const codePath = path.resolve(__dirname, '../../coverage/coverage-summary.json');
       if (fs.existsSync(codePath)) {
         const code = JSON.parse(fs.readFileSync(codePath, 'utf-8'));
@@ -98,7 +134,7 @@ export default class AttestationReporter implements Reporter {
         stats.functions = code.total.functions.pct;
       }
     } catch (e) {
-      // console.warn('Could not read coverage stats', e);
+      // Silent fail
     }
     return stats;
   }
@@ -106,14 +142,14 @@ export default class AttestationReporter implements Reporter {
   private generateMarkdown(files: File[], gitInfo: { hash: string, dirtyFiles: string }, duration: string): string {
     let md = `# Pricing Engine: Quality Assurance Attestation\n\n**Generated:** ${new Date().toLocaleString()}\n**Git Hash:** ${gitInfo.hash}\n\n`;
     if (gitInfo.dirtyFiles) md += `**⚠️ Uncommitted Changes:**\n${gitInfo.dirtyFiles}\n\n`;
-    
+
     md += `## 1. Executive Summary\n\n| Area | Passed | Failed | Status |\n| :--- | :--- | :--- | :--- |\n`;
 
     let totalPass = 0, totalFail = 0;
     files.forEach(file => {
       file.tasks.forEach(task => {
         if (task.type === 'suite') {
-          const stats = this.getSuiteStats(task);
+          const stats = this.getSuiteStats(task as RunnerTestSuite);
           totalPass += stats.passed;
           totalFail += stats.failed;
           const status = stats.failed === 0 ? '✅ PASS' : '❌ FAIL';
@@ -130,7 +166,7 @@ export default class AttestationReporter implements Reporter {
   private generateHtml(files: File[], gitInfo: { hash: string, dirtyFiles: string }, duration: string, includeTraces: boolean): string {
     const matrix = this.generateTraceabilityMatrix(files);
     const coverage = this.getCoverageStats();
-    
+
     let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QA Attestation Report</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; }
@@ -177,7 +213,7 @@ export default class AttestationReporter implements Reporter {
     files.forEach(file => {
       file.tasks.forEach(task => {
         if (task.type === 'suite') {
-          const stats = this.getSuiteStats(task);
+          const stats = this.getSuiteStats(task as RunnerTestSuite);
           const statusClass = stats.failed === 0 ? 'status-pass' : 'status-fail';
           const statusText = stats.failed === 0 ? '✅ PASS' : '❌ FAIL';
           html += `<tr><td>${task.name}</td><td>${stats.passed}</td><td>${stats.failed}</td><td class="${statusClass}">${statusText}</td></tr>`;
@@ -186,7 +222,6 @@ export default class AttestationReporter implements Reporter {
     });
     html += `</table>`;
 
-    // Coverage Section
     html += `
     <h2 style="margin-top: 40px;">Coverage Summary</h2>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
@@ -221,7 +256,6 @@ export default class AttestationReporter implements Reporter {
     return html;
   }
 
-  // Helpers
   private sanitizeForId(str: string): string { return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
 
   private generateTraceabilityMatrix(files: File[]): string {
@@ -229,7 +263,7 @@ export default class AttestationReporter implements Reporter {
     const noRuleTests: Array<{name: string, fullName: string, status: string}> = [];
 
     files.forEach(file => {
-      const traverse = (task: Task) => {
+      const traverse = (task: RunnerTask) => {
         if (task.type === 'test') {
           const testName = getFullTestName(task);
           const simpleName = task.name.replace(/^Precondition: /, '');
@@ -239,14 +273,17 @@ export default class AttestationReporter implements Reporter {
                 if (testName.includes(invName)) { metadata = meta; break; }
              }
           }
-          const status = task.result?.state === 'pass' ? '✅' : '❌';
+          const status = task.result?.state === 'passed' ? '✅' : '❌';
           if (metadata && metadata.ruleReference) {
             if (!ruleMap.has(metadata.ruleReference)) ruleMap.set(metadata.ruleReference, { desc: metadata.rule, tests: [] });
             ruleMap.get(metadata.ruleReference)!.tests.push({ name: simpleName, fullName: testName, status });
           } else {
             noRuleTests.push({ name: simpleName, fullName: testName, status });
           }
-        } else if (task.type === 'suite') task.tasks.forEach(traverse);
+        } else if (task.type === 'suite') {
+          const suite = task as RunnerTestSuite;
+          suite.tasks?.forEach(traverse);
+        }
       };
       file.tasks.forEach(traverse);
     });
@@ -260,75 +297,92 @@ export default class AttestationReporter implements Reporter {
     return html;
   }
 
-  private getSuiteStats(suite: Suite): { passed: number; failed: number } {
+  private getSuiteStats(suite: RunnerTestSuite): { passed: number; failed: number } {
     let passed = 0, failed = 0;
-    suite.tasks.forEach(task => {
-      if (task.type === 'test') { if (task.result?.state === 'pass') passed++; else failed++; }
-      else if (task.type === 'suite') { const nested = this.getSuiteStats(task); passed += nested.passed; failed += nested.failed; }
+    suite.tasks?.forEach(task => {
+      if (task.type === 'test') {
+        if (task.result?.state === 'passed') passed++; else failed++;
+      } else if (task.type === 'suite') {
+        const nested = this.getSuiteStats(task as RunnerTestSuite);
+        passed += nested.passed;
+        failed += nested.failed;
+      }
     });
     return { passed, failed };
   }
 
-  private renderTaskMd(task: Task, level: number): string {
+  private renderTaskMd(task: RunnerTask, level: number): string {
     const indent = '#'.repeat(level);
     if (task.type === 'suite') {
       let output = `\n${indent} ${task.name}\n\n`;
-      if (task.tasks.some(t => t.type === 'test')) output += `| Scenario | Result |\n| :--- | :--- |\n`;
-      task.tasks.forEach(subTask => output += this.renderTaskMd(subTask, level + 1));
+      const suite = task as RunnerTestSuite;
+      if (suite.tasks?.some(t => t.type === 'test')) output += `| Scenario | Result |\n| :--- | :--- |\n`;
+      suite.tasks?.forEach(subTask => output += this.renderTaskMd(subTask, level + 1));
       return output;
     } else if (task.type === 'test') {
-      return `| ${task.name} | ${task.result?.state === 'pass' ? '✅ PASS' : '❌ FAIL'} |\n`;
+      return `| ${task.name} | ${task.result?.state === 'passed' ? '✅ PASS' : '❌ FAIL'} |\n`;
     }
     return '';
   }
 
-  private renderTaskHtml(task: Task, level: number, includeTraces: boolean): string {
+  private renderTaskHtml(task: RunnerTask, level: number, includeTraces: boolean): string {
     let output = '';
     if (task.type === 'suite') {
       if (level === 0) output += `<div class="suite-section"><h3 class="suite-header">${task.name}</h3>`;
       else if (task.name) output += `<div style="padding: 10px 0; font-weight: 600; color: #666;">${task.name}</div>`;
-      
-      if (task.tasks.some(t => t.type === 'test')) {
+
+      const suite = task as RunnerTestSuite;
+      if (suite.tasks?.some(t => t.type === 'test')) {
          output += `<table><tr><th style="width: 70%">Scenario</th><th style="width: 15%">Status</th>${includeTraces ? '<th style="width: 15%">Duration</th>' : ''}</tr>`;
-         task.tasks.forEach(subTask => {
+         suite.tasks?.forEach(subTask => {
              if (subTask.type === 'test') {
                  const testName = getFullTestName(subTask);
                  const displayName = subTask.name.replace(/^Precondition: /, '');
                  const testId = this.sanitizeForId(testName);
                  let metadata = tracer.getInvariantMetadata().get(testName) || tracer.getInvariantMetadata().get(subTask.name);
-                 if (!metadata) { for (const [invName, meta] of tracer.getInvariantMetadata()) { if (testName.includes(invName)) { metadata = meta; break; } } } // Fallback search
-                 const statusClass = subTask.result?.state === 'pass' ? 'status-pass' : 'status-fail';
-                 
+                 if (!metadata) { for (const [invName, meta] of tracer.getInvariantMetadata()) { if (testName.includes(invName)) { metadata = meta; break; } } }
+                 const statusClass = subTask.result?.state === 'passed' ? 'status-pass' : 'status-fail';
+
                  let tagsHtml = '';
                  if (metadata && metadata.tags) tagsHtml = metadata.tags.map(t => `<span class="tag ${t.includes('critical') ? 'tag-critical' : ''}">${t}</span>`).join('');
-                 
+
                  let detailsContent = '';
                  if (metadata) detailsContent += `<div class="business-rule-box"><div style="font-weight: 600; color: #24292e;">${metadata.ruleReference}</div><div style="color: #586069;">${metadata.rule}</div></div>`;
-                 
+
                  if (includeTraces) {
                     let interactions = tracer.get(testName);
                     if (interactions.length === 0 && metadata?.name) interactions = tracer.get(metadata.name);
                     interactions.forEach((interaction, idx) => {
-                        detailsContent += `<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;"><div style="font-size: 0.8em; color: #999; margin-bottom: 5px;">Trace #${idx + 1}</div><div class="io-block"><div class="io-section"><div class="io-label">Input</div><pre>${JSON.stringify(interaction.input, null, 2)}</pre></div><div class="io-section"><div class="io-label">Output</div><pre>${JSON.stringify(interaction.output, null, 2)}</pre></div></div></div>`;
+                        detailsContent += `<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;"><div style="font-size: 0.8em; color: #999; margin-bottom: 5px;">Trace #${idx + 1}</div><div class="io-block"><div class="io-section"><div class="io-label">Input</div><pre>${this.escapeHtml(JSON.stringify(interaction.input, null, 2))}</pre></div><div class="io-section"><div class="io-label">Output</div><pre>${this.escapeHtml(JSON.stringify(interaction.output, null, 2))}</pre></div></div></div>`;
                     });
                  }
-                 
+
                  const detailsHtml = detailsContent ? `<details><summary>View Details</summary><div class="test-details">${detailsContent}</div></details>` : '';
-                 output += `<tr id="${testId}"><td><div style="display: flex; align-items: center; justify-content: space-between;"><strong>${displayName}</strong><div>${tagsHtml}</div></div>${detailsHtml}</td><td class="${statusClass}">${subTask.result?.state === 'pass' ? '✅ PASS' : '❌ FAIL'}</td>${includeTraces ? `<td>${subTask.result?.duration || '-'}ms</td>` : ''}</tr>`;
+                 output += `<tr id="${testId}"><td><div style="display: flex; align-items: center; justify-content: space-between;"><strong>${this.escapeHtml(displayName)}</strong><div>${tagsHtml}</div></div>${detailsHtml}</td><td class="${statusClass}">${subTask.result?.state === 'passed' ? '✅ PASS' : '❌ FAIL'}</td>${includeTraces ? `<td>${subTask.result?.duration || '-'}ms</td>` : ''}</tr>`;
              }
          });
          output += `</table>`;
       }
-      task.tasks.forEach(subTask => { if (subTask.type === 'suite') output += this.renderTaskHtml(subTask, level + 1, includeTraces); });
+      suite.tasks?.forEach(subTask => { if (subTask.type === 'suite') output += this.renderTaskHtml(subTask, level + 1, includeTraces); });
       if (level === 0) output += `</div>`;
     }
     return output;
   }
+
+  private escapeHtml(str: string): string {
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+  }
 }
 
-function getFullTestName(task: Task): string {
+function getFullTestName(task: RunnerTask): string {
   let name = task.name;
-  let parent = task.suite;
-  while (parent && parent.name) { name = `${parent.name} > ${name}`; parent = parent.suite; }
+  const suite = task as RunnerTestSuite;
+  if (suite.parent && suite.parent !== suite && suite.parent.type !== 'module') {
+    name = `${getFullTestName(suite.parent)} > ${name}`;
+  }
   return name;
 }

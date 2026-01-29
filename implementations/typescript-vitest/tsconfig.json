@@ -8,9 +8,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./",
-    "resolveJsonModule": true
+    "rootDir": "../",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*", "test/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*", "test/**/*", "../shared/src/**/*", "../shared/fixtures/**/*"],
+  "exclude": ["node_modules", "../shared/node_modules"]
 }
