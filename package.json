@@ -6,7 +6,6 @@
     "test": "cd implementations/typescript-vitest && npm test",
     "test:unit": "cd implementations/typescript-vitest && npm test",
     "test:e2e": "cd implementations/react-playwright && npm test",
-    "test:all": "npm run test:unit && npm run test:e2e",
     "test:coverage": "cd implementations/typescript-vitest && npm run test:coverage",
     "test:allure": "cd implementations/typescript-vitest && npm run test:allure",
     "reports:allure": "allure generate allure-results/ --clean --output allure-report/",

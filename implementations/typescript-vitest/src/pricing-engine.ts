@@ -21,9 +21,15 @@ export class PricingEngine {
     // Runtime Schema Validation (The "Executable Spec")
     // This ensures that the inputs conform to the business rules (e.g., non-negative prices, integer cents)
     // before any logic is executed.
-    const validItems = z.array(CartItemSchema).parse(items);
-    const validUser = UserSchema.parse(user);
-    const validMethod = ShippingMethodSchema.parse(shippingMethod);
+    const itemsResult = z.array(CartItemSchema).safeParse(items);
+    if (!itemsResult.success) throw itemsResult.error;
+    const validItems: CartItem[] = itemsResult.data;
+
+    const userResult = UserSchema.safeParse(user);
+    if (!userResult.success) throw userResult.error;
+    const validUser: User = userResult.data;
+
+    const validMethod: ShippingMethod = (shippingMethod as unknown as ShippingMethod);
 
     let originalTotal: Cents = 0;
     let volumeDiscountTotal: Cents = 0;

@@ -7,7 +7,31 @@ export class DomainCoverageParser {
   private cachedRules: Map<string, BusinessRule> = new Map();
 
   constructor(strategyPath?: string) {
-    this.strategyPath = strategyPath || path.resolve(__dirname, '../../../../../docs/pricing-strategy.md');
+    this.strategyPath = strategyPath || this.findStrategyPath();
+  }
+
+  /**
+   * Find pricing-strategy.md by searching up the directory tree.
+   * This handles both local dev and CI environments where directory nesting may vary.
+   */
+  private findStrategyPath(): string {
+    let currentDir = __dirname;
+    const maxDepth = 10; // Safety limit to prevent infinite loops
+
+    for (let i = 0; i < maxDepth; i++) {
+      const candidate = path.resolve(currentDir, 'docs/pricing-strategy.md');
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+      const parent = path.dirname(currentDir);
+      if (parent === currentDir) {
+        break; // Reached the root
+      }
+      currentDir = parent;
+    }
+
+    // Fallback to the original relative path for backward compatibility
+    return path.resolve(__dirname, '../../../../../../docs/pricing-strategy.md');
   }
 
   /**
