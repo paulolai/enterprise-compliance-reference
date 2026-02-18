@@ -62,41 +62,50 @@ describe('Report Generation Validation', () => {
     const reporter = new AttestationReporter();
     reporter.onInit(null as any);
 
-    // Create minimal mock file structure
-    const mockFiles: any[] = [{
-      id: 'mock-id',
+    // Create minimal mock module structure (Vitest v3/v4 TestModule format)
+    const mockModule: any = {
+      moduleId: 'mock.test.ts',
+      type: 'module',
       name: 'mock.test.ts',
-      filepath: '/mock/path/mock.test.ts',
-      mode: 'run',
-      projectName: 'mock-project',
-      type: 'suite',
-      file: '/mock/path/mock.test.ts',
-      meta: {},
-      tasks: []
-    }];
-
-    // Add a mock task
-    const mockTask: any = {
-      id: 'task-id',
-      type: 'test',
-      name: 'Mock Test Scenario',
-      file: mockFiles[0],
-      suite: {
-        type: 'suite',
-        name: 'Mock Suite',
-        tasks: []
-      },
-      result: {
-        state: 'pass',
-        duration: 123
-      }
+      // Nested task structure: Module -> Suite -> Test
+      tasks: [
+        {
+          type: 'suite',
+          name: 'Mock Suite',
+          id: 'suite-id',
+          result: { state: 'passed' },
+          tasks: [
+            {
+              type: 'test',
+              name: 'Mock Test Scenario',
+              id: 'task-id',
+              result: {
+                state: 'passed',
+                duration: 123
+              },
+              parent: undefined // will be set by the traversal if needed
+            }
+          ]
+        }
+      ]
     };
 
-    // Link tasks
-    mockFiles[0].tasks.push(mockTask.suite); // Suite at top level
-    mockTask.suite.tasks.push(mockTask); // Test inside suite
+    // Set parent reference for the test task
+    mockModule.tasks[0].tasks[0].parent = mockModule.tasks[0];
+    mockModule.tasks[0].parent = mockModule;
 
-    // Trigger report generation - use onTestRunEnd for vitest v4 API
+    // Call onTestModuleCollected to register the mock module
+    (reporter as any).onTestModuleCollected(mockModule);
+
+    // Register metadata for the mock test
+    tracer.registerInvariant({
+      name: 'Mock Test Scenario',
+      ruleReference: 'test-reference.md §1',
+      rule: 'Mock rule for testing',
+      tags: ['@test']
+    });
+
+    // Trigger report generation
     (reporter as any).onTestRunEnd([], [], 'passed');
 
     // Validation

@@ -23,6 +23,16 @@ export class DomainCoverageParser {
       if (fs.existsSync(candidate)) {
         return candidate;
       }
+
+      // Also check if we're in the implementations/typescript-vitest directory
+      const implementationsRoot = path.resolve(currentDir, '../../../');
+      if (i > 2) {
+        const fromImplementations = path.resolve(implementationsRoot, 'docs/pricing-strategy.md');
+        if (fs.existsSync(fromImplementations)) {
+          return fromImplementations;
+        }
+      }
+
       const parent = path.dirname(currentDir);
       if (parent === currentDir) {
         break; // Reached the root
@@ -31,7 +41,8 @@ export class DomainCoverageParser {
     }
 
     // Fallback to the original relative path for backward compatibility
-    return path.resolve(__dirname, '../../../../../../docs/pricing-strategy.md');
+    const fallback = path.resolve(__dirname, '../../../../../../docs/pricing-strategy.md');
+    return fallback;
   }
 
   /**
