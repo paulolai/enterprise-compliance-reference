@@ -225,7 +225,7 @@ export const GetPaymentIntentResponseSchema = z.object({
   amount: CentsSchema,
   currency: z.string(),
   createdAt: z.number(),
-  metadata: z.record(z.string()),
+  metadata: z.record(z.string(), z.string()),
 });
 
 export type GetPaymentIntentResponse = z.infer<typeof GetPaymentIntentResponseSchema>;
@@ -398,7 +398,7 @@ export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
  * Validation error response schema
  */
 export const ValidationErrorResponseSchema = ErrorResponseSchema.extend({
-  fields: z.record(z.array(z.string())),
+  fields: z.record(z.string(), z.array(z.string())),
 });
 
 export type ValidationErrorResponse = z.infer<typeof ValidationErrorResponseSchema>;

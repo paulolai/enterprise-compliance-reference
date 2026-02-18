@@ -12,7 +12,8 @@
  * @see PRODUCTION_READY_PLAN.md Part 5.1: Comprehensive Zod Validation Pipeline
  */
 
-import { z, ZodError, ZodSchema } from 'zod';
+import { z, ZodError } from 'zod';
+import type { ZodType } from 'zod';
 import type { Context, Next } from 'hono';
 import { ValidationError } from '../errors';
 import { logger } from '../logger';
@@ -51,7 +52,7 @@ export interface ValidationOptions {
  *   return c.json({ id: user.id });
  * });
  */
-export function validateBody<T extends ZodSchema<unknown>>(
+export function validateBody<T extends ZodType<unknown>>(
   schema: T,
   options: ValidationOptions = {}
 ) {
@@ -130,7 +131,7 @@ export function validateBody<T extends ZodSchema<unknown>>(
  *   return c.json({ users });
  * });
  */
-export function validateQuery<T extends ZodSchema<unknown>>(
+export function validateQuery<T extends ZodType<unknown>>(
   schema: T,
   options: ValidationOptions = {}
 ) {
@@ -206,7 +207,7 @@ export function validateQuery<T extends ZodSchema<unknown>>(
  *   return c.json({ user: await getUserById(id) });
  * });
  */
-export function validateParams<T extends ZodSchema<unknown>>(
+export function validateParams<T extends ZodType<unknown>>(
   schema: T,
   options: ValidationOptions = {}
 ) {
@@ -262,7 +263,7 @@ export function validateParams<T extends ZodSchema<unknown>>(
  * @param querySchema - Zod schema for query validation
  * @param options - Validation options
  */
-export function validateAll<T extends ZodSchema<unknown>, U extends ZodSchema<unknown>>(
+export function validateAll<T extends ZodType<unknown>, U extends ZodType<unknown>>(
   bodySchema: T,
   querySchema: U,
   options: ValidationOptions = {}
@@ -273,14 +274,14 @@ export function validateAll<T extends ZodSchema<unknown>, U extends ZodSchema<un
 /**
  * Type helper to extract validated body type
  */
-export type ValidatedBody<T extends ZodSchema<unknown>> = z.infer<T>;
+export type ValidatedBody<T extends ZodType<unknown>> = z.infer<T>;
 
 /**
  * Type helper to extract validated query type
  */
-export type ValidatedQuery<T extends ZodSchema<unknown>> = z.infer<T>;
+export type ValidatedQuery<T extends ZodType<unknown>> = z.infer<T>;
 
 /**
  * Type helper to extract validated params type
  */
-export type ValidatedParams<T extends ZodSchema<unknown>> = z.infer<T>;
+export type ValidatedParams<T extends ZodType<unknown>> = z.infer<T>;
