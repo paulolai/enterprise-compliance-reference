@@ -34,6 +34,10 @@ jobs:
         working-directory: ./implementations/typescript-vitest
         run: pnpm test:coverage
 
+      - name: Check Domain Coverage Threshold
+        working-directory: ./implementations/typescript-vitest
+        run: pnpm coverage:domain
+
       - name: Generate Allure Report
         working-directory: ./implementations/typescript-vitest
         run: pnpm test:allure && pnpm report:allure:generate
