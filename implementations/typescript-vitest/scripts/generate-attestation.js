@@ -29,6 +29,10 @@ function main() {
   // 1. Load Allure Data
   const tasks = loadAllureData();
   console.log(`[Attestation] Loaded ${tasks.length} test results.`);
+  
+  if (tasks.length === 0) {
+    console.warn('[Attestation] ⚠️ No test results found. Generating empty report with warning.');
+  }
 
   // 2. Prepare Output Directory
   let outDir;
@@ -492,13 +496,15 @@ function generateMarkdown(tasks, gitInfo, duration) {
   const matrixSection = renderTraceabilityMatrixMarkdown(matrixData);
   const tagStatsSection = renderTagStatsMarkdown(tagStatsData);
 
+  const hasResults = tasks.length > 0;
+  
   return `# Attestation
 
 Generated: ${new Date().toLocaleString()}
 Git: \`${gitInfo.hash}\`
 ${gitInfo.dirtyFiles ? '\n⚠️ **Warning**: Uncommitted changes detected in working directory.' : ''}
 
-## Executive Summary
+${!hasResults ? '## ⚠️ Warning: No Test Results\n\nNo test results were found. This may indicate a test runner failure or misconfiguration.\n\n---\n\n' : ''}## Executive Summary
 
 | Metric | Value |
 |--------|-------|
