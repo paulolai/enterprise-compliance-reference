@@ -1,2 +1,21 @@
 packages:
   - 'implementations/*'
+
+# Workspace Catalog: Single source of truth for dependency versions
+# Use "catalog:" in package.json to reference these versions
+# https://pnpm.io/catalogs
+catalog:
+  # Core runtime dependencies
+  zod: ^3.24.2
+  zustand: ^5.0.10
+
+  # Testing libraries
+  vitest: ^4.0.16
+  fast-check: ^3.14.0
+
+  # TypeScript
+  typescript: ^5.9.0
+
+  # React ecosystem
+  react: ^19.2.0
+  react-dom: ^19.2.0

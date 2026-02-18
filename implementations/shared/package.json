@@ -11,11 +11,11 @@
     "./fixtures": "./fixtures/index.ts"
   },
   "dependencies": {
-    "fast-check": "^3.14.0",
-    "zod": "^3.24.2"
+    "fast-check": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "typescript": "^5.3.3"
+    "typescript": "catalog:"
   }
 }

@@ -4,6 +4,30 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    fast-check:
+      specifier: ^3.14.0
+      version: 3.23.2
+    react:
+      specifier: ^19.2.0
+      version: 19.2.3
+    react-dom:
+      specifier: ^19.2.0
+      version: 19.2.3
+    typescript:
+      specifier: ^5.9.0
+      version: 5.9.3
+    vitest:
+      specifier: ^4.0.16
+      version: 4.0.17
+    zod:
+      specifier: ^3.24.2
+      version: 3.25.76
+    zustand:
+      specifier: ^5.0.10
+      version: 5.0.10
+
 importers:
 
   .:
@@ -49,10 +73,10 @@ importers:
         specifier: ^4.11.4
         version: 4.11.5
       react:
-        specifier: ^19.2.0
+        specifier: 'catalog:'
         version: 19.2.3
       react-dom:
-        specifier: ^19.2.0
+        specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
       react-hot-toast:
         specifier: ^2.6.0
@@ -61,10 +85,10 @@ importers:
         specifier: ^7.12.0
         version: 7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       zod:
-        specifier: ^3.24.2
+        specifier: 'catalog:'
         version: 3.25.76
       zustand:
-        specifier: ^5.0.10
+        specifier: 'catalog:'
         version: 5.0.10(@types/react@19.2.9)(react@19.2.3)
     devDependencies:
       '@eslint/js':
@@ -116,7 +140,7 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ~5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       typescript-eslint:
         specifier: ^8.46.4
@@ -131,17 +155,17 @@ importers:
   implementations/shared:
     dependencies:
       fast-check:
-        specifier: ^3.14.0
+        specifier: 'catalog:'
         version: 3.23.2
       zod:
-        specifier: ^3.24.2
+        specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
       typescript:
-        specifier: ^5.3.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   implementations/typescript-cucumber:
@@ -169,8 +193,8 @@ importers:
   implementations/typescript-vitest:
     dependencies:
       zod:
-        specifier: ^4.2.1
-        version: 4.3.5
+        specifier: 'catalog:'
+        version: 3.25.76
     devDependencies:
       '@vitest/coverage-v8':
         specifier: ^4.0.17
@@ -185,16 +209,16 @@ importers:
         specifier: ^3.4.5
         version: 3.4.5(@vitest/runner@4.0.17)(allure-playwright@3.4.5(@playwright/test@1.57.0))(vitest@4.0.17(@types/node@24.10.9)(tsx@4.21.0)(yaml@2.8.2))
       fast-check:
-        specifier: ^3.0.0
+        specifier: 'catalog:'
         version: 3.23.2
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@24.10.9)(typescript@5.9.3)
       typescript:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.9.3
       vitest:
-        specifier: ^4.0.16
+        specifier: 'catalog:'
         version: 4.0.17(@types/node@24.10.9)(tsx@4.21.0)(yaml@2.8.2)
 
 packages:
@@ -4426,8 +4450,8 @@ snapshots:
       '@babel/parser': 7.28.6
       eslint: 9.39.2
       hermes-parser: 0.25.1
-      zod: 3.25.76
-      zod-validation-error: 4.0.2(zod@3.25.76)
+      zod: 4.3.5
+      zod-validation-error: 4.0.2(zod@4.3.5)
     transitivePeerDependencies:
       - supports-color
 
@@ -5787,9 +5811,9 @@ snapshots:
       toposort: 2.0.2
       type-fest: 2.19.0
 
-  zod-validation-error@4.0.2(zod@3.25.76):
+  zod-validation-error@4.0.2(zod@4.3.5):
     dependencies:
-      zod: 3.25.76
+      zod: 4.3.5
 
   zod@3.25.76: {}
 

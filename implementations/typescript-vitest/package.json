@@ -19,12 +19,12 @@
     "@vitest/runner": "^4.0.16",
     "allure-commandline": "^2.36.0",
     "allure-vitest": "^3.4.5",
-    "fast-check": "^3.0.0",
+    "fast-check": "catalog:",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.0",
-    "vitest": "^4.0.16"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
-    "zod": "^4.2.1"
+    "zod": "catalog:"
   }
 }
