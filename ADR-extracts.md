@@ -3,7 +3,7 @@
 This document is **GENERATED** from `docs/ARCHITECTURE_DECISIONS.md`.
 DO NOT EDIT MANUALLY - Changes will be overwritten on next sync.
 
-Last generated: 2026-01-24T00:50:11.702Z
+Last generated: 2026-02-18T12:44:13.426Z
 
 ---
 
@@ -120,4 +120,16 @@ Last generated: 2026-01-24T00:50:11.702Z
 
 ✅ **[MUST]** Workspace Protocol:** For monorepo internal dependencies, use `"workspace:*"` in package.json dependencies.
    *ADR-14: Package Manager: pnpm {#14-package-manager-pnpm}* (Rule)
+
+✅ **[MUST]** Use `catalog:` for Shared Dependencies:** If a dependency is used in 2+ packages, add it to the catalog.
+   *ADR-15: Dependency Version Management: Workspace Catalogs* (Rule)
+
+✅ **[MUST]** Document Blocked Updates:** When a dependency cannot be updated to latest, document the reason (see below).
+   *ADR-15: Dependency Version Management: Workspace Catalogs* (Rule)
+
+✅ **[MUST]** Package-Specific Versions:** Only use explicit versions for dependencies unique to one package.
+   *ADR-15: Dependency Version Management: Workspace Catalogs* (Rule)
+
+ℹ️ **[INFO]** We use **pnpm Workspace Catalogs** to centralize dependency version management in `pnpm-workspace.yaml`. All shared dependencies across workspaces should use the `catalog:` protocol.
+   *ADR-15: Dependency Version Management: Workspace Catalogs* (The Decision)
 

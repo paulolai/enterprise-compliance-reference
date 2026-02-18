@@ -85,6 +85,12 @@ This document explains the *Why* behind these decisions, and what alternatives w
     + [The Decision {#the-decision-13}](#the-decision-%23the-decision-13)
     + [Why? {#why-13}](#why-%23why-13)
     + [Rule {#rule-7}](#rule-%23rule-7)
+  * [15. Dependency Version Management: Workspace Catalogs](#15-dependency-version-management-workspace-catalogs)
+    + [The Decision](#the-decision-13)
+    + [Why?](#why-13)
+    + [Catalog Categories](#catalog-categories)
+    + [Rule](#rule-7)
+    + [Blocked Updates](#blocked-updates)
 
 <!-- tocstop -->
 
@@ -558,3 +564,62 @@ We use **pnpm** as the package manager instead of npm or yarn.
 #### Rule {#rule-7}
 *   **Use `pnpm exec` for Running Binaries:** When executing CLI tools from `node_modules/.bin`, use `pnpm exec <command>` (or `pnpm exec -- <command>` for passing flags) instead of `npx` or direct node command invocation.
 *   **Workspace Protocol:** For monorepo internal dependencies, use `"workspace:*"` in package.json dependencies.
+
+---
+
+### 15. Dependency Version Management: Workspace Catalogs
+**Status:** Accepted  
+**Date:** 2026-02-18
+
+#### The Decision
+We use **pnpm Workspace Catalogs** to centralize dependency version management in `pnpm-workspace.yaml`. All shared dependencies across workspaces should use the `catalog:` protocol.
+
+#### Why?
+*   **Single Source of Truth:** One place to update versions that propagate to all workspaces.
+*   **Consistency:** Prevents version drift where different packages use different versions of the same dependency (e.g., vitest 4.0.16 in one package, 4.0.18 in another).
+*   **Easier Updates:** Bumping a version in one place updates all consumers automatically on next `pnpm install`.
+*   **Visibility:** Makes it clear which dependencies are shared across the monorepo vs. package-specific.
+
+#### Catalog Categories
+```yaml
+catalog:
+  # Core runtime dependencies (used in production)
+  zod: ^4.3.6
+  zustand: ^5.0.11
+  
+  # Testing libraries (shared test infrastructure)
+  vitest: ^4.0.18
+  fast-check: ^4.5.3
+  "@playwright/test": ^1.58.2
+  
+  # TypeScript ecosystem
+  typescript: ^5.9.0
+  "@types/node": ^25.2.3
+  
+  # React ecosystem (frontend)
+  react: ^19.2.4
+  "react-dom": ^19.2.4
+  "@types/react": ^19.2.14
+  
+  # Build tools
+  vite: ^7.2.4
+  tsx: ^4.21.0
+  
+  # Linting (see Blocked Updates below)
+  eslint: ^9.39.1  # v10 blocked
+```
+
+#### Rule
+*   **Use `catalog:` for Shared Dependencies:** If a dependency is used in 2+ packages, add it to the catalog.
+*   **Document Blocked Updates:** When a dependency cannot be updated to latest, document the reason (see below).
+*   **Package-Specific Versions:** Only use explicit versions for dependencies unique to one package.
+
+#### Blocked Updates
+The following dependencies are intentionally held at versions below latest:
+
+| Package | Current | Latest | Reason | Tracking |
+|---------|---------|--------|--------|----------|
+| eslint | 9.39.2 | 10.0.0 | `eslint-plugin-react-hooks` v7.0.1 does not support ESLint v10 peer dependency | https://github.com/facebook/react/issues/32549 |
+| @eslint/js | 9.39.2 | 10.0.1 | Locked to match eslint version | Same as above |
+
+**When to Update:** Once `eslint-plugin-react-hooks` adds ESLint v10 support (React v19 stable or v20), we can upgrade both packages.
