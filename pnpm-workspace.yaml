@@ -7,15 +7,44 @@ packages:
 catalog:
   # Core runtime dependencies
   zod: ^4.3.6
-  zustand: ^5.0.10
+  zustand: ^5.0.11
 
   # Testing libraries
-  vitest: ^4.0.16
-  fast-check: ^3.14.0
+  vitest: ^4.0.18
+  fast-check: ^4.5.3
+  "@playwright/test": ^1.58.2
+  "@vitest/coverage-v8": ^4.0.18
+  "@vitest/runner": ^4.0.18
 
   # TypeScript
   typescript: ^5.9.0
+  "@types/node": ^25.2.3
 
   # React ecosystem
-  react: ^19.2.0
-  react-dom: ^19.2.0
+  react: ^19.2.4
+  "react-dom": ^19.2.4
+  "@types/react": ^19.2.14
+  "@types/react-dom": ^19.2.3
+  "react-router-dom": ^7.13.0
+
+  # Build tools
+  "@vitejs/plugin-react": ^5.1.4
+  vite: ^7.2.4
+  tsx: ^4.21.0
+
+  # Backend/Hono
+  hono: ^4.11.10
+  "@hono/node-server": ^1.13.1
+  "@hono/vite-dev-server": ^0.25.0
+
+  # Linting
+  eslint: ^9.39.1
+  "@eslint/js": ^9.39.1
+  typescript-eslint: ^8.56.0
+  "eslint-plugin-react-refresh": ^0.5.0
+  globals: ^17.3.0
+
+  # Reporting
+  "allure-vitest": ^3.4.5
+  "allure-playwright": ^3.4.5
+  "allure-commandline": ^2.36.0

@@ -29,14 +29,14 @@
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.45.1",
-    "stripe": "^20.2.0"
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
-    "allure-commandline": "^2.36.0",
-    "drizzle-kit": "^0.31.8",
+    "allure-commandline": "catalog:",
+    "drizzle-kit": "^0.31.9",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "markdown-toc": "^1.2.0",
-    "tsx": "^4.21.0"
+    "tsx": "catalog:"
   }
 }

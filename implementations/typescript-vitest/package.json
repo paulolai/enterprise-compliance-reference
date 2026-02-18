@@ -15,10 +15,10 @@
     "report:allure:view": "npx --yes http-server reports/allure-report -o -c-1"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.0.17",
-    "@vitest/runner": "^4.0.16",
-    "allure-commandline": "^2.36.0",
-    "allure-vitest": "^3.4.5",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/runner": "catalog:",
+    "allure-commandline": "catalog:",
+    "allure-vitest": "catalog:",
     "fast-check": "catalog:",
     "ts-node": "^10.9.1",
     "typescript": "catalog:",
