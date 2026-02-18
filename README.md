@@ -144,6 +144,45 @@ cd implementations/react-playwright
 pnpm run dev
 ```
 
+### Running Tests Locally
+
+#### Unit Tests (API Layer)
+
+```bash
+# Run from root
+pnpm run test:unit
+
+# Or from the vitest directory
+cd implementations/typescript-vitest
+pnpm test
+```
+
+#### E2E Tests (GUI Layer)
+
+E2E tests use Playwright and require browser binaries. **First-time setup:**
+
+```bash
+# Install Playwright browsers (one-time, ~130MB download)
+cd implementations/react-playwright
+pnpm exec playwright install chromium
+
+# Run E2E tests
+pnpm test
+```
+
+**Notes:**
+- Browsers are cached in `~/.cache/ms-playwright/` and won't re-download on subsequent installs
+- CI automatically handles browser installation with caching
+- Run `pnpm run test:all` from root to execute both unit and E2E tests together
+
+#### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `Executable doesn't exist` | Run `pnpm exec playwright install chromium` |
+| Tests timeout | Increase timeout in `playwright.config.ts` or check if dev server started |
+| Port 5173 in use | Kill existing process: `lsof -ti:5173 | xargs kill` |
+
 ## 📁 Project Structure
 
 This repository follows a multi-implementation structure to demonstrate ATDD patterns at different layers:
