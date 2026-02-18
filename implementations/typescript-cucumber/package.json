@@ -2,18 +2,19 @@
   "name": "pricing-engine-cucumber",
   "version": "1.0.0",
   "description": "Anti-pattern example: Gherkin-based pricing engine tests",
+  "type": "module",
   "scripts": {
-    "test": "cucumber-js --require-module ts-node/register --require 'step-definitions/**/*.ts' features/**/*.feature",
-    "report": "cucumber-js --require-module ts-node/register --require 'step-definitions/**/*.ts' features/**/*.feature --format html:cucumber-report.html"
+    "test": "node --import=tsx/esm ./node_modules/@cucumber/cucumber/bin/cucumber-js",
+    "report": "node --import=tsx/esm ./node_modules/@cucumber/cucumber/bin/cucumber-js --format html:cucumber-report.html"
   },
   "dependencies": {
     "@cucumber/cucumber": "^12.6.0",
-    "chai": "^5.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.8.0"
   },
   "devDependencies": {
     "@types/chai": "^5.2.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^25.2.3",
+    "chai": "^6.2.2"
   }
 }

@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -10,9 +11,13 @@
     "resolveJsonModule": true,
     "outDir": "./dist",
     "rootDir": "./",
-    "moduleResolution": "node",
-    "types": ["node", "@cucumber/cucumber"],
-    "allowSyntheticDefaultImports": true
+    "baseUrl": ".",
+    "paths": {
+      "../src/*": ["./src/*"]
+    },
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true
   },
   "include": [
     "step-definitions/**/*.ts",
@@ -22,10 +27,5 @@
     "node_modules",
     "dist",
     "features"
-  ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    }
-  }
+  ]
 }
