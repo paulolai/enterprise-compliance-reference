@@ -171,24 +171,53 @@ export class DomainCoverageParser {
 
     for (const rule of rules) {
       const ruleRef = `pricing-strategy.md §${rule.section}`;
-      const tests = ruleReferences.get(ruleRef) || [];
+      
+      // Match tests by section number - handles both short (§1) and long (§1 - Title) formats
+      // Also supports subsection matching (§5 matches tests referencing §5.1, §5.2, etc.)
+      const matchingTests: TestReference[] = [];
+      const seenTests = new Set<string>(); // Prevent duplicate test entries
+      
+      for (const [testRef, tests] of ruleReferences.entries()) {
+        // Extract section number from test reference (e.g., "§1 - Base Rules" -> "1")
+        const sectionMatch = testRef.match(/§(\d+(?:\.\d+)?)/);
+        if (!sectionMatch) continue;
+        
+        const testSection = sectionMatch[1];
+        
+        // Check if this test references this rule's section
+        // Either exact match (§1 matches §1) or subsection match (§5 matches §5.1)
+        const isMatch = testSection === rule.section || 
+                       (rule.section.includes('.') && testSection === rule.section) ||
+                       (!rule.section.includes('.') && testSection.startsWith(rule.section + '.'));
+        
+        if (isMatch) {
+          for (const test of tests) {
+            const testKey = `${test.filePath}:${test.testName}`;
+            if (!seenTests.has(testKey)) {
+              seenTests.add(testKey);
+              matchingTests.push(test);
+            }
+          }
+        }
+      }
 
       result.push({
         ruleReference: ruleRef,
         title: rule.title,
-        covered: tests.length > 0,
-        tests
+        covered: matchingTests.length > 0,
+        tests: matchingTests
       });
     }
 
     const coveredRules = result.filter(r => r.covered).length;
+    const coveragePercentage = result.length > 0 ? (coveredRules / result.length) * 100 : 0;
 
     return {
       rules: result,
       summary: {
         totalRules: result.length,
         coveredRules,
-        coveragePercentage: (coveredRules / result.length) * 100
+        coveragePercentage
       }
     };
   }
