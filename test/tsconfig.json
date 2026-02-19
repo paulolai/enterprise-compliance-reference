@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@executable-specs/domain": ["../packages/domain/src"],
+      "@executable-specs/domain/*": ["../packages/domain/src/*"],
+      "@executable-specs/shared": ["../packages/shared/src"],
+      "@executable-specs/shared/*": ["../packages/shared/src/*"],
+      "@executable-specs/shared/fixtures": ["../packages/shared/fixtures"],
+      "@executable-specs/shared/fixtures/*": ["../packages/shared/fixtures/*"],
+      "@executable-specs/client/*": ["../packages/client/src/*"]
+    }
+  },
+  "include": ["e2e/**/*.ts", "builders/**/*.ts"],
+  "exclude": ["node_modules", "reports"]
+}

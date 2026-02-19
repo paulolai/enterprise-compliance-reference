@@ -1,0 +1,22 @@
+{
+  "name": "@executable-specs/e2e",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "@executable-specs/domain": "workspace:*",
+    "@executable-specs/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "allure-playwright": "catalog:",
+    "fast-check": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

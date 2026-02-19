@@ -1,0 +1,24 @@
+{
+  "name": "@executable-specs/server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Hono API server",
+  "main": "./src/server/index.ts",
+  "scripts": {
+    "dev": "tsx src/server/standalone.ts",
+    "start": "node dist/server/standalone.js"
+  },
+  "dependencies": {
+    "@executable-specs/domain": "workspace:*",
+    "@executable-specs/shared": "workspace:*",
+    "@hono/node-server": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "allure-playwright": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}
