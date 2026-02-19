@@ -1,0 +1,21 @@
+{
+  "name": "@executable-specs/shared",
+  "version": "1.0.0",
+  "description": "Shared test fixtures and utilities",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./index-server": "./src/index-server.ts",
+    "./fixtures": "./fixtures/index.ts",
+    "./fixtures/allure-helpers": "./fixtures/allure-helpers.ts"
+  },
+  "dependencies": {
+    "@executable-specs/domain": "workspace:*",
+    "fast-check": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
