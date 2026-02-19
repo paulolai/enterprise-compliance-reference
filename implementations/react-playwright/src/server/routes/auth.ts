@@ -33,7 +33,7 @@ router.post('/login', validateBody(requestSchemas.login), async (c) => {
       const userWithoutPassword = { email: userEmail, name, tenureYears };
       return c.json({
         user: userWithoutPassword,
-        accessToken: 'mock-token-' + Math.random().toString(36).substr(2),
+        accessToken: 'mock-token-' + Math.random().toString(36).substring(2),
       });
     }
 

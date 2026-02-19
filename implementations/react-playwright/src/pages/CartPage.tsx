@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
-import { CartBadge } from '../components/cart/CartBadge';
 import { CartItem as CartItemComponent } from '../components/cart/CartItem';
 import { CartSummary } from '../components/cart/CartSummary';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingBag } from 'lucide-react';
 import { logger } from '../lib/logger';
 
 export function CartPage() {
@@ -14,6 +16,8 @@ export function CartPage() {
 
   // Fetch pricing when cart or user changes
   React.useEffect(() => {
+    const controller = new AbortController();
+    
     const fetchPricing = async () => {
       if (items.length === 0) {
         useCartStore.setState({ pricingResult: null });
@@ -29,6 +33,7 @@ export function CartPage() {
             user: user || { tenureYears: 0 },
             method: useCartStore.getState().shippingMethod,
           }),
+          signal: controller.signal,
         });
 
         if (response.ok) {
@@ -36,11 +41,18 @@ export function CartPage() {
           useCartStore.setState({ pricingResult: result });
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         logger.error('Pricing fetch failed', error, { page: 'cart' });
       }
     };
 
     fetchPricing();
+
+    return () => {
+      controller.abort();
+    };
   }, [items, user]);
 
   const handleCheckout = () => {
@@ -48,58 +60,48 @@ export function CartPage() {
   };
 
   return (
-    <div className="cart-page" data-testid="cart-page">
-      <header>
-        <nav>
-          <Link to="/">TechHome Direct</Link>
-          <div className="nav-links">
-            <Link to="/products">Products</Link>
-            <Link to="/cart">
-              <CartBadge />
-            </Link>
-            <Link to="/login">Login</Link>
-          </div>
-        </nav>
-      </header>
-
-      <main>
-        <div className="page-header">
-          <h1>Shopping Cart</h1>
-          {user?.tenureYears && user.tenureYears > 2 && (
-            <span className="vip-badge" data-testid="vip-user-label">
-              VIP Member ({user.tenureYears} years)
-            </span>
-          )}
-        </div>
-
-        {items.length === 0 ? (
-          <div className="empty-cart">
-            <p>Your cart is empty</p>
-            <Link to="/products">Continue Shopping</Link>
-          </div>
-        ) : (
-          <div className="cart-content">
-            <div className="cart-items">
-              {items.map((item) => (
-                <CartItemComponent key={item.sku} sku={item.sku} />
-              ))}
-            </div>
-
-            <div className="cart-sidebar">
-              <CartSummary result={pricingResult} />
-              {pricingResult && (
-                <button
-                  className="checkout-button"
-                  onClick={handleCheckout}
-                  data-testid="checkout-button"
-                >
-                  Proceed to Checkout
-                </button>
-              )}
-            </div>
-          </div>
+    <div className="space-y-8" data-testid="cart-page">
+      <div className="flex items-center gap-4">
+        <h1 className="text-3xl font-bold tracking-tight">Shopping Cart</h1>
+        {user?.tenureYears && user.tenureYears > 2 && (
+          <Badge variant="vip" data-testid="vip-user-label">
+            VIP Member ({user.tenureYears} years)
+          </Badge>
         )}
-      </main>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="text-center py-16 space-y-4">
+          <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground" />
+          <p className="text-xl font-medium">Your cart is empty</p>
+          <p className="text-muted-foreground">Add some products to get started</p>
+          <Button asChild>
+            <Link to="/products">Continue Shopping</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
+          <div className="space-y-4">
+            {items.map((item) => (
+              <CartItemComponent key={item.sku} sku={item.sku} />
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            <CartSummary result={pricingResult} />
+            {pricingResult && (
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={handleCheckout}
+                data-testid="checkout-button"
+              >
+                Proceed to Checkout
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

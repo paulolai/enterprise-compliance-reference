@@ -103,8 +103,6 @@ router.post('/', validateBody(requestSchemas.createOrder), async (c) => {
       total,
     });
   } catch (error) {
-    // Log with console.error for debugging - the logger has issues in dev mode
-    console.error('[DEBUG] Order creation failed:', error);
     logger.error('Order creation failed', error, { action: 'create_order' });
     const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
     return c.json({ error: errorMessage }, 500);

@@ -1,9 +1,14 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
-import { CartBadge } from '../components/cart/CartBadge';
 import { ShippingMethodSelector } from '../components/checkout/ShippingMethodSelector';
 import { OrderSummary } from '../components/checkout/OrderSummary';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import { logger } from '../lib/logger';
 
 export function CheckoutPage() {
@@ -15,6 +20,8 @@ export function CheckoutPage() {
 
   // Fetch pricing when shipping method changes
   React.useEffect(() => {
+    const controller = new AbortController();
+    
     const fetchPricing = async () => {
       if (items.length === 0) {
         navigate('/cart');
@@ -30,6 +37,7 @@ export function CheckoutPage() {
             user: user || { tenureYears: 0 },
             method: shippingMethod,
           }),
+          signal: controller.signal,
         });
 
         if (response.ok) {
@@ -37,11 +45,18 @@ export function CheckoutPage() {
           useCartStore.setState({ pricingResult: result });
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         logger.error('Pricing fetch failed', error, { page: 'checkout' });
       }
     };
 
     fetchPricing();
+
+    return () => {
+      controller.abort();
+    };
   }, [items, user, shippingMethod, navigate]);
 
   const handlePlaceOrder = async () => {
@@ -54,91 +69,123 @@ export function CheckoutPage() {
   };
 
   return (
-    <div className="checkout-page" data-testid="checkout-page">
-      <header>
-        <nav>
-          <Link to="/">TechHome Direct</Link>
-          <div className="nav-links">
-            <Link to="/products">Products</Link>
-            <Link to="/cart">
-              <CartBadge />
-            </Link>
-            <Link to="/login">Login</Link>
-          </div>
-        </nav>
-      </header>
+    <div className="space-y-8" data-testid="checkout-page">
+      <div className="flex items-center gap-4">
+        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
+        {user?.tenureYears && user.tenureYears > 2 && (
+          <Badge variant="vip" data-testid="vip-user-label">
+            VIP Member ({user.tenureYears} years)
+          </Badge>
+        )}
+      </div>
 
-      <main>
-        <div className="page-header">
-          <h1>Checkout</h1>
-          {user?.tenureYears && user.tenureYears > 2 && (
-            <span className="vip-badge" data-testid="vip-user-label">
-              VIP Member ({user.tenureYears} years)
-            </span>
-          )}
-        </div>
-
-        <div className="checkout-content">
-          <div className="checkout-form">
-            <section>
-              <h2>Shipping Method</h2>
+      <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
+        <div className="space-y-6">
+          {/* Shipping Method */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Shipping Method</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ShippingMethodSelector />
-            </section>
+            </CardContent>
+          </Card>
 
-            <section>
-              <h2>Shipping Address</h2>
-              <form>
-                <input
+          {/* Shipping Address */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Shipping Address</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="shipping-name">Full Name</Label>
+                <Input
                   type="text"
+                  id="shipping-name"
                   placeholder="Full Name"
                   data-testid="shipping-name"
                 />
-                <input
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shipping-address">Street Address</Label>
+                <Input
                   type="text"
+                  id="shipping-address"
                   placeholder="Street Address"
                   data-testid="shipping-address"
                 />
-                <input
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shipping-city">City</Label>
+                <Input
                   type="text"
+                  id="shipping-city"
                   placeholder="City"
                   data-testid="shipping-city"
                 />
-                <div className="form-row">
-                  <input type="text" placeholder="State" />
-                  <input type="text" placeholder="ZIP Code" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="shipping-state">State</Label>
+                  <Input type="text" id="shipping-state" placeholder="State" />
                 </div>
-              </form>
-            </section>
+                <div className="space-y-2">
+                  <Label htmlFor="shipping-zip">ZIP Code</Label>
+                  <Input type="text" id="shipping-zip" placeholder="ZIP Code" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <section>
-              <h2>Payment</h2>
-              <form>
-                <input
+          {/* Payment */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="card-number">Card Number</Label>
+                <Input
                   type="text"
+                  id="card-number"
                   placeholder="Card Number"
                   data-testid="card-number"
                 />
-                <div className="form-row">
-                  <input type="text" placeholder="MM/YY" />
-                  <input type="text" placeholder="CVC" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="card-expiry">Expiry Date (MM/YY)</Label>
+                  <Input type="text" id="card-expiry" placeholder="MM/YY" />
                 </div>
-              </form>
-            </section>
-          </div>
-
-          <div className="checkout-sidebar">
-            <OrderSummary />
-            <button
-              className="place-order-button"
-              onClick={handlePlaceOrder}
-              disabled={isPlacingOrder || items.length === 0}
-              data-testid="place-order-button"
-            >
-              {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
-            </button>
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="card-cvc">CVC</Label>
+                  <Input type="text" id="card-cvc" placeholder="CVC" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </main>
+
+        <div className="space-y-4">
+          <OrderSummary />
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handlePlaceOrder}
+            disabled={isPlacingOrder || items.length === 0}
+            data-testid="place-order-button"
+          >
+            {isPlacingOrder ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Placing Order...
+              </>
+            ) : (
+              'Place Order'
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
