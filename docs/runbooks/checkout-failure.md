@@ -74,7 +74,7 @@ curl http://localhost:5173/api/products
 3. Check `src/domain/cart/fns.ts` for calculation invariants
 4. Run the property-based tests for cart invariants:
    ```bash
-   cd implementations/react-playwright
+   cd implementations/executable-specs/e2e
    pnpm test cart-invariants.test.ts
    ```
 

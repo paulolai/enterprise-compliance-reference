@@ -91,7 +91,7 @@ it('Invariant: Final Total is always <= Original Total', () => {
 At **Google**, we didn't have "QA Tooling" teams—we had **Engineering Productivity (EngProd)**. Our mission was to be **Dev Accelerators**. We built tools that served the engineer, not the process. This architecture replaces the "Gherkin Burden" with **Type-Safe Test Data Builders**, ensuring testing is a high-speed feedback loop that feels like coding, not data entry.
 
 ### 2. Continuous Attestation (The CBA Lesson)
-In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](implementations/typescript-vitest/reporting-architecture.md) for details):
+In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](implementations/executable-specs/unit/reporting-architecture.md) for details):
 - **Attestation Report**: Business-rule traceability for auditors. Generated via `npm run reports:attestation`.
 - **Allure Report**: Historical trends and flakiness detection for engineers.
 
@@ -140,7 +140,7 @@ pnpm install
 pnpm run test:all
 
 # 3. Navigate to React app and start dev server
-cd implementations/react-playwright
+cd implementations/executable-specs/e2e
 pnpm run dev
 ```
 
@@ -152,8 +152,8 @@ pnpm run dev
 # Run from root
 pnpm run test:unit
 
-# Or from the vitest directory
-cd implementations/typescript-vitest
+# Or from the unit test directory
+cd implementations/executable-specs/unit
 pnpm test
 ```
 
@@ -163,7 +163,7 @@ E2E tests use Playwright and require browser binaries. **First-time setup:**
 
 ```bash
 # Install Playwright browsers (one-time, ~130MB download)
-cd implementations/react-playwright
+cd implementations/executable-specs/e2e
 pnpm exec playwright install chromium
 
 # Run E2E tests
@@ -189,25 +189,28 @@ This repository follows a multi-implementation structure to demonstrate ATDD pat
 
 ```
 implementations/
-├── typescript-vitest/     # Unit test layer: Pricing engine + Vitest
-│   ├── src/               # Core business logic (PricingEngine)
-│   ├── test/              # Property-based tests, integration tests
-│   └── scripts/           # Attestation report generation
+├── executable-specs/        # The recommended approach
+│   ├── unit/                # Unit test layer: Pricing engine + Vitest
+│   │   ├── src/             # Core business logic (PricingEngine)
+│   │   ├── test/            # Property-based tests, integration tests
+│   │   └── scripts/         # Attestation report generation
+│   │
+│   ├── e2e/                 # E2E test layer: React app + Playwright + Hono API
+│   │   ├── src/
+│   │   │   ├── components/  # Cart, checkout, product components
+│   │   │   ├── pages/       # Home, Products, Cart, Checkout, Login, Register
+│   │   │   ├── server/      # Hono backend API (pricing, auth, orders)
+│   │   │   ├── store/       # Zustand state management (cart logic)
+│   │   │   └── providers/   # React context providers
+│   │   └── test-results/    # Playwright test output
+│   │
+│   └── shared/              # Shared types, DB schema, and utilities
 │
-├── react-playwright/      # E2E test layer: React app + Playwright + Hono API
-│   ├── src/
-│   │   ├── components/    # Cart, checkout, product components
-│   │   ├── pages/         # Home, Products, Cart, Checkout, Login, Register
-│   │   ├── server/        # Hono backend API (pricing, auth, orders)
-│   │   ├── store/         # Zustand state management (cart logic)
-│   │   └── providers/     # React context providers
-│   └── test-results/      # Playwright test output
-│
-├── shared/                # Shared types, DB schema, and utilities
-└── typescript-cucumber/   # Cucumber implementation (documentation/contrast only)
+└── comparison-gherkin/      # Anti-pattern comparison
+    └── cucumber/            # Gherkin/Cucumber implementation (documentation/contrast only)
 
-reports/                   # Generated attestation reports
-docs/                      # Business rules, patterns, and guidelines
+reports/                     # Generated attestation reports
+docs/                        # Business rules, patterns, and guidelines
 ```
 
 ### Documentation Automation
@@ -245,7 +248,7 @@ npm run docs:fix
 
 ## 📚 Essential Reading
 
-*   **[Reporting Architecture](implementations/typescript-vitest/reporting-architecture.md)** ⭐ **Viewing Allure reports requires HTTP server** - See this guide
+*   **[Reporting Architecture](implementations/executable-specs/unit/reporting-architecture.md)** ⭐ **Viewing Allure reports requires HTTP server** - See this guide
 *   **[The Shift Left Playbook](docs/guides/shift-left-playbook.md)** - How to coach teams through this transition.
 *   **[Attestation Architecture](docs/reference/attestation-architecture.md)** - How we automate compliance.
 *   **[Bug Discovery Evidence](docs/reference/bug-discovery-evidence.md)** - Real-world evidence that invariant tests catch bugs hand-written scenarios miss.

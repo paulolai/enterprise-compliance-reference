@@ -68,12 +68,12 @@ This document provides a concise overview of the implementation work completed f
 
 ### Key Files
 - `docs/pricing-strategy.md`: Single source of truth for business rules
-- `implementations/typescript-vitest/src/pricing-engine.ts`: Core business logic
-- `implementations/typescript-vitest/test/pricing.test.ts`: Original pricing tests
-- `implementations/typescript-vitest/test/shipping.test.ts`: Shipping tests
-- `implementations/typescript-vitest/test/fixtures/cart-builder.ts`: Fluent test builder
-- `implementations/typescript-vitest/test/fixtures/arbitraries.ts`: Property-based test generators
-- `implementations/typescript-vitest/test/reporters/`: Custom attestation reporter
+- `implementations/executable-specs/unit/src/pricing-engine.ts`: Core business logic
+- `implementations/executable-specs/unit/test/pricing.test.ts`: Original pricing tests
+- `implementations/executable-specs/unit/test/shipping.test.ts`: Shipping tests
+- `implementations/executable-specs/unit/test/fixtures/cart-builder.ts`: Fluent test builder
+- `implementations/executable-specs/unit/test/fixtures/arbitraries.ts`: Property-based test generators
+- `implementations/executable-specs/unit/test/reporters/`: Custom attestation reporter
 
 ## CI/CD
 - GitHub Actions workflow runs on push/PR

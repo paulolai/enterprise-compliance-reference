@@ -209,7 +209,7 @@ Frontend                         Backend                          Stripe
 
 ### API Integration Tests (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/api/payments-api.spec.ts`
+**Location:** `implementations/executable-specs/e2e/src/test/api/payments-api.spec.ts`
 
 | Test | Description | Metadata |
 |------|-------------|----------|
@@ -226,7 +226,7 @@ Frontend                         Backend                          Stripe
 
 ### E2E Tests (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/e2e/checkout-complete-flow.ui.test.ts`
+**Location:** `implementations/executable-specs/e2e/src/test/e2e/checkout-complete-flow.ui.test.ts`
 
 | Test | Description |
 |------|-------------|
@@ -244,11 +244,11 @@ Frontend                         Backend                          Stripe
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Payments Route | `implementations/react-playwright/src/server/routes/payments.ts` | ✅ Complete |
-| Database Orders | `implementations/shared/src/db/schema.ts` | ✅ Complete |
-| API Tests | `implementations/react-playwright/src/test/api/payments-api.spec.ts` | ✅ Complete |
-| E2E Flow Tests | `implementations/react-playwright/src/test/e2e/checkout-complete-flow.ui.test.ts` | ✅ Complete (Mocked) |
-| Checkout Page | `implementations/react-playwright/src/pages/CheckoutPage.tsx` | ✅ Complete |
+| Payments Route | `implementations/executable-specs/e2e/src/server/routes/payments.ts` | ✅ Complete |
+| Database Orders | `implementations/executable-specs/shared/src/db/schema.ts` | ✅ Complete |
+| API Tests | `implementations/executable-specs/e2e/src/test/api/payments-api.spec.ts` | ✅ Complete |
+| E2E Flow Tests | `implementations/executable-specs/e2e/src/test/e2e/checkout-complete-flow.ui.test.ts` | ✅ Complete (Mocked) |
+| Checkout Page | `implementations/executable-specs/e2e/src/pages/CheckoutPage.tsx` | ✅ Complete |
 
 ### API Endpoints
 

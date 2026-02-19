@@ -1,8 +1,8 @@
 {
-  "name": "pricing-engine-ts-vitest",
+  "name": "@executable-specs/unit",
   "version": "1.0.0",
   "type": "module",
-  "description": "Code as Specification demo implementation",
+  "description": "Code as Specification demo - Unit test layer",
   "main": "src/pricing-engine.ts",
   "scripts": {
     "test": "vitest run",

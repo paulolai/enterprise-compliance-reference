@@ -184,7 +184,7 @@ On Every Change:
 
 ### E2E Tests (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts`
+**Location:** `implementations/executable-specs/e2e/src/test/e2e/cart.ui.properties.test.ts`
 
 | Test | Current Status | Required Update |
 |------|----------------|-----------------|
@@ -197,7 +197,7 @@ On Every Change:
 
 ### Unit Tests (To Be Created)
 
-**Location:** `implementations/typescript-vitest/test/cart-store.spec.ts`
+**Location:** `implementations/executable-specs/unit/test/cart-store.spec.ts`
 
 | Test | Description |
 |------|-------------|
@@ -213,7 +213,7 @@ On Every Change:
 
 ### Component Tests (To Be Created)
 
-**Location:** `implementations/react-playwright/src/test/components/ProductDetailPage.spec.ts`
+**Location:** `implementations/executable-specs/e2e/src/test/components/ProductDetailPage.spec.ts`
 
 | Test | Description |
 |------|-------------|
@@ -229,11 +229,11 @@ On Every Change:
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Cart Store | `implementations/react-playwright/src/store/cartStore.ts` | ✅ Exists, complete |
-| Cart Components | `implementations/react-playwright/src/components/cart/` | ✅ Exists |
-| Product Detail Page | `implementations/react-playwright/src/pages/ProductDetailPage.tsx` | ✅ Complete |
-| E2E Tests | `implementations/react-playwright/src/test/e2e/cart.ui.properties.test.ts` | ✅ Complete |
-| Unit Tests | `implementations/typescript-vitest/test/cart-store.spec.ts` | ❌ To be created |
+| Cart Store | `implementations/executable-specs/e2e/src/store/cartStore.ts` | ✅ Exists, complete |
+| Cart Components | `implementations/executable-specs/e2e/src/components/cart/` | ✅ Exists |
+| Product Detail Page | `implementations/executable-specs/e2e/src/pages/ProductDetailPage.tsx` | ✅ Complete |
+| E2E Tests | `implementations/executable-specs/e2e/src/test/e2e/cart.ui.properties.test.ts` | ✅ Complete |
+| Unit Tests | `implementations/executable-specs/unit/test/cart-store.spec.ts` | ❌ To be created |
 
 ### Store Interface
 

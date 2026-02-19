@@ -190,7 +190,7 @@ Backend────────────────────────�
 
 ### E2E Tests End-to-End (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/e2e/checkout-complete-flow.ui.test.ts`
+**Location:** `implementations/executable-specs/e2e/src/test/e2e/checkout-complete-flow.ui.test.ts`
 
 | Test | Description | Metadata |
 |------|-------------|----------|
@@ -225,15 +225,15 @@ These tests verify all domains work together:
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Products Page | `implementations/react-playwright/src/pages/ProductsPage.tsx` | ✅ Complete |
-| Product Detail Page | `implementations/react-playwright/src/pages/ProductDetailPage.tsx` | ✅ Complete |
-| Cart Page | `implementations/react-playwright/src/pages/CartPage.tsx` | ✅ Complete |
-| Checkout Page | `implementations/react-playwright/src/pages/CheckoutPage.tsx` | ✅ Complete |
-| Confirmation Page | `implementations/react-playwright/src/pages/OrderConfirmationPage.tsx` | ❌ Missing |
-| Cart Store | `implementations/react-playwright/src/store/cartStore.ts` | ✅ Complete |
-| Pricing Route | `implementations/react-playwright/src/server/routes/pricing.ts` | ✅ Complete |
-| Payments Route | `implementations/react-playwright/src/server/routes/payments.ts` | ✅ Complete |
-| Orders Route | `implementations/react-playwright/src/server/routes/orders.ts` | ✅ Complete |
+| Products Page | `implementations/executable-specs/e2e/src/pages/ProductsPage.tsx` | ✅ Complete |
+| Product Detail Page | `implementations/executable-specs/e2e/src/pages/ProductDetailPage.tsx` | ✅ Complete |
+| Cart Page | `implementations/executable-specs/e2e/src/pages/CartPage.tsx` | ✅ Complete |
+| Checkout Page | `implementations/executable-specs/e2e/src/pages/CheckoutPage.tsx` | ✅ Complete |
+| Confirmation Page | `implementations/executable-specs/e2e/src/pages/OrderConfirmationPage.tsx` | ❌ Missing |
+| Cart Store | `implementations/executable-specs/e2e/src/store/cartStore.ts` | ✅ Complete |
+| Pricing Route | `implementations/executable-specs/e2e/src/server/routes/pricing.ts` | ✅ Complete |
+| Payments Route | `implementations/executable-specs/e2e/src/server/routes/payments.ts` | ✅ Complete |
+| Orders Route | `implementations/executable-specs/e2e/src/server/routes/orders.ts` | ✅ Complete |
 
 ### Critical Integrations
 

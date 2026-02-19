@@ -53,10 +53,10 @@ executable-specs-demo/
 │   ├── TESTING_FRAMEWORK.md      # Testing standards
 │   └── ARCHITECTURE_DECISIONS.md # Design rationale
 ├── implementations/
-│   ├── typescript-vitest/        # Unit test layer (pricing engine)
+│   ├── executable-specs/unit/        # Unit test layer (pricing engine)
 │   │   ├── src/                  # Price calculation logic
 │   │   └── test/                 # Property-based tests
-│   ├── react-playwright/         # E2E test layer (full app)
+│   ├── executable-specs/e2e/         # E2E test layer (full app)
 │   │   ├── src/
 │   │   │   ├── app/              # React components
 │   │   │   ├── server/           # Hono API server
@@ -80,11 +80,11 @@ executable-specs-demo/
 | File | Purpose | Owner |
 |------|---------|-------|
 | `docs/pricing-strategy.md` | Business requirements - THE SOURCE OF TRUTH | Product/Domain Team |
-| `implementations/shared/src/pricing-engine.ts` | Core pricing logic (domain layer) | Backend Team |
-| `implementations/react-playwright/src/server/routes/pricing.ts` | Pricing API endpoint | Backend Team |
-| `implementations/react-playwright/src/app/components/Cart.tsx` | Shopping cart UI | Frontend Team |
-| `implementations/react-playwright/src/test/` | E2E tests | QA Team |
-| `implementations/typescript-vitest/src/test/` | Unit tests | QA Team |
+| `implementations/executable-specs/shared/src/pricing-engine.ts` | Core pricing logic (domain layer) | Backend Team |
+| `implementations/executable-specs/e2e/src/server/routes/pricing.ts` | Pricing API endpoint | Backend Team |
+| `implementations/executable-specs/e2e/src/app/components/Cart.tsx` | Shopping cart UI | Frontend Team |
+| `implementations/executable-specs/e2e/src/test/` | E2E tests | QA Team |
+| `implementations/executable-specs/unit/src/test/` | Unit tests | QA Team |
 
 ---
 
@@ -102,7 +102,7 @@ executable-specs-demo/
 
 2. **Write a Property Test First**
 
-   In `implementations/typescript-vitest/src/test/pricing/volume-discount.properties.test.ts`:
+   In `implementations/executable-specs/unit/src/test/pricing/volume-discount.properties.test.ts`:
    ```typescript
    it('should apply 5% shipping discount for orders over $500', () => {
      fc.assert(
@@ -120,12 +120,12 @@ executable-specs-demo/
 
 3. **Run Tests** (should fail initially)
    ```bash
-   cd implementations/typescript-vitest && pnpm test
+   cd implementations/executable-specs/unit && pnpm test
    ```
 
 4. **Implement the Logic**
 
-   Edit `implementations/shared/src/pricing-engine.ts`:
+   Edit `implementations/executable-specs/shared/src/pricing-engine.ts`:
    ```typescript
    if (baseTotal > 50000) {  // $500 in cents
      shippingCents = Math.round(shippingCents * 0.95);
@@ -150,7 +150,7 @@ executable-specs-demo/
 ### Unit Tests (Vitest)
 
 ```bash
-cd implementations/typescript-vitest
+cd implementations/executable-specs/unit
 pnpm test                    # Run all tests
 pnpm run test:watch          # Watch mode
 pnpm run test:coverage       # Coverage report
@@ -160,7 +160,7 @@ pnpm run test:allure         # Generate Allure report
 ### E2E Tests (Playwright)
 
 ```bash
-cd implementations/react-playwright
+cd implementations/executable-specs/e2e
 pnpm test                    # Run all tests (headless)
 pnpm run test:headed         # Run with visible browser
 pnpm run test:ui             # Playwright Test UI
@@ -194,8 +194,8 @@ pnpm run test:all             # Run all test suites
 ### Adding a New Domain Rule
 
 1. Update `docs/pricing-strategy.md` (THE SOURCE OF TRUTH)
-2. Write property test in `implementations/typescript-vitest/`
-3. Implement rule in `implementations/shared/src/`
+2. Write property test in `implementations/executable-specs/unit/`
+3. Implement rule in `implementations/executable-specs/shared/src/`
 4. Verify E2E tests cover the behavior
 
 ---
@@ -217,7 +217,7 @@ netstat -ano | findstr :5173  # Windows
 SQLite locks occur when multiple processes try to write simultaneously. This is expected behavior and will resolve automatically. If it persists:
 
 ```bash
-rm implementations/react-playwright/data/shop.db
+rm implementations/executable-specs/e2e/data/shop.db
 pnpm run db:seed
 ```
 

@@ -175,7 +175,7 @@ cancelled
 
 ### Unit Tests (Already Exists)
 
-**Location:** `implementations/typescript-vitest/test/database/schema.spec.ts`
+**Location:** `implementations/executable-specs/unit/test/database/schema.spec.ts`
 
 | Test | Description |
 |------|-------------|
@@ -187,7 +187,7 @@ cancelled
 
 ### Migration Tests (Already Exists)
 
-**Location:** `implementations/typescript-vitest/test/database/migrations.spec.ts`
+**Location:** `implementations/executable-specs/unit/test/database/migrations.spec.ts`
 
 | Test | Description |
 |------|-------------|
@@ -197,7 +197,7 @@ cancelled
 
 ### API Integration Tests (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/api/orders-api.spec.ts`
+**Location:** `implementations/executable-specs/e2e/src/test/api/orders-api.spec.ts`
 
 | Test | Description | Metadata |
 |------|-------------|----------|
@@ -219,14 +219,14 @@ cancelled
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Database Schema | `implementations/shared/src/db/schema.ts` | ✅ Complete |
-| Database Connection | `implementations/shared/src/db/index.ts` | ✅ Complete |
-| Seed Script | `implementations/shared/src/db/seed.ts` | ✅ Complete |
-| Orders Route | `implementations/react-playwright/src/server/routes/orders.ts` | ✅ Complete |
-| Products Route | `implementations/react-playwright/src/server/routes/products.ts` | ✅ Complete |
+| Database Schema | `implementations/executable-specs/shared/src/db/schema.ts` | ✅ Complete |
+| Database Connection | `implementations/executable-specs/shared/src/db/index.ts` | ✅ Complete |
+| Seed Script | `implementations/executable-specs/shared/src/db/seed.ts` | ✅ Complete |
+| Orders Route | `implementations/executable-specs/e2e/src/server/routes/orders.ts` | ✅ Complete |
+| Products Route | `implementations/executable-specs/e2e/src/server/routes/products.ts` | ✅ Complete |
 | Drizzle Config | `drizzle.config.ts` | ✅ Complete |
-| Unit Tests | `implementations/typescript-vitest/test/database/` | ✅ Complete |
-| API Tests | `implementations/react-playwright/src/test/api/orders-api.spec.ts` | ✅ Complete |
+| Unit Tests | `implementations/executable-specs/unit/test/database/` | ✅ Complete |
+| API Tests | `implementations/executable-specs/e2e/src/test/api/orders-api.spec.ts` | ✅ Complete |
 
 ### Database Schema (Drizzle)
 

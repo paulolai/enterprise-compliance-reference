@@ -578,7 +578,7 @@ The `invariant()` helper in `src/test/e2e/fixtures/invariant-helper.ts` automati
 
 ```bash
 # Run GUI tests
-cd implementations/react-playwright
+cd implementations/executable-specs/e2e
 npm test
 
 # Generate Allure report (from root)

@@ -1,7 +1,7 @@
 {
-  "name": "pricing-engine-cucumber",
+  "name": "@comparison-gherkin/cucumber",
   "version": "1.0.0",
-  "description": "Anti-pattern example: Gherkin-based pricing engine tests",
+  "description": "Anti-pattern comparison: Gherkin-based pricing engine tests",
   "type": "module",
   "scripts": {
     "test": "node --import=tsx/esm ./node_modules/@cucumber/cucumber/bin/cucumber-js",

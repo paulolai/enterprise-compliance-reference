@@ -32,7 +32,7 @@ try {
   console.log('\n[Test Runner] 🧪 Running Unit Tests (Vitest)...');
   // Use 'test:allure' because it uses the config that respects our env var and has the reporter
   execSync('pnpm run test:allure', { 
-    cwd: path.join(ROOT_DIR, 'implementations/typescript-vitest'), 
+    cwd: path.join(ROOT_DIR, 'implementations/executable-specs/unit'), 
     stdio: 'inherit', 
     env 
   });
@@ -40,7 +40,7 @@ try {
   // 4. Run E2E Tests (Playwright)
   console.log('\n[Test Runner] 🎭 Running E2E Tests (Playwright)...');
   execSync('pnpm test', { 
-    cwd: path.join(ROOT_DIR, 'implementations/react-playwright'), 
+    cwd: path.join(ROOT_DIR, 'implementations/executable-specs/e2e'), 
     stdio: 'inherit', 
     env 
   });
@@ -53,7 +53,7 @@ try {
 // 5. Generate Attestation Report
 console.log('\n[Test Runner] 📝 Generating Attestation Report...');
 try {
-  execSync('node implementations/typescript-vitest/scripts/generate-attestation.js', { 
+  execSync('node implementations/executable-specs/unit/scripts/generate-attestation.js', { 
     cwd: ROOT_DIR, 
     stdio: 'inherit', 
     env 

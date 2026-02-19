@@ -1,5 +1,6 @@
 packages:
-  - 'implementations/*'
+  - 'implementations/executable-specs/*'
+  - 'implementations/comparison-gherkin/*'
 
 # Workspace Catalog: Single source of truth for dependency versions
 # Use "catalog:" in package.json to reference these versions

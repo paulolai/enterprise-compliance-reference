@@ -6,7 +6,7 @@
 
 ---
 
-## Reference Architecture (`implementations/typescript-vitest`)
+## Reference Architecture (`implementations/executable-specs/unit`)
 
 ### Agent Observation: "Deterministic Alignment"
 
@@ -28,7 +28,7 @@
 
 ---
 
-## Legacy Gherkin Suite (`implementations/typescript-cucumber`)
+## Legacy Gherkin Suite (`implementations/comparison-gherkin/cucumber`)
 
 ### Agent Observation: "The Iteration Trap"
 

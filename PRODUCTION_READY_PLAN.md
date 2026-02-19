@@ -74,7 +74,7 @@ export type CartItemCreate = z.input<typeof cartItemSchema>;  // Raw input type
 
 ### 2.2 Error Handling Architecture
 
-**File:** `implementations/react-playwright/src/lib/errors.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/lib/errors.ts` (New)
 
 ```typescript
 export class AppError extends Error {
@@ -122,7 +122,7 @@ export class ValidationError extends AppError {
 
 ### 3.1 Structured Logging
 
-**File:** `implementations/react-playwright/src/lib/logger.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/lib/logger.ts` (New)
 
 ```typescript
 interface LogContext {
@@ -147,7 +147,7 @@ export const logger = {
 
 ### 3.2 Health Check & Readiness
 
-**File:** `implementations/react-playwright/src/server/routes/health.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/server/routes/health.ts` (New)
 
 ```typescript
 // /health - liveness probe (app running)
@@ -163,7 +163,7 @@ Checks:
 
 ### 3.3 Metrics Framework
 
-**File:** `implementations/react-playwright/src/lib/metrics.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/lib/metrics.ts` (New)
 
 ```typescript
 export const metrics = {
@@ -198,7 +198,7 @@ export const metrics = {
 
 ### 4.1 Test Infrastructure
 
-**File:** `implementations/react-playwright/src/test/setup/test-utils.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/test/setup/test-utils.ts` (New)
 
 ```typescript
 // Reusable test utilities
@@ -211,7 +211,7 @@ export { mockAPI } from './api-mocking';
 
 ### 4.2 Test Data Builders
 
-**Files:** `implementations/react-playwright/src/test/builders/` (Add to existing)
+**Files:** `implementations/executable-specs/e2e/src/test/builders/` (Add to existing)
 
 ```typescript
 // cart-builder.ts - Extends existing shared builder
@@ -226,7 +226,7 @@ export class PageBuilder {
 
 ### 4.3 Property-Based Tests
 
-**File:** `implementations/react-playwright/src/test/properties/cart-invariants.test.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/test/properties/cart-invariants.test.ts` (New)
 
 Document and prove cart invariants:
 - Total price equals sum of item prices minus discounts
@@ -237,7 +237,7 @@ Document and prove cart invariants:
 
 ### 4.4 Contract Tests
 
-**Files:** `implementations/react-playwright/src/test/api/contract/` (New)
+**Files:** `implementations/executable-specs/e2e/src/test/api/contract/` (New)
 
 Test API contracts:
 - Request/response schemas validated
@@ -254,7 +254,7 @@ Test API contracts:
 
 **Philosophy:** Zod is the single source of truth for all runtime validation. Types for testing, runtime validation, and API contracts should all derive from Zod schemas.
 
-**File:** `implementations/react-playwright/src/lib/validation.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/lib/validation.ts` (New)
 
 ```typescript
 // Request schemas - validate at API boundary
@@ -303,7 +303,7 @@ export const validateRequest = (schema: z.ZodSchema) => async (c, next) => {
 
 ### 5.2 Security Headers Middleware
 
-**File:** `implementations/react-playwright/src/server/middleware/security.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/server/middleware/security.ts` (New)
 
 ```typescript
 export const securityHeaders = async (c, next) => {
@@ -318,7 +318,7 @@ export const securityHeaders = async (c, next) => {
 
 ### 5.3 Rate Limiting
 
-**File:** `implementations/react-playwright/src/server/middleware/rate-limit.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/server/middleware/rate-limit.ts` (New)
 
 ```typescript
 // Different limits per endpoint
@@ -331,7 +331,7 @@ const limits = {
 
 ### 5.4 CORS Configuration
 
-**File:** `implementations/react-playwright/src/server/middleware/cors.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/server/middleware/cors.ts` (New)
 
 Environment-aware CORS with credentials support.
 
@@ -341,7 +341,7 @@ Environment-aware CORS with credentials support.
 
 ### 6.1 Configuration Management (Zod-Validated)
 
-**File:** `implementations/react-playwright/src/lib/env.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/lib/env.ts` (New)
 
 **Pattern:** Environment variables validated at startup using Zod. Fails fast on invalid config.
 
@@ -367,7 +367,7 @@ export type Env = z.infer<typeof envSchema>;
 
 ### 6.2 Graceful Shutdown
 
-**File:** `implementations/react-playwright/src/server/shutdown.ts` (New)
+**File:** `implementations/executable-specs/e2e/src/server/shutdown.ts` (New)
 
 ```typescript
 export const setupGracefulShutdown = (server: Server) => {
@@ -548,10 +548,10 @@ README.md             - Actual project content
 
 ```bash
 # All tests
-cd implementations/react-playwright && npm test  # 96/96 passing ✅
+cd implementations/executable-specs/e2e && npm test  # 96/96 passing ✅
 
 # Type safety (react-playwright)
-cd implementations/react-playwright && npx tsc --noEmit  # No errors ✅
+cd implementations/executable-specs/e2e && npx tsc --noEmit  # No errors ✅
 
 # Note: typescript-vitest has ~57 TS errors due to project reference configuration
 # This is a separate implementation and not blocking production readiness

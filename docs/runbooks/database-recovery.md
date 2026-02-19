@@ -9,7 +9,7 @@ The application uses SQLite for data persistence:
 
 - **Database File:** `data/checkout.db`
 - **WAL Files:** `data/checkout.db-wal`, `data/checkout.db-shm` (Write-Ahead Logs)
-- **Schema Location:** `implementations/shared/src/index-server.ts` (Drizzle ORM)
+- **Schema Location:** `implementations/executable-specs/shared/src/index-server.ts` (Drizzle ORM)
 
 ---
 

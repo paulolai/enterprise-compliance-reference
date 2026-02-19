@@ -8,9 +8,10 @@ This repo uses a multi-implementation structure to demonstrate ATDD patterns at 
 
 | Directory | Purpose | Key Commands |
 |-----------|---------|--------------|
-| `implementations/typescript-vitest/` | Unit test layer: Pricing engine + Vitest | `cd implementations/typescript-vitest && pnpm test` |
-| `implementations/react-playwright/` | E2E test layer: React app + Playwright + Hono API | `cd implementations/react-playwright && pnpm test` |
-| `implementations/shared/` | Shared types and utilities | - |
+| `implementations/executable-specs/unit/` | Unit test layer: Pricing engine + Vitest | `cd implementations/executable-specs/unit && pnpm test` |
+| `implementations/executable-specs/e2e/` | E2E test layer: React app + Playwright + Hono API | `cd implementations/executable-specs/e2e && pnpm test` |
+| `implementations/executable-specs/shared/` | Shared types and utilities | - |
+| `implementations/comparison-gherkin/cucumber/` | Anti-pattern comparison: Gherkin/Cucumber | `cd implementations/comparison-gherkin/cucumber && pnpm test` |
 | `docs/` | Business rules, patterns, and guidelines | - |
 | `reports/` | Generated attestation reports | `pnpm run test:all` |
 

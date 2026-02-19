@@ -1,22 +1,22 @@
 {
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev:frontend": "cd implementations/react-playwright && npm run dev",
-    "dev:backend": "cd implementations/react-playwright && npm run dev:with-server",
-    "test": "cd implementations/typescript-vitest && npm test",
-    "test:unit": "cd implementations/typescript-vitest && npm test",
-    "test:e2e": "cd implementations/react-playwright && npm test",
-    "test:coverage": "cd implementations/typescript-vitest && npm run test:coverage",
-    "test:allure": "cd implementations/typescript-vitest && npm run test:allure",
+    "dev:frontend": "cd implementations/executable-specs/e2e && npm run dev",
+    "dev:backend": "cd implementations/executable-specs/e2e && npm run dev:with-server",
+    "test": "cd implementations/executable-specs/unit && npm test",
+    "test:unit": "cd implementations/executable-specs/unit && npm test",
+    "test:e2e": "cd implementations/executable-specs/e2e && npm test",
+    "test:coverage": "cd implementations/executable-specs/unit && npm run test:coverage",
+    "test:allure": "cd implementations/executable-specs/unit && npm run test:allure",
     "reports:allure": "allure generate allure-results/ --clean --output allure-report/",
     "reports:allure:open": "allure open allure-report/",
     "reports:allure:serve": "allure serve allure-results/",
-    "reports:attestation": "node implementations/typescript-vitest/scripts/generate-attestation.js",
+    "reports:attestation": "node implementations/executable-specs/unit/scripts/generate-attestation.js",
     "test:all": "npx tsx scripts/test-runner.ts",
     "test:ci": "npx tsx scripts/test-runner.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:seed": "node implementations/shared/src/db/seed.js",
+    "db:seed": "node implementations/executable-specs/shared/src/db/seed.js",
     "docs:fix": "find docs -name '*.md' -exec markdown-toc -i {} \\;",
     "adr:sync": "npx tsx@latest scripts/sync-agents-from-adr.ts",
     "prepare": "husky"
@@ -24,7 +24,7 @@
   "lint-staged": {
     "docs/ARCHITECTURE_DECISIONS.md": "pnpm run adr:sync",
     "docs/*.md": "bash -c 'for f in \"$@\"; do markdown-toc -i \"$f\"; done' --",
-    "implementations/react-playwright/**/*.{ts,tsx}": "bash -c 'cd implementations/react-playwright && pnpm exec eslint --fix \"$@\"' --"
+    "implementations/executable-specs/e2e/**/*.{ts,tsx}": "bash -c 'cd implementations/executable-specs/e2e && pnpm exec eslint --fix \"$@\"' --"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
