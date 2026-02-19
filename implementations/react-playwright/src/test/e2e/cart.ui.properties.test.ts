@@ -175,7 +175,7 @@ invariant('Cart allows quantity updates', {
   expect(initialQuantity).toBe('1');
 
   // Increase quantity
-  await page.getByRole('button', { name: '+' }).click();
+  await page.getByRole('button', { name: 'Increase quantity' }).click();
 
   const newQuantity = await quantityInput.inputValue();
   expect(newQuantity).toBe('2');
@@ -230,7 +230,7 @@ invariant('Adding same SKU merges quantity, does not duplicate', {
   await page.waitForLoadState('networkidle');
 
   const quantityInput = page.getByTestId(`cart-item-quantity-${product.sku}`);
-  await page.getByRole('button', { name: '+' }).click();
+  await page.getByRole('button', { name: 'Increase quantity' }).click();
 
   // Check quantity increased
   const quantity = await quantityInput.inputValue();
