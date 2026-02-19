@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { productCatalog } from '../store/cartStore';
-import { CartBadge } from '../components/cart/CartBadge';
+import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 
 export function ProductsPage() {
   const [searchParams] = useSearchParams();
@@ -15,7 +16,6 @@ export function ProductsPage() {
 
   const categories = ['All', ...new Set(productCatalog.map((p) => p.category))];
 
-  // Listen for add to cart events
   React.useEffect(() => {
     const handleAddToCart = (e: CustomEvent) => {
       toast.success(`Added ${e.detail.name} to cart!`);
@@ -29,50 +29,71 @@ export function ProductsPage() {
   }, []);
 
   return (
-    <div className="products-page" data-testid="products-page">
-      <header>
-        <nav>
-          <Link to="/">TechHome Direct</Link>
-          <div className="nav-links">
-            <Link to="/products">Products</Link>
-            <Link to="/cart">
-              <CartBadge />
-            </Link>
-            <Link to="/login">Login</Link>
-          </div>
-        </nav>
-      </header>
+    <div className="space-y-8" data-testid="products-page">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+        <p className="text-muted-foreground mt-1">Browse our collection of quality products</p>
+      </div>
 
-      <main>
-        <div className="page-header">
-          <h1>Products</h1>
-        </div>
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-2">
+        {categories.map((cat) => (
+          <Link
+            key={cat}
+            to={`/products?category=${cat}`}
+            className={cn(
+              'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+              categoryFilter === cat
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            )}
+            data-testid={`category-${cat.toLowerCase()}`}
+          >
+            {cat}
+          </Link>
+        ))}
+      </div>
 
-        <div className="category-filter">
-          {categories.map((cat) => (
-            <Link
-              key={cat}
-              to={`/products?category=${cat}`}
-              className={`category-tab ${categoryFilter === cat ? 'active' : ''}`}
-              data-testid={`category-${cat.toLowerCase()}`}
-            >
-              {cat}
-            </Link>
-          ))}
-        </div>
-
-        <div className="product-grid">
-          {filteredProducts.map((product) => (
-            <Link key={product.sku} to={`/products/${product.sku}`} className="product-link">
-              <div className="product-card" data-testid={`product-card-${product.sku}`}>
-                <span className="product-category">{product.category}</span>
-                <h3>{product.name}</h3>
-                <p>${(product.price / 100).toFixed(2)}</p>
+      {/* Product Grid */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredProducts.map((product) => (
+          <Link key={product.sku} to={`/products/${product.sku}`}>
+            <Card className="group overflow-hidden transition-all hover:shadow-lg h-full" data-testid={`product-card-${product.sku}`}>
+              <div className="aspect-square overflow-hidden bg-muted">
+                <img
+                  src={getProductImage(product.sku)}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                />
               </div>
-            </Link>
-          ))}
-        </div>
-      </main>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{product.category}</p>
+                <h3 className="font-semibold mt-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                <p className="text-lg font-bold mt-2">${(product.price / 100).toFixed(2)}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
+}
+
+function getProductImage(sku: string): string {
+  const colors: Record<string, string> = {
+    'WIRELESS-EARBUDS': '1e40af',
+    'SMART-WATCH': '1d4ed8',
+    'TABLET-10': '2563eb',
+    'LAPTOP-PRO': '3b82f6',
+    'DESK-LAMP': '15803d',
+    'COFFEE-MAKER': '16a34a',
+    'THROW-BLANKET': '22c55e',
+    'BATH-TOWEL-SET': '4ade80',
+    'T-SHIRT-BASIC': '7c3aed',
+    'JEANS-SLIM': '8b5cf6',
+    'HOODIE-ZIP': 'a855f7',
+  };
+  
+  const color = colors[sku] || '6b7280';
+  return `https://placehold.co/400x400/${color}/white?text=${encodeURIComponent(sku.replace(/-/g, '+'))}`;
 }

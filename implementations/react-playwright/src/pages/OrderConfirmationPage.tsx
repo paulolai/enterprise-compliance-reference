@@ -2,7 +2,10 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { logger } from '../lib/logger';
 import { formatCurrency, type PricingResult } from '../../../shared/src/types';
-import { CartBadge } from '../components/cart/CartBadge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle, Package, AlertCircle } from 'lucide-react';
 
 interface OrderItem {
   sku: string;
@@ -50,99 +53,73 @@ export function OrderConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="page-loading">
-        <header>
-          <nav>
-            <Link to="/">TechHome Direct</Link>
-          </nav>
-        </header>
-        <main>
-           <p>Loading order details...</p>
-        </main>
+      <div className="space-y-6" data-testid="order-confirmation-page">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="page-error">
-        <header>
-          <nav>
-            <Link to="/">TechHome Direct</Link>
-          </nav>
-        </header>
-        <main>
-            <h1>Error</h1>
-            <p>{error || 'Order not found'}</p>
-            <Link to="/">Return Home</Link>
-        </main>
+      <div className="space-y-6 text-center py-12" data-testid="order-confirmation-page">
+        <AlertCircle className="h-16 w-16 mx-auto text-destructive" />
+        <h1 className="text-2xl font-bold">Error</h1>
+        <p className="text-muted-foreground">{error || 'Order not found'}</p>
+        <Button asChild>
+          <Link to="/">Return Home</Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="order-confirmation-page" data-testid="order-confirmation-page">
-      <header>
-        <nav>
-          <Link to="/">TechHome Direct</Link>
-          <div className="nav-links">
-            <Link to="/products">Products</Link>
-            <Link to="/cart">
-               <CartBadge />
-            </Link>
-            <Link to="/login">Login</Link>
-          </div>
-        </nav>
-      </header>
+    <div className="space-y-8" data-testid="order-confirmation-page">
+      <div className="text-center space-y-2">
+        <CheckCircle className="h-16 w-16 mx-auto text-success" />
+        <h1 className="text-3xl font-bold">Order Confirmed!</h1>
+        <p className="text-muted-foreground">Order ID: {order.id}</p>
+      </div>
 
-      <main>
-        <div className="page-header">
-          <h1>Order Confirmed!</h1>
-          <p className="order-id">Order ID: {order.id}</p>
-        </div>
-
-        <div className="confirmation-content" style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div className="success-message" style={{ background: '#f0fdf4', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #bbf7d0', color: '#166534' }}>
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Order Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-success/10 text-success p-4 rounded-lg">
             <p>Thank you for your purchase. Your order has been received.</p>
           </div>
 
-          <div className="order-summary-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Order Summary</h2>
-            <div className="order-items">
-              {order.items.map((item) => (
-                <div key={item.sku} className="order-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <span className="item-name" style={{ fontWeight: 500 }}>{item.sku}</span>
-                    <span className="item-qty" style={{ color: '#666' }}>x{item.quantity}</span>
-                  </div>
-                  <span className="item-price">{formatCurrency(item.price * item.quantity)}</span>
+          <div className="space-y-3">
+            {order.items.map((item) => (
+              <div key={item.sku} className="flex items-center justify-between py-2 border-b">
+                <div className="flex items-center gap-4">
+                  <span className="font-medium">{item.sku}</span>
+                  <span className="text-sm text-muted-foreground">x{item.quantity}</span>
                 </div>
-              ))}
-            </div>
-            
-            <div className="order-totals" style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '2px solid #eee' }}>
-              <div className="total-row grand-total" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 'bold' }}>
-                <span>Total</span>
-                <span data-testid="order-total">{formatCurrency(order.total)}</span>
+                <span className="font-medium">{formatCurrency(item.price * item.quantity)}</span>
               </div>
-            </div>
+            ))}
           </div>
 
-          <div className="actions" style={{ marginTop: '2rem', textAlign: 'center' }}>
-            <Link to="/products" className="button primary-button" style={{ 
-              display: 'inline-block', 
-              background: '#2563eb', 
-              color: 'white', 
-              padding: '0.75rem 1.5rem', 
-              borderRadius: '4px', 
-              textDecoration: 'none',
-              fontWeight: 500
-            }}>
-              Continue Shopping
-            </Link>
+          <div className="pt-4 border-t-2">
+            <div className="flex items-center justify-between text-xl font-bold">
+              <span>Total</span>
+              <span data-testid="order-total">{formatCurrency(order.total)}</span>
+            </div>
           </div>
-        </div>
-      </main>
+        </CardContent>
+      </Card>
+
+      <div className="text-center">
+        <Button asChild size="lg">
+          <Link to="/products">Continue Shopping</Link>
+        </Button>
+      </div>
     </div>
   );
 }

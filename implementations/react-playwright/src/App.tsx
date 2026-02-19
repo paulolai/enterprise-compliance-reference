@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components/layout/Layout';
 import { HomePage } from './pages/HomePage';
 import { ProductsPage } from './pages/ProductsPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -12,7 +13,7 @@ import { CheckoutDebugPage } from './pages/debug/CheckoutDebugPage';
 import { DebugIndexPage } from './pages/debug/DebugIndexPage';
 import { AuthProvider } from './providers/AuthProvider';
 import { Toaster } from 'react-hot-toast';
-import './App.css';
+import './index.css';
 
 function App() {
   return (
@@ -20,19 +21,21 @@ function App() {
       <AuthProvider>
         <Toaster position="bottom-right" />
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:sku" element={<ProductDetailPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/:sku" element={<ProductDetailPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          {/* Debug routes for visual debugging and QA */}
-          <Route path="/debug" element={<DebugIndexPage />} />
-          <Route path="/debug/cart-view" element={<CartDebugPage />} />
-          <Route path="/debug/checkout" element={<CheckoutDebugPage />} />
+            {/* Debug routes for visual debugging and QA */}
+            <Route path="/debug" element={<DebugIndexPage />} />
+            <Route path="/debug/cart-view" element={<CartDebugPage />} />
+            <Route path="/debug/checkout" element={<CheckoutDebugPage />} />
+          </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

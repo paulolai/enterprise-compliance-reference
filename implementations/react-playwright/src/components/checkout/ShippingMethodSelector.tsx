@@ -1,6 +1,9 @@
 import { ShippingMethod } from '../../../../shared/src';
 import { useCartStore } from '../../store/cartStore';
 import { PriceDisplay } from '../ui/PriceDisplay';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 
 const SHIPPING_METHODS = [
   { method: ShippingMethod.STANDARD, label: 'Standard', description: '5-7 business days', defaultCost: 700 },
@@ -13,8 +16,12 @@ export function ShippingMethodSelector() {
   const pricingResult = useCartStore((state) => state.pricingResult);
 
   return (
-    <div className="shipping-method-selector" data-testid="shipping-method-selector">
-      <h3>Shipping Method</h3>
+    <RadioGroup
+      value={shippingMethod}
+      onValueChange={(value) => setShippingMethod(value as ShippingMethod)}
+      className="space-y-3"
+      data-testid="shipping-method-selector"
+    >
       {SHIPPING_METHODS.map(({ method, label, description, defaultCost }) => {
         const isSelected = shippingMethod === method;
 
@@ -28,24 +35,39 @@ export function ShippingMethodSelector() {
         const isFree = pricingResult?.shipment.isFreeShipping && method !== ShippingMethod.EXPRESS;
 
         return (
-          <div key={method} className={`shipping-option ${isSelected ? 'selected' : ''}`} 
-            onClick={() => setShippingMethod(method)}>
-            <input type="radio" name="shipping" id={`shipping-${method}`} checked={isSelected}
-              onChange={() => setShippingMethod(method)} />
-            <label htmlFor={`shipping-${method}`}>
-              <span className="shipping-label">{label}</span>
-              <span className="shipping-description">{description}</span>
-              <span className="shipping-cost">
-                {isFree ? (
-                  <span className="free-badge" data-testid="free-shipping-badge">Free</span>
-                ) : (
-                  <PriceDisplay amount={cost} />
-                )}
-              </span>
-            </label>
-          </div>
+          <Label
+            key={method}
+            htmlFor={`shipping-${method}`}
+            className={`shipping-option flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-colors ${
+              isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <RadioGroupItem
+                value={method}
+                id={`shipping-${method}`}
+                aria-describedby={`shipping-${method}-desc`}
+              />
+              <div>
+                <div className="font-medium">{label}</div>
+                <div
+                  id={`shipping-${method}-desc`}
+                  className="text-sm text-muted-foreground"
+                >
+                  {description}
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              {isFree ? (
+                <Badge variant="success" data-testid="free-shipping-badge">Free</Badge>
+              ) : (
+                <PriceDisplay amount={cost} />
+              )}
+            </div>
+          </Label>
         );
       })}
-    </div>
+    </RadioGroup>
   );
 }

@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { ProductDetail } from '../components/product/ProductDetail';
-import { CartBadge } from '../components/cart/CartBadge';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export function ProductDetailPage() {
   const { sku } = useParams<{ sku: string }>();
@@ -10,26 +11,14 @@ export function ProductDetailPage() {
   }
 
   return (
-    <div className="product-detail-page" data-testid="product-detail-page">
-      <header>
-        <nav>
-          <Link to="/">TechHome Direct</Link>
-          <div className="nav-links">
-            <Link to="/products">Products</Link>
-            <Link to="/cart">
-              <CartBadge />
-            </Link>
-            <Link to="/login">Login</Link>
-          </div>
-        </nav>
-      </header>
-
-      <main>
-        <Link to="/products" className="back-link">
-          ← Back to Products
+    <div className="space-y-6" data-testid="product-detail-page">
+      <Button variant="ghost" asChild>
+        <Link to="/products">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Products
         </Link>
-        <ProductDetail sku={sku} />
-      </main>
+      </Button>
+      <ProductDetail sku={sku} />
     </div>
   );
 }
