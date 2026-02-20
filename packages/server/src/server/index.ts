@@ -9,7 +9,7 @@ import { paymentsRouter } from './routes/payments';
 import { securityHeaders } from './middleware/security';
 import { rateLimit } from './middleware/rate-limit';
 import { metrics } from '../lib/metrics';
-import { getReadyzHandler, getLivezHandler } from './routes/health-handlers';
+import { healthRouter } from './routes/health';
 
 const app = new Hono();
 
@@ -32,13 +32,7 @@ app.all('/api/*', (c) => {
 });
 
 // Health check routes - at root level
-app.get('/health', (c) => c.json({
-  status: 'ok',
-  timestamp: new Date().toISOString(),
-  uptime: process.uptime(),
-}));
-app.get('/readyz', getReadyzHandler);
-app.get('/livez', getLivezHandler);
+app.route('/', healthRouter);
 
 // Prometheus metrics endpoint - for monitoring/scraping
 app.get('/metrics', (c) => {

@@ -6,90 +6,6 @@ import Stripe from 'stripe';
 const router = new Hono();
 
 /**
- * GET /health
- * Simple liveness probe - returns 200 if the app is running.
- * Used by Kubernetes/proxies to check if the pod is alive.
- */
-router.get('/health', (c) => {
-  return c.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
-
-/**
- * GET /readyz
- * Readiness probe with dependency checks.
- * Used by Kubernetes to determine if the pod can receive traffic.
- */
-router.get('/readyz', async (c) => {
-  const checks: Record<string, { status: 'healthy' | 'unhealthy'; message?: string }> = {};
-
-  // Database connectivity check
-  try {
-    // Use a simple SELECT 1 via raw query for connection test
-    await db.$client.prepare('SELECT 1').get();
-    checks.database = { status: 'healthy' };
-  } catch (error) {
-    checks.database = {
-      status: 'unhealthy',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-
-  // Stripe API check (if configured)
-  if (isStripeConfigured) {
-    try {
-      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-      if (stripeSecretKey) {
-        const stripe = new Stripe(stripeSecretKey, {
-          apiVersion: '2025-12-15.clover',
-        });
-        // Simple check - retrieve an account balance
-        await stripe.balance.retrieve();
-        checks.stripe = { status: 'healthy' };
-      }
-    } catch (error) {
-      checks.stripe = {
-        status: 'unhealthy',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  } else {
-    checks.stripe = { status: 'healthy', message: 'Not configured (feature disabled)' };
-  }
-
-  // Memory usage check
-  const memoryUsage = process.memoryUsage();
-  const memoryUsedMB = memoryUsage.heapUsed / 1024 / 1024;
-  const memoryTotalMB = memoryUsage.heapTotal / 1024 / 1024;
-  const memoryRatio = memoryUsedMB / memoryTotalMB;
-
-  if (memoryRatio > 0.9) {
-    checks.memory = {
-      status: 'unhealthy',
-      message: `Memory usage high: ${memoryUsedMB.toFixed(2)}MB/${memoryTotalMB.toFixed(2)}MB (${(memoryRatio * 100).toFixed(1)}%)`,
-    };
-  } else {
-    checks.memory = {
-      status: 'healthy',
-      message: `${memoryUsedMB.toFixed(2)}MB/${memoryTotalMB.toFixed(2)}MB (${(memoryRatio * 100).toFixed(1)}%)`,
-    };
-  }
-
-  // Determine overall status
-  const allHealthy = Object.values(checks).every((check) => check.status === 'healthy');
-  const statusCode = allHealthy ? 200 : 503;
-
-  return c.json({
-    status: allHealthy ? 'ready' : 'not ready',
-    timestamp: new Date().toISOString(),
-    checks,
-  }, statusCode);
-});
-
-/**
  * Latency tracking for detailed health metrics
  */
 interface LatencyBucket {
@@ -126,23 +42,108 @@ function getLatencySummary(action: string): { count: number; avgMs: number; maxM
 }
 
 /**
+ * GET /health
+ * Simple liveness probe - returns 200 if the app is running.
+ */
+router.get('/health', (c) => {
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
+/**
+ * GET /readyz
+ * Readiness probe with dependency checks.
+ */
+router.get('/readyz', async (c) => {
+  const checks: Record<string, { status: 'healthy' | 'unhealthy'; message?: string }> = {};
+
+  // Database connectivity check
+  try {
+    await db.$client.prepare('SELECT 1').get();
+    checks.database = { status: 'healthy' };
+  } catch (error) {
+    checks.database = {
+      status: 'unhealthy',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+
+  // Stripe API check
+  if (isStripeConfigured) {
+    try {
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+      if (stripeSecretKey) {
+        const stripe = new Stripe(stripeSecretKey, {
+          apiVersion: '2025-12-15.clover',
+        });
+        await stripe.balance.retrieve();
+        checks.stripe = { status: 'healthy' };
+      }
+    } catch (error) {
+      checks.stripe = {
+        status: 'unhealthy',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  } else {
+    checks.stripe = { status: 'healthy', message: 'Not configured (feature disabled)' };
+  }
+
+  // Memory usage check
+  const memoryUsage = process.memoryUsage();
+  const memoryUsedMB = memoryUsage.heapUsed / 1024 / 1024;
+  const memoryTotalMB = memoryUsage.heapTotal / 1024 / 1024;
+  const memoryRatio = memoryUsedMB / memoryTotalMB;
+
+  if (memoryRatio > 0.9) {
+    checks.memory = {
+      status: 'unhealthy',
+      message: `Memory usage high: ${memoryUsedMB.toFixed(2)}MB/${memoryTotalMB.toFixed(2)}MB (${(memoryRatio * 100).toFixed(1)}%)`,
+    };
+  } else {
+    checks.memory = {
+      status: 'healthy',
+      message: `${memoryUsedMB.toFixed(2)}MB/${memoryTotalMB.toFixed(2)}MB (${(memoryRatio * 100).toFixed(1)}%)`,
+    };
+  }
+
+  const allHealthy = Object.values(checks).every((check) => check.status === 'healthy');
+  const statusCode = allHealthy ? 200 : 503;
+
+  return c.json({
+    status: allHealthy ? 'ready' : 'not ready',
+    timestamp: new Date().toISOString(),
+    checks,
+  }, statusCode);
+});
+
+/**
  * GET /livez
  * Detailed health status including latency bucketing and resource metrics.
- * Provides comprehensive health information for monitoring dashboards.
  */
 router.get('/livez', async (c) => {
-  // Reuse readyz checks
-  const readyzResponse = await fetch(new Request(new URL('/readyz', c.req.url)));
-  const readyzData = (await readyzResponse.json()) as { checks?: Record<string, unknown> };
+  // Reuse readiness checks logic (simplified for inline)
+  // In a real router, we might extract the check logic to a service function to avoid duplication or HTTP calls
+  // For now, we'll just re-run the checks manually as in readyz to avoid self-fetch overhead
+  const checks: Record<string, { status: 'healthy' | 'unhealthy'; message?: string }> = {};
+  
+  try {
+    await db.$client.prepare('SELECT 1').get();
+    checks.database = { status: 'healthy' };
+  } catch (error) {
+    checks.database = { status: 'unhealthy', message: error instanceof Error ? error.message : 'Error' };
+  }
 
-  // Request latency metrics
+  // Latency metrics
   const actions = ['calculate_pricing', 'create_order', 'get_products', 'create_payment_intent'];
   const latencies: Record<string, { count: number; avgMs: number; maxMs: number; minMs: number } | null> = {};
   for (const action of actions) {
     latencies[action] = getLatencySummary(action);
   }
 
-  // Resource metrics
   const memoryUsage = process.memoryUsage();
   const cpuUsage = process.cpuUsage();
 
@@ -154,33 +155,16 @@ router.get('/livez', async (c) => {
       memory: {
         heapUsed: `${(memoryUsage.heapUsed / 1024 / 1024).toFixed(2)}MB`,
         heapTotal: `${(memoryUsage.heapTotal / 1024 / 1024).toFixed(2)}MB`,
-        rss: `${(memoryUsage.rss / 1024 / 1024).toFixed(2)}MB`,
-        external: `${(memoryUsage.external / 1024 / 1024).toFixed(2)}MB`,
       },
       cpu: {
         user: `${(cpuUsage.user / 1000).toFixed(2)}ms`,
         system: `${(cpuUsage.system / 1000).toFixed(2)}ms`,
       },
-      node: {
-        version: process.version,
-        arch: process.arch,
-        platform: process.platform,
-        pid: process.pid,
-      },
     },
-    dependencies: readyzData.checks,
+    dependencies: checks,
     latency: latencies,
-    metrics: {
-      // Sample of metrics from the metrics framework
-      note: 'Full metrics available via metrics export endpoint (not implemented in this demo)',
-    },
   }, 200);
 });
 
-/**
- * Helper function to record latency for API routes.
- * This can be imported and used in route handlers.
- */
 export { recordLatency };
-
 export { router as healthRouter };
