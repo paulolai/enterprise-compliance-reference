@@ -1,5 +1,5 @@
-import { Reporter, TestRunEndReason } from 'vitest/reporters';
-import { SerializedError } from '@vitest/utils';
+import type { Reporter, TestRunEndReason } from 'vitest/reporters';
+import type { SerializedError } from '@vitest/utils';
 import type { RunnerTestSuite, RunnerTask } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';

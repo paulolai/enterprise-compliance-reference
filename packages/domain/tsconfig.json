@@ -1,17 +1,19 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "rootDir": ".",
     "outDir": "./dist",
-    "rootDir": "../",
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@executable-specs/shared": ["../shared/src"],
+      "@executable-specs/shared/*": ["../shared/src/*"],
+      "@executable-specs/shared/fixtures": ["../shared/fixtures"],
+      "@executable-specs/shared/fixtures/*": ["../shared/fixtures/*"]
+    }
   },
-  "include": ["src/**/*", "test/**/*", "../shared/src/**/*", "../shared/fixtures/**/*"],
-  "exclude": ["node_modules", "../shared/node_modules"]
+  "include": ["src/**/*", "test/**/*"],
+  "references": [
+    { "path": "../shared" }
+  ]
 }
