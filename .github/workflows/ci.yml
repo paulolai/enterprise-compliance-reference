@@ -40,7 +40,7 @@ jobs:
 
       - name: Generate Allure Report
         working-directory: ./packages/domain
-        run: pnpm test:allure && pnpm report:allure:generate
+        run: pnpm test:allure && pnpm reports:allure
 
       - name: Upload Coverage Report
         if: always()
