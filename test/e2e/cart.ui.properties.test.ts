@@ -25,10 +25,7 @@ invariant('Cart total matches calculation result', {
   // Check cart total exists and is positive
   const grandTotal = page.getByTestId('grand-total');
   await expect(grandTotal).toBeVisible();
-
-  const grandTotalText = await grandTotal.textContent();
-  expect(grandTotalText).toBeTruthy();
-  expect(grandTotalText).toMatch(/\$\d+\.\d{2}/);
+  await expect(grandTotal).toHaveText(/\$\d+\.\d{2}/);
 });
 
 invariant('Cart badge shows correct item count', {
@@ -42,8 +39,7 @@ invariant('Cart badge shows correct item count', {
   await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
-  let badgeText = await page.getByTestId('cart-badge').textContent();
-  expect(badgeText).toBe('1');
+  await expect(page.getByTestId('cart-badge')).toHaveText('1');
 
   // Add another item
   await page.goto('/products/WIRELESS-EARBUDS');
@@ -51,8 +47,7 @@ invariant('Cart badge shows correct item count', {
   // Wait for badge to reflect the updated count
   await expect(page.getByTestId('cart-badge')).toHaveText('2');
 
-  badgeText = await page.getByTestId('cart-badge').textContent();
-  expect(badgeText).toBe('2');
+  await expect(page.getByTestId('cart-badge')).toHaveText('2');
 });
 
 invariant('VIP badge shown for VIP users', {
@@ -222,8 +217,7 @@ invariant('Adding same SKU merges quantity, does not duplicate', {
   await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
-  let badgeText = await page.getByTestId('cart-badge').textContent();
-  expect(badgeText).toBe('1');
+  await expect(page.getByTestId('cart-badge')).toHaveText('1');
 
   // Add same item again (via debug teleport to avoid navigation issues)
   await page.goto('/cart');
@@ -237,9 +231,7 @@ invariant('Adding same SKU merges quantity, does not duplicate', {
   expect(quantity).toBe('2');
 
   // Check badge reflects total quantity (1 SKU × 2 items = 1 badge count, or 2 items)
-  badgeText = await page.getByTestId('cart-badge').textContent();
-  // Badge shows total number of items, not SKUs
-  expect(badgeText).toBe('2');
+  await expect(page.getByTestId('cart-badge')).toHaveText('2');
 });
 
 invariant('Cart persists across page reload', {
@@ -255,16 +247,14 @@ invariant('Cart persists across page reload', {
   await page.getByRole('button', { name: 'Add to Cart' }).click();
   await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
 
-  let badgeText = await page.getByTestId('cart-badge').textContent();
-  expect(badgeText).toBe('1');
+  await expect(page.getByTestId('cart-badge')).toHaveText('1');
 
   // Reload the page
   await page.reload();
   await page.waitForLoadState('networkidle');
 
   // Cart badge should still show items
-  badgeText = await page.getByTestId('cart-badge').textContent();
-  expect(badgeText).toBe('1');
+  await expect(page.getByTestId('cart-badge')).toHaveText('1');
 
   // Navigate to cart and verify items are still there
   await page.goto('/cart');
@@ -317,7 +307,5 @@ invariant('Clearing cart removes all items', {
   await expect(emptyCartMessage).toBeVisible();
 
   // Verify badge is reset
-  const badge = page.getByTestId('cart-badge');
-  const badgeText = await badge.textContent();
-  expect(badgeText).toBe('0');
+  await expect(page.getByTestId('cart-badge')).toHaveText('0');
 });
