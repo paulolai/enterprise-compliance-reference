@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../../../shared/src';
+import { formatCurrency } from '@executable-specs/shared';
 
 interface PriceDisplayProps {
   amount: number; // cents

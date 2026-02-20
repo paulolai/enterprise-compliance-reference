@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import type { CartItem } from '../../../../shared/src';
-import { ShippingMethod } from '../../../../shared/src';
+import type { CartItem } from '@executable-specs/shared';
+import { ShippingMethod } from '@executable-specs/shared';
 import { isProduction } from '../../lib/env';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';

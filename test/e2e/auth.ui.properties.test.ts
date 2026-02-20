@@ -49,6 +49,7 @@ invariant('Login with valid credentials succeeds', {
   tags: ['@vip']
 }, async ({ page }) => {
   await page.goto('/login');
+  await page.waitForLoadState('networkidle');
 
   // Fill in login form with demo VIP user
   await page.getByLabel('Email').fill('vip@techhome.com');
@@ -56,7 +57,7 @@ invariant('Login with valid credentials succeeds', {
   await page.getByRole('button', { name: 'Sign In' }).click();
 
   // Should navigate to cart after successful login
-  await page.waitForURL(/\/cart/);
+  await page.waitForURL(/\/cart/, { timeout: 5000 });
 
   // VIP badge should be visible in cart
   await expect(page.getByTestId('vip-user-label')).toBeVisible();

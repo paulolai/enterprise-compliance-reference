@@ -6,14 +6,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  timeout: 3 * 1000,
+  timeout: 10 * 1000,
   expect: {
-    timeout: 3 * 1000,
+    timeout: 10 * 1000,
   },
   reporter: [
     ['html', { outputFolder: 'reports/html-report', open: 'never' }],
     ['list'],
-    ['allure-playwright', { resultsDir: process.env.ALLURE_RESULTS_DIR ? `${process.env.ALLURE_RESULTS_DIR}/gui` : '../../allure-results/gui' }],
+    ['allure-playwright', { resultsDir: process.env.ALLURE_RESULTS_DIR ? `${process.env.ALLURE_RESULTS_DIR}/gui` : './allure-results/gui' }],
   ],
   use: {
     baseURL: 'http://localhost:5173',

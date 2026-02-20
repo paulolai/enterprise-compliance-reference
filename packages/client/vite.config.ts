@@ -13,6 +13,8 @@ export default defineConfig({
       '@executable-specs/shared': path.resolve(__dirname, '../shared/src'),
       '@executable-specs/shared/fixtures': path.resolve(__dirname, '../shared/fixtures'),
       '@executable-specs/domain': path.resolve(__dirname, '../domain/src'),
+      // Server package aliases for dev server
+      '@executable-specs/server': path.resolve(__dirname, '../server/src'),
     },
   },
   optimizeDeps: {
