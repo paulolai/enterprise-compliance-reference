@@ -143,6 +143,18 @@ cd test && pnpm exec tsc --noEmit
 pnpm run test:all
 ```
 
+### Why CI Finds Issues We Miss Locally
+
+CI runs **different tools** and **stricter checks** than local development:
+
+| Check | Local Dev | CI | Why Different? |
+|-------|-----------|-----|----------------|
+| TypeScript | Vitest (permissive) | `tsc --noEmit` (strict) | Vitest allows `.ts` extensions, strict TS doesn't |
+| Coverage | Not run by default | `coverage:domain` script | Custom script with hardcoded paths |
+| Commands | Individual packages | Full workflow chains | CI chains commands we don't run locally |
+
+**The Problem**: We ran `pnpm test` locally which uses Vitest. CI runs `tsc --noEmit` which is stricter and catches import issues.
+
 ### Common CI Issues
 
 **Issue 1: `coverage:domain` fails with "Found 0 test files"**
