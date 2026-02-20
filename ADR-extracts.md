@@ -3,7 +3,7 @@
 This document is **GENERATED** from `docs/ARCHITECTURE_DECISIONS.md`.
 DO NOT EDIT MANUALLY - Changes will be overwritten on next sync.
 
-Last generated: 2026-02-20T08:50:57.041Z
+Last generated: 2026-02-20T08:51:13.363Z
 
 ---
 
