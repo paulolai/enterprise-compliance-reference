@@ -265,7 +265,7 @@ Then a unified mocking strategy (record/replay for everything) may reduce comple
 **Date:** 2026-01-22
 
 #### The Decision
-All test data generation lives in a monorepo-style `implementations/shared` directory, consumed by both API and GUI test suites.
+All test data generation lives in a monorepo-style `packages/shared` directory, consumed by both API and GUI test suites.
 
 #### Why?
 *   **Single Source of Truth:** The `CartBuilder` used in Vitest tests is identical to the one used in Playwright tests.
@@ -277,7 +277,7 @@ All test data generation lives in a monorepo-style `implementations/shared` dire
 
 #### Structure
 ```
-implementations/shared/
+packages/shared/
 ├── fixtures/
 │   ├── cart-builder.ts      # Fluent API for creating carts
 │   └── arbitraries.ts       # fast-check generators for PBT
@@ -286,7 +286,7 @@ implementations/shared/
 ```
 
 #### Rule
-*   **Never Duplicate Builders:** If you need a helper for test data, it belongs in `implementations/shared/fixtures`.
+*   **Never Duplicate Builders:** If you need a helper for test data, it belongs in `packages/shared/fixtures`.
 *   **No Magic Objects:** Tests must never use raw `{ name: "item", price: 100 }` literals. Always use `CartBuilder.new()`.
 
 #### When to Revisit: Single Implementation
@@ -440,8 +440,8 @@ This pattern adds a small overhead for creating Result objects. For ultra-hot pa
 In most business applications, the clarity and safety benefits outweigh the minimal overhead.
 
 #### References
-*   Implementation: `implementations/shared/src/result.ts`
-*   Tests: `implementations/typescript-vitest/test/result.spec.ts` (42 tests)
+*   Implementation: `packages/shared/src/result.ts`
+*   Tests: `packages/domain/test/result.spec.ts` (42 tests)
 *   Documentation: `docs/RESULT_PATTERN.md`
 
 ---
