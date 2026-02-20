@@ -2,8 +2,8 @@
 
 **An up-to-date public recreation of the reference implementation built at Commonwealth Bank.**
 
-> [!NOTE] Work in Progress (WIP)
-> This repository demonstrates ATDD (Acceptance Test-Driven Development) in practice. The testing infrastructure was built first to enable test runs before the full application implementation was completed. See the [folder structure](#project-structure) for the current state.
+> [!NOTE]
+> This repository demonstrates ATDD (Acceptance Test-Driven Development) in practice. The testing infrastructure was built first to enable test runs before the full application implementation was completed—a core Shift Left principle. The project is now feature-complete with comprehensive documentation and teaching resources.
 
 > *How to enable developers to own Quality & Compliance without slowing them down.*
 
