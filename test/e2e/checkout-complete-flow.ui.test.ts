@@ -67,9 +67,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     // Step 6: Review pricing
     const grandTotal = page.getByTestId('grand-total');
     await expect(grandTotal).toBeVisible();
-
-    const totalPrice = await grandTotal.textContent();
-    expect(totalPrice).toBeTruthy();
+    await expect(grandTotal).toHaveText(/\$[\d,.]+/); // Web-first assertion with retry
 
     // For this test, we verify the checkout page loads correctly
     await expect(page.getByText(/grand total/i)).toBeVisible();
@@ -131,10 +129,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
     // Get grand total
     const grandTotalElement = page.getByTestId('grand-total');
-    const totalPrice = await grandTotalElement.textContent();
-
-    expect(totalPrice).toBeTruthy();
-    expect(totalPrice).toMatch(/\$\d+\.\d{2}/);
+    await expect(grandTotalElement).toHaveText(/\$\d+\.\d{2}/); // Web-first assertion with retry
   });
 
   test('back button after checkout leads to confirmation', async ({ page }) => {
