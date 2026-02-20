@@ -2,10 +2,10 @@ import { z } from 'zod';
 import {
   ShippingMethod,
   CartItemSchema, UserSchema, ShippingMethodSchema
-} from './types.ts';
+} from './types';
 import type {
   CartItem, User, PricingResult, LineItemResult, ShipmentInfo, Cents
-} from './types.ts';
+} from './types';
 
 export class PricingEngine {
   // Business Rules Constants

@@ -1,5 +1,5 @@
-import { db, close } from './index.ts';
-import { products } from './schema.ts';
+import { db, close } from './index';
+import { products } from './schema';
 
 /**
  * Seed script for the shop database.

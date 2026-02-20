@@ -12,4 +12,4 @@
  */
 
 // Re-export all browser-safe exports
-export * from './index.ts';
+export * from './index';
