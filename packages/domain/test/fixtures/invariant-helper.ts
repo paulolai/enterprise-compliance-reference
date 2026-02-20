@@ -52,6 +52,15 @@ function registerInvariant(metadata: InvariantMetadata) {
 }
 
 /**
+ * NAMING NOTE:
+ * - verifyInvariant = API layer (property-based testing with fast-check)
+ * - invariant = UI layer (Playwright wrapper for E2E tests)
+ *
+ * They serve the same purpose (wrapping tests with metadata) but for different
+ * test layers. API uses 'verify' prefix to indicate mathematical verification.
+ */
+
+/**
  * Helper to verify a pricing invariant.
  * Automatically handles:
  * - Property generation (Cart + User)
