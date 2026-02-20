@@ -30,6 +30,23 @@ Never declare success until the complete business invariant is validated:
 - **Tests**: `test/` contains fluent builders, arbitraries, and the test suites.
 - **Reporters**: Custom attestation logic lives in `test/reporters/`.
 
+## Naming Conventions
+
+### Files & Directories
+- **General**: Use `kebab-case` for most files and directories (e.g., `pricing-engine.ts`, `cart-store.ts`).
+- **React Components**: Use `PascalCase` for component files to match the component name (e.g., `ProductCard.tsx`, `CheckoutPage.tsx`).
+
+### Code Symbols
+- **Variables & Functions**: Use `camelCase` (e.g., `calculateTotal`, `cartItem`).
+- **Types & Interfaces**: Use `PascalCase` (e.g., `PricingResult`, `CartItem`).
+- **Constants**: Use `UPPER_SNAKE_CASE` for global constants (e.g., `MAX_RETRIES`).
+
+### Test Files
+We use specific suffixes to distinguish test types for reporting and tooling:
+- **`*.spec.ts`**: Unit tests and specific examples (e.g., `pricing.spec.ts`).
+- **`*.properties.test.ts`**: Property-based invariant tests using `fast-check` (e.g., `pricing.properties.test.ts`).
+- **`*.ui.test.ts`**: End-to-End or UI integration tests (e.g., `checkout.ui.test.ts`).
+
 ## Commit Guidelines
 We use [Conventional Commits](https://www.conventionalcommits.org).
 - `feat`: A new business rule or feature.
