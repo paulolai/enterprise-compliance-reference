@@ -2,8 +2,36 @@ import { describe, it, expect } from 'vitest';
 import { ShippingMethod, CartItem, User, PricingResult } from '../src';
 import { verifyShippingInvariant } from './fixtures/invariant-helper';
 
+/**
+ * Shipping: Mathematical Invariants
+ * 
+ * These tests verify shipping business rules using property-based testing.
+ * Each test proves the rule holds for ALL valid inputs (not just examples).
+ * 
+ * WHY EDGE CASES MATTER:
+ * - Floating point math: 0.1 + 0.2 ≠ 0.3 in binary!
+ * - Boundary conditions: exactly $100 vs $100.01 is different behavior
+ * - Interaction effects: shipping method can override free shipping threshold
+ * - Order of operations: discounts applied before shipping calculation
+ * 
+ * KEY SHIPPING RULES:
+ * 1. Standard: $7 base + $2/kg (unless free shipping applies)
+ * 2. Free shipping: subtotal > $100 after discounts (NOT including shipping)
+ * 3. Express: fixed $25 (never free)
+ * 4. Shipping is SEPARATE from product discount cap
+ */
 describe('Shipping: Mathematical Invariants', () => {
 
+  /**
+   * EDGE CASE: Weight calculation uses rounding!
+   * 
+   * Why this matters:
+   * - Math.round(totalWeight * 200) handles floating point precision
+   * - Example: 0.3kg × $2 = $0.60, not $0.59999999...
+   * 
+   * Test covers: ANY valid weight (0.01kg to 100kg in our arbitraries)
+   * This PROVES the formula works for all weights, not just 1.0kg or 10kg
+   */
   it('Standard shipping = $7 + (totalKg × $2) unless free', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.1 - Base Shipping & Weight',
@@ -22,6 +50,18 @@ describe('Shipping: Mathematical Invariants', () => {
     });
   });
 
+  /**
+   * EDGE CASE: The $100 threshold is EXCLUSIVE (> not ≥)
+   * 
+   * Why this matters:
+   * - Exactly $100.00 does NOT get free shipping (boundary!)
+   * - $100.01 DOES get free shipping
+   * - This is a common source of customer complaints if wrong
+   * 
+   * ORDER MATTERS: Free shipping checked AFTER product discounts
+   * Why? Because free shipping is a CUSTOMER LOYALTY reward based on purchase value
+   * (shipping cost shouldn't count toward the threshold - that would be circular!)
+   */
   it('Free shipping triggered exactly when discounted subtotal > $100', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.2 - Free Shipping Threshold',
@@ -34,6 +74,17 @@ describe('Shipping: Mathematical Invariants', () => {
     });
   });
 
+  /**
+   * EDGE CASE: Express is NEVER free, even if subtotal > $100
+   * 
+   * Why this matters:
+   * - Express shipping is a PREMIUM service with guaranteed fast delivery
+   * - The $25 charge is for the SPEED, not just shipping logistics
+   * - This is different from Standard shipping which CAN be free
+   * 
+   * INTERACTION: Express overrides Standard shipping logic entirely
+   * This is why we check `method === ShippingMethod.EXPRESS` first
+   */
   it('Express delivery always costs exactly $25', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.4 - Express Delivery',
@@ -46,6 +97,21 @@ describe('Shipping: Mathematical Invariants', () => {
     });
   });
 
+  /**
+   * EDGE CASE: Shipping is EXCLUDED from the 30% discount cap
+   * 
+   * Why this matters (BUSINESS RULE):
+   * - If shipping counted toward cap, you'd get "free shipping" automatically at 30% off
+   * - That would destroy the free shipping threshold incentive ($100+)
+   * - The 30% cap protects REVENUE on PRODUCT sales, not shipping
+   * 
+   * IMPLEMENTATION DETAIL:
+   * - totalDiscount = volumeDiscount + vipDiscount (product discounts only!)
+   * - grandTotal = finalTotal + shipping
+   * - This ensures shipping is always charged separately
+   * 
+   * This is a REVENUE PROTECTION rule - critical for business viability!
+   */
   it('Shipping costs are NEVER included in product discount cap', () => {
     verifyShippingInvariant({
       ruleReference: 'pricing-strategy.md §5.5 - Shipping Discount Cap',
