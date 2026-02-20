@@ -8,8 +8,8 @@ import { eq } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
 import type { CreatePaymentIntentRequest, ConfirmPaymentRequest, CancelPaymentRequest, GetPaymentIntentRequest } from '../../lib/validation/schemas';
-import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
-import { isFailure } from '@executable-specs/shared/result';
+import { mapCartToLineItems, validateOrderInvariants } from '../domain/cart/fns';
+import { isFailure } from '@executable-specs/domain';
 
 // Valid HTTP status codes for responses
 type StatusCode = 200 | 201 | 400 | 401 | 404 | 500 | 501 | 502;

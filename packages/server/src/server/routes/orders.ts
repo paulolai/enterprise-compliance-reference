@@ -7,8 +7,8 @@ import { eq, inArray } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
 import type { CreateOrderRequest, GetOrderRequest } from '../../lib/validation/schemas';
-import { mapCartToLineItems, validateOrderInvariants } from '../../domain/cart/fns.ts';
-import { isFailure } from '@executable-specs/shared/result';
+import { mapCartToLineItems, validateOrderInvariants } from '../domain/cart/fns';
+import { isFailure } from '@executable-specs/domain';
 
 const router = new Hono();
 

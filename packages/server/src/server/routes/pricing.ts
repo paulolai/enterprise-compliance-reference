@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
-import { PricingEngine } from '../../../../shared/src';
+import { PricingEngine } from '@executable-specs/shared';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';
 import type { CalculatePricingRequest } from '../../lib/validation/schemas';

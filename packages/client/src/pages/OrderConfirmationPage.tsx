@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { logger } from '../lib/logger';
-import { formatCurrency, type PricingResult } from '../../../shared/src/types';
+import { formatCurrency, type PricingResult } from '@executable-specs/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
