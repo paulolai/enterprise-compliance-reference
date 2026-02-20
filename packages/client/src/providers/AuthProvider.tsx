@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { authClient } from '../lib/auth';
-import { useCartStore } from '../store/cartStore';
+import { useCartStore } from '../store/cart-store';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setUser = useCartStore((state) => state.setUser);

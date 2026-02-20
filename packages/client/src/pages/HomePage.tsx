@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { productCatalog } from '../store/cartStore';
+import { productCatalog } from '../store/cart-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';

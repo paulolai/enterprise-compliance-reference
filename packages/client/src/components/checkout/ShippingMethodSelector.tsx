@@ -1,5 +1,5 @@
 import { ShippingMethod } from '../../../../shared/src';
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 import { PriceDisplay } from '../ui/PriceDisplay';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';

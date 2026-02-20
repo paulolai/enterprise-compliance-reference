@@ -1,4 +1,4 @@
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 import { CartSummary } from '../cart/CartSummary';
 import type { PricingResult } from '../../../../shared/src';
 

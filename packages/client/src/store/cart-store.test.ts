@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useCartStore } from './cartStore';
+import { useCartStore } from './cart-store';
 import { ShippingMethod } from '../../../shared/src';
 
 // Mock localStorage for Node environment

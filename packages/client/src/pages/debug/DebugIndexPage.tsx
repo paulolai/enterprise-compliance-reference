@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 import { ShippingMethod, type User } from '../../../../shared/src';
 
 interface Scenario {

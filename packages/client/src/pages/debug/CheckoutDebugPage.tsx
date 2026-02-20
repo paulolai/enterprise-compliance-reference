@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CheckoutPage } from '../CheckoutPage';
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 import { authClient } from '../../lib/auth';
 import { CartBuilder } from '../../../../shared/fixtures';
 import { ShippingMethod } from '../../../../shared/src';

@@ -1,5 +1,5 @@
 import { PriceDisplay } from '../ui/PriceDisplay';
-import { productCatalog } from '../../store/cartStore';
+import { productCatalog } from '../../store/cart-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ShoppingCart } from 'lucide-react';

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { CartPage } from '../CartPage';
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 import { authClient } from '../../lib/auth';
 import { CartBuilder } from '../../../../shared/fixtures';
 import { ShippingMethod } from '../../../../shared/src';

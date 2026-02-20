@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCartStore } from '../store/cartStore';
+import { useCartStore } from '../store/cart-store';
 import { ShippingMethodSelector } from '../components/checkout/ShippingMethodSelector';
 import { OrderSummary } from '../components/checkout/OrderSummary';
 import { Button } from '@/components/ui/button';

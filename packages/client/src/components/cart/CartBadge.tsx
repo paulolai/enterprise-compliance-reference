@@ -1,4 +1,4 @@
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 
 export function CartBadge() {
   const items = useCartStore((state) => state.items);

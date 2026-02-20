@@ -1,5 +1,5 @@
 import { PriceDisplay } from '../ui/PriceDisplay';
-import { productCatalog, useCartStore } from '../../store/cartStore';
+import { productCatalog, useCartStore } from '../../store/cart-store';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

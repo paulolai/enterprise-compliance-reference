@@ -1,4 +1,4 @@
-import { useCartStore } from '../../store/cartStore';
+import { useCartStore } from '../../store/cart-store';
 import { PriceDisplay } from '../ui/PriceDisplay';
 import { DiscountBadge } from '../ui/DiscountBadge';
 import { Badge } from '@/components/ui/badge';

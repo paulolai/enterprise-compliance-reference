@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { productCatalog } from '../store/cartStore';
+import { productCatalog } from '../store/cart-store';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
