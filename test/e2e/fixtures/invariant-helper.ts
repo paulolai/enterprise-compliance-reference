@@ -48,6 +48,15 @@ function deriveHierarchyFromPath(filePath: string): { parentSuite: string, suite
 }
 
 /**
+ * NAMING NOTE:
+ * - verifyInvariant = API layer (property-based testing with fast-check)
+ * - invariant = UI layer (Playwright wrapper for E2E tests)
+ *
+ * They serve the same purpose (wrapping tests with metadata) but for different
+ * test layers. API uses 'verify' prefix to indicate mathematical verification.
+ */
+
+/**
  * Wrapper for Playwright test that handles Attestation Metadata automatically.
  */
 export function invariant(
