@@ -90,22 +90,19 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     await page.goto('/products');
 
     // Check badge shows 2 items
-    let badgeText = await page.getByTestId('cart-badge').textContent();
-    expect(badgeText).toBe('2');
+    await expect(page.getByTestId('cart-badge')).toHaveText('2');
 
     // Navigate to checkout
     await page.goto('/checkout');
 
     // Badge should still show 2
-    badgeText = await page.getByTestId('cart-badge').textContent();
-    expect(badgeText).toBe('2');
+    await expect(page.getByTestId('cart-badge')).toHaveText('2');
 
     // Go back to products
     await page.goto('/products');
 
     // Badge should still show 2
-    badgeText = await page.getByTestId('cart-badge').textContent();
-    expect(badgeText).toBe('2');
+    await expect(page.getByTestId('cart-badge')).toHaveText('2');
   });
 
   test('pricing accuracy displayed in checkout', async ({ page }) => {
