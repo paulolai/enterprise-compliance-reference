@@ -85,18 +85,21 @@ it('Invariant: Final Total is always <= Original Total', () => {
 
 ---
 
-## 🏗 The 3 Pillars of Enablement
+## 🏛 The 3 Pillars of Developer-Native Compliance
 
 ### 1. Zero-Tax Verification (The Google Lesson)
-At **Google**, we didn't have "QA Tooling" teams—we had **Engineering Productivity (EngProd)**. Our mission was to be **Dev Accelerators**. We built tools that served the engineer, not the process. This architecture replaces the "Gherkin Burden" with **Type-Safe Test Data Builders**, ensuring testing is a high-speed feedback loop that feels like coding, not data entry.
+**The Problem:** Traditional QA processes slow developers down with context switching and manual data entry.
+**The Solution:** At **Google**, Engineering Productivity (EngProd) tools served the engineer, not the process. We replace the "Gherkin Tax" with **Type-Safe Test Data Builders**, ensuring testing is a high-speed feedback loop that feels like coding, not bureaucracy.
 
 ### 2. Continuous Attestation (The CBA Lesson)
-In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](packages/domain/reporting-architecture.md) for details):
-- **Attestation Report**: Business-rule traceability for auditors. Generated via `npm run reports:attestation`.
-- **Allure Report**: Historical trends and flakiness detection for engineers.
+**The Problem:** In regulated industries like banking, shipping features is blocked by manual evidence gathering (screenshots, Word docs).
+**The Solution:** We generate **Regulatory-Grade Evidence** as a direct side-effect of the CI/CD pipeline. Every test run produces two distinct artifacts:
+- **Attestation Report**: A business-readable audit trail linking execution back to `pricing-strategy.md` for compliance officers.
+- **Allure Report**: A technical dashboard for engineers to track flakiness and trends.
 
-### 3. Infinite Examples (The Scalability Lesson)
-Using **Property-Based Testing**, we define a business rule once and let the machine generate hundreds of randomized test cases (negative values, empty carts, massive quantities) that humans forget to check.
+### 3. Autonomous Quality (The Scalability Lesson)
+**The Problem:** Human testers (and developers) inevitably miss edge cases. Writing enough examples to cover every scenario is impossible.
+**The Solution:** We move from "Example-Based Testing" to **Property-Based Testing (PBT)**. Instead of writing 50 separate test cases, we define a single **Invariant** (e.g., "Discount never exceeds 30%"). The machine then generates hundreds of randomized scenarios—negative numbers, massive quantities, distinct user types—proving the rule holds universally.
 
 ---
 
