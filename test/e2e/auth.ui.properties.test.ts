@@ -2,9 +2,9 @@ import { expect } from '@playwright/test';
 import { invariant } from './fixtures/invariant-helper';
 
 invariant('Login page renders correctly', {
-  ruleReference: 'pricing-strategy.md §1 - Base Rules',
-  rule: 'Login page structure verification',
-  tags: []
+  ruleReference: 'security-policy.md §1.1 - Login Requirements',
+  rule: 'Login page displays email and password fields with submit button',
+  tags: ['@auth', '@ui']
 }, async ({ page }) => {
   await page.goto('/login');
 
@@ -15,9 +15,9 @@ invariant('Login page renders correctly', {
 });
 
 invariant('Demo user buttons work', {
-  ruleReference: 'pricing-strategy.md §1 - Base Rules',
-  rule: 'Demo functionality for testing',
-  tags: ['@demo']
+  ruleReference: 'security-policy.md §1.1 - Login Requirements',
+  rule: 'Demo user buttons pre-fill authentication forms for testing',
+  tags: ['@auth', '@demo']
 }, async ({ page }) => {
   await page.goto('/login');
 
@@ -30,9 +30,9 @@ invariant('Demo user buttons work', {
 });
 
 invariant('Register page renders correctly', {
-  ruleReference: 'pricing-strategy.md §1 - Base Rules',
-  rule: 'Register page structure verification',
-  tags: []
+  ruleReference: 'security-policy.md §1.2 - Registration Requirements',
+  rule: 'Registration page displays name, email, password fields with create account button',
+  tags: ['@auth', '@ui']
 }, async ({ page }) => {
   await page.goto('/register');
 
@@ -44,9 +44,9 @@ invariant('Register page renders correctly', {
 });
 
 invariant('Login with valid credentials succeeds', {
-  ruleReference: 'pricing-strategy.md §3 - VIP Tier',
-  rule: 'Valid login grants access and loads user state (VIP status)',
-  tags: ['@vip']
+  ruleReference: 'security-policy.md §1.1 - Login Requirements',
+  rule: 'Successful login redirects to cart and loads user VIP status',
+  tags: ['@auth', '@vip']
 }, async ({ page }) => {
   await page.goto('/login');
   await page.waitForLoadState('networkidle');
@@ -64,9 +64,9 @@ invariant('Login with valid credentials succeeds', {
 });
 
 invariant('Login with invalid credentials shows error', {
-  ruleReference: 'pricing-strategy.md §1 - Base Rules',
-  rule: 'System rejects invalid authentication',
-  tags: ['@security']
+  ruleReference: 'security-policy.md §1.1 - Login Requirements',
+  rule: 'System displays clear error message for invalid credentials without revealing which field was incorrect',
+  tags: ['@auth', '@security']
 }, async ({ page }) => {
   await page.goto('/login');
 
@@ -80,9 +80,9 @@ invariant('Login with invalid credentials shows error', {
 });
 
 invariant('Registration with new email succeeds', {
-  ruleReference: 'pricing-strategy.md §1 - Base Rules',
-  rule: 'New user registration flow',
-  tags: []
+  ruleReference: 'security-policy.md §1.2 - Registration Requirements',
+  rule: 'New user registration creates account, authenticates user, and redirects to cart',
+  tags: ['@auth']
 }, async ({ page }) => {
   const uniqueEmail = `newuser${Date.now()}@example.com`;
 
