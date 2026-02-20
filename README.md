@@ -185,29 +185,44 @@ pnpm test
 
 ## 📁 Project Structure
 
-This repository follows a multi-implementation structure to demonstrate ATDD patterns at different layers:
+This repository follows a monorepo structure to demonstrate ATDD patterns at different layers:
 
 ```
-implementations/
-├── typescript-vitest/     # Unit test layer: Pricing engine + Vitest
-│   ├── src/               # Core business logic (PricingEngine)
-│   ├── test/              # Property-based tests, integration tests
-│   └── scripts/           # Attestation report generation
+packages/
+├── domain/              # Unit test layer: Pricing engine + Vitest
+│   ├── src/            # Core business logic (PricingEngine)
+│   ├── test/           # Property-based tests, integration tests
+│   └── scripts/        # Attestation report generation
 │
-├── react-playwright/      # E2E test layer: React app + Playwright + Hono API
+├── client/             # React frontend app
 │   ├── src/
-│   │   ├── components/    # Cart, checkout, product components
-│   │   ├── pages/         # Home, Products, Cart, Checkout, Login, Register
-│   │   ├── server/        # Hono backend API (pricing, auth, orders)
-│   │   ├── store/         # Zustand state management (cart logic)
-│   │   └── providers/     # React context providers
-│   └── test-results/      # Playwright test output
+│   │   ├── components/ # Cart, checkout, product components
+│   │   ├── pages/     # Home, Products, Cart, Checkout, Login, Register
+│   │   ├── store/     # Zustand state management
+│   │   └── lib/       # Auth, validation, utilities
+│   └── ...
 │
-├── shared/                # Shared types, DB schema, and utilities
-└── typescript-cucumber/   # Cucumber implementation (documentation/contrast only)
+├── server/             # Hono API backend
+│   ├── src/
+│   │   ├── server/    # Routes, middleware
+│   │   ├── lib/      # Logger, metrics, validation
+│   │   └── db/       # Drizzle SQLite schema
+│   └── ...
+│
+└── shared/            # Shared types, fixtures, arbitraries
+    ├── src/           # Types, result, pricing engine
+    └── fixtures/      # CartBuilder, Allure helpers, arbitraries
 
-reports/                   # Generated attestation reports
-docs/                      # Business rules, patterns, and guidelines
+test/                   # E2E test layer: Playwright
+├── e2e/               # End-to-end tests
+│   ├── cart.ui.properties.test.ts
+│   ├── checkout.ui.properties.test.ts
+│   └── fixtures/      # invariant-helper, API seams
+└── playwright.config.ts
+
+comparison-gherkin/    # Gherkin/Cucumber anti-pattern demo
+docs/                  # Business rules, patterns, and guidelines
+reports/               # Generated attestation reports
 ```
 
 ### Documentation Automation
@@ -235,6 +250,8 @@ npm run docs:fix
 | Topic | Document |
 |-------|----------|
 | **Testing Framework** | [docs/TESTING_FRAMEWORK.md](docs/TESTING_FRAMEWORK.md) |
+| **Teaching Guide** | [docs/TEACHING_GUIDE.md](docs/TEACHING_GUIDE.md) - Learn executable specs step-by-step |
+| **CartBuilder Reference** | [docs/CARTBUILDER_REFERENCE.md](docs/CARTBUILDER_REFERENCE.md) - Quick reference |
 | **API Testing Patterns** | [docs/API_TESTING_PATTERNS.md](docs/API_TESTING_PATTERNS.md) |
 | **GUI Testing Patterns** | [docs/GUI_TESTING_PATTERNS.md](docs/GUI_TESTING_PATTERNS.md) |
 | **Invariants & PBT** | [docs/reference/infinite-examples.md](docs/reference/infinite-examples.md) |
