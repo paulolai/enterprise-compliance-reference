@@ -11,7 +11,7 @@ import type {
   CartItem,
   CartItemRequest,
   PricingResult,
-} from './schema.ts';
+} from './schema';
 
 /**
  * Maps incoming request cart items to canonical domain items.

@@ -7,8 +7,8 @@ const ROOT_DIR = path.resolve(import.meta.dirname, '../../..');
 
 function findTestFiles(): string[] {
   const patterns = [
-    'implementations/**/*.test.ts',
-    'implementations/**/*.spec.ts'
+    'packages/domain/test/**/*.test.ts',
+    'packages/domain/test/**/*.spec.ts'
   ];
 
   const files: string[] = [];
