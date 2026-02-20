@@ -49,7 +49,7 @@ invariant('Cart badge shows correct item count', {
   await page.goto('/products/WIRELESS-EARBUDS');
   await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for badge to reflect the updated count
-  await page.waitForTimeout(100);
+  await expect(page.getByTestId('cart-badge')).toHaveText('2');
 
   badgeText = await page.getByTestId('cart-badge').textContent();
   expect(badgeText).toBe('2');
@@ -290,7 +290,7 @@ invariant('Clearing cart removes all items', {
   // Add second item
   await page.goto(`/products/${product2.sku}`);
   await page.getByRole('button', { name: 'Add to Cart' }).click();
-  await page.waitForTimeout(100);
+  await expect(page.getByTestId('cart-badge')).toHaveText('2');
 
   // Navigate to cart
   await page.goto('/cart');
