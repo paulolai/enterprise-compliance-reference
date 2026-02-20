@@ -196,12 +196,8 @@ invariant('Add to cart preserves price at time of add', {
 
   // Check that the cart shows the original price
   const itemPriceElement = page.getByTestId(`cart-item-price-${product.sku}`);
-  const priceText = await itemPriceElement.textContent();
   // Price is displayed as "$89.00" - we extract 8900 from it
-  const cartPrice = parseInt(priceText?.replace(/[^0-9]/g, '') || '0');
-
-  // Price should match the original price (in cents)
-  expect(cartPrice).toBe(originalPrice);
+  await expect(itemPriceElement).toHaveText(new RegExp(`\\$${(originalPrice / 100).toFixed(2).replace('.', '\\.')}`));
 });
 
 invariant('Adding same SKU merges quantity, does not duplicate', {

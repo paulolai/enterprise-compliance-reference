@@ -35,9 +35,10 @@ invariant('Page Builder Demo - VIP user seeding', {
   // Grand Total: $1925.00
   
   // Note: Items are not listed individually on checkout page, only in summary totals
-  const totalText = await page.getByTestId('grand-total').textContent();
+  const grandTotalElement = page.getByTestId('grand-total');
+  await expect(grandTotalElement).toBeVisible();
   // Allow either format just in case locale changes, but current is without comma
-  expect(totalText?.replace(',', '')).toContain('$1925.00');
+  await expect(grandTotalElement).toHaveText(/\$1,?925\.00/);
 });
 
 invariant('Page Builder Demo - Guest user seeding', {
@@ -70,6 +71,7 @@ invariant('Page Builder Demo - Guest user seeding', {
   // Let's just check the grand total to verify state is loaded.
   // If shipping is $7.00 (Standard), then $107.00.
   
-  const totalText = await page.getByTestId('grand-total').textContent();
-  expect(totalText).toMatch(/\$\d+\.\d{2}/); // Just verify it shows a price
+  const grandTotalElement2 = page.getByTestId('grand-total');
+  await expect(grandTotalElement2).toBeVisible();
+  await expect(grandTotalElement2).toHaveText(/\$\d+\.\d{2}/); // Just verify it shows a price
 });

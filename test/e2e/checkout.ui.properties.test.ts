@@ -18,11 +18,14 @@ invariant('Grand total equals product total plus shipping', {
   // Navigate to checkout
   await page.goto('/checkout');
 
-  // Get shipping cost
+  // Get shipping cost - wait for element first (web-first assertion)
   const shippingCostElement = page.getByTestId('cart-summary')
     .locator('.summary-row')
     .filter({ hasText: 'Shipping' })
     .getByTestId('price-display-amount');
+  
+  // Wait for shipping to be visible before parsing
+  await expect(shippingCostElement).toBeVisible();
   
   let shippingCost = 0;
   try {
@@ -32,8 +35,10 @@ invariant('Grand total equals product total plus shipping', {
     // Shipping might not be loaded or in a different format
   }
 
-  // Get grand total
-  const grandTotalText = await page.getByTestId('grand-total').textContent();
+  // Get grand total - wait for element first (web-first assertion)
+  const grandTotalElement = page.getByTestId('grand-total');
+  await expect(grandTotalElement).toBeVisible();
+  const grandTotalText = await grandTotalElement.textContent();
   const grandTotal = grandTotalText ? parseFloat(grandTotalText.replace(/[^0-9.]/g, '')) : 0;
 
   // Grand total should be ≥ shipping cost (adding products should be included)
@@ -58,12 +63,14 @@ invariant('Express shipping costs exactly $25', {
   // Select express shipping
   await page.getByRole('radio', { name: 'Express' }).click({ force: true });
 
-  // Get shipping cost
-  const shippingText = await page.getByTestId('cart-summary')
+  // Wait for shipping cost element to be visible (web-first)
+  const shippingCostElement = page.getByTestId('cart-summary')
     .locator('.summary-row')
     .filter({ hasText: 'Shipping (EXPRESS)' })
-    .getByTestId('price-display-amount')
-    .textContent();
+    .getByTestId('price-display-amount');
+  await expect(shippingCostElement).toBeVisible();
+  
+  const shippingText = await shippingCostElement.textContent();
   const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
 
   // Express shipping should be exactly $25
@@ -183,11 +190,13 @@ invariant('Weight-based shipping: $2 per kilogram surcharge', {
   await page.goto('/checkout');
 
   // Get shipping cost - should be $7 base + $2 × 2.5kg = $7 + $5 = $12
-  const shippingText = await page.getByTestId('cart-summary')
+  // Wait for element first (web-first assertion)
+  const shippingCostElement2 = page.getByTestId('cart-summary')
     .locator('.summary-row')
     .filter({ hasText: 'Shipping (STANDARD)' })
-    .getByTestId('price-display-amount')
-    .textContent();
+    .getByTestId('price-display-amount');
+  await expect(shippingCostElement2).toBeVisible();
+  const shippingText = await shippingCostElement2.textContent();
   const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
 
   // Shipping should be $7 base + $5 weight surcharge = $12
@@ -219,11 +228,13 @@ invariant('Weight-based shipping: multiple items weight accumulates', {
   await page.goto('/checkout');
 
   // Get shipping cost - should be $7 base + $2 × 0.3kg = $7 + $0.60 = $7.60
-  const shippingText = await page.getByTestId('cart-summary')
+  // Wait for element first (web-first assertion)
+  const shippingCostElement3 = page.getByTestId('cart-summary')
     .locator('.summary-row')
     .filter({ hasText: 'Shipping (STANDARD)' })
-    .getByTestId('price-display-amount')
-    .textContent();
+    .getByTestId('price-display-amount');
+  await expect(shippingCostElement3).toBeVisible();
+  const shippingText = await shippingCostElement3.textContent();
   const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
 
   // Shipping should be approximately $7.60 (with rounding)
@@ -251,11 +262,13 @@ invariant('Heavy item shipping increases accordingly', {
   await page.goto('/checkout');
 
   // Get shipping cost - should be $7 base + $2 × 6kg = $7 + $12 = $19
-  const shippingText = await page.getByTestId('cart-summary')
+  // Wait for element first (web-first assertion)
+  const shippingCostElement4 = page.getByTestId('cart-summary')
     .locator('.summary-row')
     .filter({ hasText: 'Shipping (STANDARD)' })
-    .getByTestId('price-display-amount')
-    .textContent();
+    .getByTestId('price-display-amount');
+  await expect(shippingCostElement4).toBeVisible();
+  const shippingText = await shippingCostElement4.textContent();
   const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
 
   // Shipping should be $19 for 6kg ($7 base + $12 weight surcharge)
@@ -281,11 +294,13 @@ invariant('Expedited shipping: 15% of original subtotal surcharge', {
 
   // Get shipping cost - should be base + weight + 15% of original
   // For $89 item @ 0.1kg: $7 base + $0.20 weight + $13.35 expedited = ~20.55
-  const shippingText = await page.getByTestId('cart-summary')
+  // Wait for element first (web-first assertion)
+  const shippingCostElement5 = page.getByTestId('cart-summary')
     .locator('.summary-row')
     .filter({ hasText: 'Shipping (EXPEDITED)' })
-    .getByTestId('price-display-amount')
-    .textContent();
+    .getByTestId('price-display-amount');
+  await expect(shippingCostElement5).toBeVisible();
+  const shippingText = await shippingCostElement5.textContent();
   const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
 
   // Expedited shipping should include the 15% surcharge
