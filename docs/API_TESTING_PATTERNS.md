@@ -120,7 +120,7 @@ Use this for pure business logic defined in `docs/pricing-strategy.md`.
 Proves that a rule holds for **all valid inputs**, not just a few examples.
 
 ```typescript
-// implementations/typescript-vitest/test/pricing.properties.test.ts
+// packages/domain/test/pricing.properties.test.ts
 it('Final Total is always <= Original Total', () => {
   verifyInvariant({
     ruleReference: 'pricing-strategy.md §1',
@@ -245,7 +245,7 @@ test.each([
 When the built-in `fast-check` generators aren't enough:
 
 ```typescript
-// implementations/shared/fixtures/arbitraries.ts
+// packages/shared/fixtures/arbitraries.ts
 import * as fc from 'fast-check';
 
 export const { itemArbitrary } = {
@@ -293,7 +293,7 @@ export const { userArbitrary } = {
 When a feature spans multiple business rules:
 
 ```typescript
-// implementations/typescript-vitest/test/integration.properties.test.ts
+// packages/domain/test/integration.properties.test.ts
 it('Pricing + Shipping + VIP all apply correctly', () => {
   verifyInvariant({
     ruleReference: 'pricing-strategy.md (Integration)',

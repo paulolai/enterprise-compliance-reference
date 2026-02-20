@@ -131,7 +131,7 @@ npx --yes http-server . -o -c-1
 
 **Alternative:** If you have the repo locally:
 ```bash
-cd implementations/typescript-vitest
+cd packages/domain
 npm run report:allure:view  # Uses existing reports/allure-report
 ```
 

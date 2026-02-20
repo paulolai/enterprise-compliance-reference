@@ -34,7 +34,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
     volumes:
       # Mount implementation source for hot-reload
-      - ./implementations/react-playwright/:/app/implementations/react-playwright/
+      - ./packages/client/:/app/packages/client/
       - ./shared/:/app/shared/
       - ./package.json:/app/package.json
       - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
@@ -42,7 +42,7 @@ services:
       - es-demo-data:/app/data
       # Prevent node_modules from being overwritten by mount
       - /app/node_modules
-      - /app/implementations/react-playwright/node_modules
+      - /app/packages/client/node_modules
     command: pnpm run dev:with-server
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]

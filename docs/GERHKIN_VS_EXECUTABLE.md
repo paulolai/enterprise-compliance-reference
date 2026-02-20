@@ -6,8 +6,8 @@ This document provides a direct comparison between the Gherkin/Cucumber anti-pat
 
 This repository demonstrates two approaches to testing the same Dynamic Pricing Engine:
 
-1. **Executable Specifications** (`implementations/typescript-vitest/`) - Uses property-based testing with fast-check
-2. **Gherkin Anti-Pattern** (`implementations/typescript-cucumber/`) - Uses hand-written scenarios with Cucumber
+1. **Executable Specifications** (`packages/domain/`) - Uses property-based testing with fast-check
+2. **Gherkin Anti-Pattern** (`comparison-gherkin/cucumber/`) - Uses hand-written scenarios with Cucumber
 
 ## Key Differences
 
@@ -412,6 +412,6 @@ For most modern software development projects, **Executable Specifications with 
 
 ## Additional Resources
 
-- **Executable Specs Implementation**: `implementations/typescript-vitest/`
-- **Gherkin Anti-Pattern**: `implementations/typescript-cucumber/`
+- **Executable Specs Implementation**: `packages/domain/`
+- **Gherkin Anti-Pattern**: `comparison-gherkin/cucumber/`
 - **Business Rules**: `docs/pricing-strategy.md`

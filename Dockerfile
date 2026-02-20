@@ -28,7 +28,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm@9.15.4
 
 # Copy implementation package files
-COPY implementations/react-playwright/package.json implementations/react-playwright/pnpm-lock.yaml ./implementations/react-playwright/
+COPY packages/client/package.json packages/client/pnpm-lock.yaml ./packages/client/
 
 # Install dependencies
 # --frozen-lockfile ensures reproducible builds
@@ -83,12 +83,12 @@ WORKDIR /app
 
 # Copy package files and install only production dependencies
 COPY package.json pnpm-lock.yaml ./
-COPY implementations/react-playwright/package.json implementations/react-playwright/pnpm-lock.yaml ./implementations/react-playwright/
+COPY packages/client/package.json packages/client/pnpm-lock.yaml ./packages/client/
 RUN npm install -g pnpm@9.15.4
 RUN pnpm install --prod --frozen-lockfile
 
 # Copy built artifacts from build stage
-COPY --from=build /app/implementations/react-playwright/dist ./dist
+COPY --from=build /app/packages/client/dist ./dist
 COPY --chown=nodejs:nodejs --from=build /app/node_modules ./node_modules
 
 # Ensure data directory exists for SQLite

@@ -168,7 +168,7 @@ CI runs **different tools** and **stricter checks** than local development:
 - **Pattern to use**: `import { something } from './file'`
 
 **Issue 3: CI workflow references old paths**
-- **Cause**: `.github/workflows/ci.yml` still references `implementations/typescript-vitest` or `implementations/react-playwright`
+- **Cause**: `.github/workflows/ci.yml` still references `packages/domain` or `packages/client`
 - **Fix**: Update paths in CI workflow:
-  - `implementations/typescript-vitest` → `packages/domain`
-  - `implementations/react-playwright` → `test`
+  - `packages/domain` → `packages/domain`
+  - `packages/client` → `test`

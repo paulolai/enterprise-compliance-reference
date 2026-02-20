@@ -143,7 +143,7 @@ These are the most useful scenarios for development/testing:
 
 ### E2E Tests (Already Exists)
 
-**Location:** `implementations/react-playwright/src/test/e2e/debug-index-page.ui.spec.ts`
+**Location:** `test/e2e/debug-index-page.ui.spec.ts`
 
 | Test | Description |
 |------|-------------|
@@ -163,11 +163,11 @@ These are the most useful scenarios for development/testing:
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Debug Index Page | `implementations/react-playwright/src/pages/debug/DebugIndexPage.tsx` | ✅ Complete |
-| Debug Routes | `implementations/react-playwright/src/server/routes/debug.ts` | ✅ Complete |
-| Cart Debug Page | `implementations/react-playwright/src/pages/debug/CartDebugPage.tsx` | ✅ Complete |
-| Checkout Debug Page | `implementations/react-playwright/src/pages/debug/CheckoutDebugPage.tsx` | ✅ Complete |
-| E2E Tests | `implementations/react-playwright/src/test/e2e/debug-index-page.ui.spec.ts` | ✅ Complete |
+| Debug Index Page | `packages/client/src/pages/debug/DebugIndexPage.tsx` | ✅ Complete |
+| Debug Routes | `packages/server/src/server/routes/debug.ts` | ✅ Complete |
+| Cart Debug Page | `packages/client/src/pages/debug/CartDebugPage.tsx` | ✅ Complete |
+| Checkout Debug Page | `packages/client/src/pages/debug/CheckoutDebugPage.tsx` | ✅ Complete |
+| E2E Tests | `test/e2e/debug-index-page.ui.spec.ts` | ✅ Complete |
 
 ### Debug Index Page Structure
 

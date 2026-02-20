@@ -1,4 +1,4 @@
-# Onboarding Guide
+# Shift Left Reference Architecture: Onboarding Guide
 
 Welcome to the Executable Specifications Demo! This guide will help you get set up and productive quickly.
 
@@ -29,11 +29,16 @@ Get up and running with a single command:
 ```bash
 git clone https://github.com/your-org/executable-specs-demo.git && cd executable-specs-demo
 pnpm install
+```
+
+Start the application services (in separate terminals):
+
+**Terminal 1 (Frontend):**
+```bash
 pnpm run dev:frontend
 ```
 
-In a separate terminal, start the backend:
-
+**Terminal 2 (Backend):**
 ```bash
 pnpm run dev:backend
 ```
@@ -52,17 +57,19 @@ executable-specs-demo/
 │   ├── pricing-strategy.md       # The Source of Truth (business rules)
 │   ├── TESTING_FRAMEWORK.md      # Testing standards
 │   └── ARCHITECTURE_DECISIONS.md # Design rationale
-├── implementations/
-│   ├── typescript-vitest/        # Unit test layer (pricing engine)
+├── packages/
+│   ├── domain/                   # Unit test layer (pricing engine)
 │   │   ├── src/                  # Price calculation logic
 │   │   └── test/                 # Property-based tests
-│   ├── react-playwright/         # E2E test layer (full app)
-│   │   ├── src/
-│   │   │   ├── app/              # React components
-│   │   │   ├── server/           # Hono API server
-│   │   │   └── lib/              # Shared utilities
-│   │   └── test/                 # Playwright E2E tests
+│   ├── client/                   # React frontend app
+│   │   ├── src/                  # React components & Hono API server
+│   │   └── ...
+│   ├── server/                   # Backend API server
+│   │   └── src/                  # Hono routes & Drizzle DB
 │   └── shared/                   # Common types and schemas
+├── test/                         # E2E test layer (Playwright)
+│   ├── e2e/                      # End-to-end user journey tests
+│   └── ...
 └── reports/                      # Generated attestation reports
 ```
 
@@ -80,11 +87,11 @@ executable-specs-demo/
 | File | Purpose | Owner |
 |------|---------|-------|
 | `docs/pricing-strategy.md` | Business requirements - THE SOURCE OF TRUTH | Product/Domain Team |
-| `implementations/shared/src/pricing-engine.ts` | Core pricing logic (domain layer) | Backend Team |
-| `implementations/react-playwright/src/server/routes/pricing.ts` | Pricing API endpoint | Backend Team |
-| `implementations/react-playwright/src/app/components/Cart.tsx` | Shopping cart UI | Frontend Team |
-| `implementations/react-playwright/src/test/` | E2E tests | QA Team |
-| `implementations/typescript-vitest/src/test/` | Unit tests | QA Team |
+| `packages/shared/src/pricing-engine.ts` | Core pricing logic (domain layer) | Backend Team |
+| `packages/server/src/routes/pricing.ts` | Pricing API endpoint | Backend Team |
+| `packages/client/src/components/Cart.tsx` | Shopping cart UI | Frontend Team |
+| `test/e2e/` | E2E tests | QA Team |
+| `packages/domain/test/` | Unit tests | QA Team |
 
 ---
 
@@ -102,7 +109,7 @@ executable-specs-demo/
 
 2. **Write a Property Test First**
 
-   In `implementations/typescript-vitest/src/test/pricing/volume-discount.properties.test.ts`:
+   In `packages/domain/test/pricing/volume-discount.properties.test.ts`:
    ```typescript
    it('should apply 5% shipping discount for orders over $500', () => {
      fc.assert(
@@ -120,12 +127,12 @@ executable-specs-demo/
 
 3. **Run Tests** (should fail initially)
    ```bash
-   cd implementations/typescript-vitest && pnpm test
+   cd packages/domain && pnpm test
    ```
 
 4. **Implement the Logic**
 
-   Edit `implementations/shared/src/pricing-engine.ts`:
+   Edit `packages/shared/src/pricing-engine.ts`:
    ```typescript
    if (baseTotal > 50000) {  // $500 in cents
      shippingCents = Math.round(shippingCents * 0.95);
@@ -150,7 +157,7 @@ executable-specs-demo/
 ### Unit Tests (Vitest)
 
 ```bash
-cd implementations/typescript-vitest
+cd packages/domain
 pnpm test                    # Run all tests
 pnpm run test:watch          # Watch mode
 pnpm run test:coverage       # Coverage report
@@ -160,7 +167,7 @@ pnpm run test:allure         # Generate Allure report
 ### E2E Tests (Playwright)
 
 ```bash
-cd implementations/react-playwright
+cd test
 pnpm test                    # Run all tests (headless)
 pnpm run test:headed         # Run with visible browser
 pnpm run test:ui             # Playwright Test UI
@@ -180,22 +187,22 @@ pnpm run test:all             # Run all test suites
 
 ### Adding a New API Endpoint
 
-1. Define Zod schemas in `src/lib/validation/schemas.ts`
-2. Create route in `src/server/routes/<domain>.ts`
-3. Register route in `src/server/index.ts`
-4. Write API test in `src/test/api/<domain>.api.test.ts`
+1. Define Zod schemas in `packages/shared/src/types.ts`
+2. Create route in `packages/server/src/routes/<domain>.ts`
+3. Register route in `packages/server/src/index.ts`
+4. Write API test in `test/api/<domain>.api.test.ts`
 
 ### Adding a New UI Component
 
-1. Create component file in `src/app/components/`
-2. Add test in `src/test/gui/<component>.ui.test.ts`
-3. Export and use in `src/app/App.tsx`
+1. Create component file in `packages/client/src/components/`
+2. Add test in `test/e2e/<component>.ui.test.ts`
+3. Export and use in `packages/client/src/App.tsx`
 
 ### Adding a New Domain Rule
 
 1. Update `docs/pricing-strategy.md` (THE SOURCE OF TRUTH)
-2. Write property test in `implementations/typescript-vitest/`
-3. Implement rule in `implementations/shared/src/`
+2. Write property test in `packages/domain/test/`
+3. Implement rule in `packages/shared/src/`
 4. Verify E2E tests cover the behavior
 
 ---
@@ -217,7 +224,7 @@ netstat -ano | findstr :5173  # Windows
 SQLite locks occur when multiple processes try to write simultaneously. This is expected behavior and will resolve automatically. If it persists:
 
 ```bash
-rm implementations/react-playwright/data/shop.db
+rm packages/server/data/shop.db
 pnpm run db:seed
 ```
 

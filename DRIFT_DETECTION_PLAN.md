@@ -13,15 +13,15 @@ Before building the tool, we define the contract.
     *   Explain the `drift:check` command.
 
 ## 2. Tooling: The Drift Detector & Fixer
-*   [ ] **Create directory**: `implementations/shared/scripts/` (if not exists)
-*   [ ] **Create directory**: `implementations/shared/src/modules/domain-coverage/` (for shared types)
-Create a suite of scripts in `implementations/shared/scripts/`.
+*   [ ] **Create directory**: `packages/shared/scripts/` (if not exists)
+*   [ ] **Create directory**: `packages/shared/src/modules/domain-coverage/` (for shared types)
+Create a suite of scripts in `packages/shared/scripts/`.
 
 ### A. The Detective (`check-drift.ts`)
-*   [ ] **Implement** `implementations/shared/scripts/check-drift.ts`
+*   [ ] **Implement** `packages/shared/scripts/check-drift.ts`
 *   **Inputs:** `pricing-strategy.md` and `**/*.test.ts`.
 *   **Logic:**
-    1.  Leverage existing `DomainCoverageParser` from `implementations/typescript-vitest/test/domain-coverage/`
+    1.  Leverage existing `DomainCoverageParser` from `packages/domain/test/domain-coverage/`
     2.  Call `parseBusinessRules()` to get all rules from Markdown
     3.  Call `extractRuleReferences()` to get all references from Tests
     4.  Compare sets to identify:
@@ -35,7 +35,7 @@ Create a suite of scripts in `implementations/shared/scripts/`.
     *   **Suggestion:** "Found 'Rule §5' in tests, but MD has 'Rule § 5'. Did you mean...?"
 
 ### B. The Fixer (`scaffold-tests.ts`)
-*   [ ] **Implement** `implementations/shared/scripts/scaffold-tests.ts`
+*   [ ] **Implement** `packages/shared/scripts/scaffold-tests.ts`
 *   **Trigger:** `npm run drift:fix` or interactive CLI.
 *   **Action:** For every "Missing Test":
     1.  Identify the Domain (e.g., "Pricing", "Shipping") based on the rule section.
@@ -64,7 +64,7 @@ Make it impossible to commit "Lying Tests."
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Documentation (ADR 13 + Framework Docs) | ❌ Not Started | Sections marked as complete but files don't contain required content |
-| `DomainCoverageParser` | ✅ Exists | Located at `implementations/typescript-vitest/test/domain-coverage/domain-coverage-parser.ts` |
+| `DomainCoverageParser` | ✅ Exists | Located at `packages/domain/test/domain-coverage/domain-coverage-parser.ts` |
 | `check-drift.ts` (Detective) | ❌ Not Implemented | Scripts directory doesn't exist |
 | `scaffold-tests.ts` (Fixer) | ❌ Not Implemented | Scripts directory doesn't exist |
 | Husky (Git Hooks) | ⚠️ Partial | Installed, but pre-commit only runs `lint-staged`, not `drift:check` |

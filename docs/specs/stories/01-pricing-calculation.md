@@ -162,7 +162,7 @@
 ## Test Specifications
 
 ### Unit Tests (Already Exists)
-**Location:** `implementations/typescript-vitest/test/pricing.properties.test.ts`
+**Location:** `packages/domain/test/pricing.properties.test.ts`
 
 **Coverage:**
 - Property-based tests using `fast-check`
@@ -170,7 +170,7 @@
 - 100+ property tests covering edge cases
 
 ### API Integration Tests (Already Exists)
-**Location:** `implementations/react-playwright/src/test/api/pricing-api.spec.ts`
+**Location:** `test/api/pricing-api.spec.ts`
 
 | Test | Description | Metadata |
 |------|-------------|----------|
@@ -185,7 +185,7 @@
 | Free shipping threshold | Orders > $100 get free standard/expedited shipping | @business-rule |
 
 ### E2E Tests (Already Exists)
-**Location:** `implementations/react-playwright/src/test/e2e/checkout.ui.properties.test.ts`
+**Location:** `test/e2e/checkout.ui.properties.test.ts`
 
 **Coverage:**
 - Grand total calculation in UI
@@ -201,11 +201,11 @@
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| Pricing Engine | `implementations/shared/src/pricing-engine.ts` | ✅ Complete |
-| Types & Schemas | `implementations/shared/src/types.ts` | ✅ Complete |
-| API Route | `implementations/react-playwright/src/server/routes/pricing.ts` | ✅ Exists, needs verification |
-| Unit Tests | `implementations/typescript-vitest/test/pricing.properties.test.ts` | ✅ Complete |
-| API Tests | `implementations/react-playwright/src/test/api/pricing-api.spec.ts` | ✅ Complete |
+| Pricing Engine | `packages/shared/src/pricing-engine.ts` | ✅ Complete |
+| Types & Schemas | `packages/shared/src/types.ts` | ✅ Complete |
+| API Route | `packages/server/src/server/routes/pricing.ts` | ✅ Exists, needs verification |
+| Unit Tests | `packages/domain/test/pricing.properties.test.ts` | ✅ Complete |
+| API Tests | `test/api/pricing-api.spec.ts` | ✅ Complete |
 
 ### API Endpoint
 

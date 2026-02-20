@@ -373,7 +373,7 @@ function process(result: Result<number, string>) {
 ## Running Tests
 
 ```bash
-cd implementations/typescript-vitest
+cd packages/domain
 npm run test result.spec.ts
 ```
 
@@ -391,4 +391,4 @@ All 42 tests should pass, demonstrating:
 
 ## Reference
 
-See `implementations/shared/src/result.ts` for the full implementation and `implementations/typescript-vitest/test/result.spec.ts` for comprehensive examples.
+See `packages/shared/src/result.ts` for the full implementation and `packages/domain/test/result.spec.ts` for comprehensive examples.

@@ -1,50 +1,31 @@
-# E2E Test Layer: React + Playwright + Hono
+# Frontend & API Layer
 
-This directory contains the end-to-end test layer and the full-stack application implementation.
+This package contains the React frontend and the Hono API implementation.
 
 ## 🏗 Architecture
 
 - **Frontend**: React 19 + Vite + Zustand + Tailwind CSS
-- **Backend**: Hono API (running in Vite during dev, standalone in prod)
-- **Database**: SQLite with Drizzle ORM
-- **Testing**: Playwright for E2E and API integration tests
+- **Backend**: Hono API (running in Vite during dev)
+- **Shared**: Consumes types and schemas from `@executable-specs/shared`
 
 ## 🚀 Getting Started
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Start development server (Frontend + API)
+# Start development server
 pnpm run dev
-
-# Run Playwright tests
-pnpm test
-
-# Run tests with UI
-pnpm run test:ui
 ```
 
-## 🧪 Testing Strategy
+## 🧪 Testing
 
-This layer focuses on verifying the **Integrated System Boundary**.
+This package contains unit tests for components and utilities.
+**End-to-End (E2E) tests are located in the root `test/` directory.**
 
-### API Integration Tests
-Located in `src/test/api/`, these tests verify that the Hono API correctly implements the business rules defined in the pricing strategy.
-
-### E2E GUI Tests
-Located in `src/test/e2e/`, these tests verify the critical user journeys through the React application.
-
-### Property-Based Testing (PBT)
-We use `fast-check` to generate randomized test data for our API tests, ensuring that business invariants hold true across a wide range of inputs.
+- **Unit Tests**: `pnpm test` (Vitest)
+- **E2E Tests**: Go to root and run `pnpm run test:e2e`
 
 ## 🛠 Project Structure
 
-- `src/app/`: React application code
-- `src/server/`: Hono API implementation
-- `src/test/`: Playwright test suites
-  - `api/`: API contract and integration tests
-  - `e2e/`: End-to-end user journey tests
-  - `builders/`: Test data builders
-- `src/lib/`: Shared utilities and validation schemas
-- `src/domain/`: Domain logic and pure functions
+- `src/components/`: React UI components
+- `src/pages/`: Application pages
+- `src/server/`: Hono API implementation (in-process for dev)
+- `src/store/`: Zustand state management

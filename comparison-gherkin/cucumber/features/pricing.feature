@@ -6,7 +6,7 @@
 # 3. Renaming concepts requires updating BOTH feature files AND regex patterns
 # 4. No IDE support - rename doesn't work across the translation boundary
 # 5. See step-definitions/pricing.steps.ts for examples of maintenance pain points
-# 6. For comparison, see implementations/typescript-vitest/ for the Executable Specs approach
+# 6. For comparison, see packages/domain/ for the Executable Specs approach
 #
 # NOTE: This is the ANTI-PATTERN we're demonstrating - hand-written examples that can never
 # prove the same level of confidence as property-based tests with mathematical invariants.

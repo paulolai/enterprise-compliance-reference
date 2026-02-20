@@ -28,7 +28,7 @@ export class DomainCoverageParser {
         return candidate;
       }
 
-      // Also check if we're in the implementations/typescript-vitest directory
+      // Also check if we're in the packages/domain directory
       const implementationsRoot = path.resolve(currentDir, '../../../');
       if (i > 2) {
         const fromImplementations = path.resolve(implementationsRoot, 'docs/pricing-strategy.md');
