@@ -4,13 +4,16 @@ This document outlines how AI Coding Assistants (Gemini, ChatGPT, Claude, GitHub
 
 ## 📁 Repository Structure
 
-This repo uses a multi-implementation structure to demonstrate ATDD patterns at different testing layers. See the [README](README.md#project-structure) for complete details.
+This repo uses a monorepo structure with packages to demonstrate ATDD patterns at different testing layers. See the [README](README.md#project-structure) for complete details.
 
 | Directory | Purpose | Key Commands |
 |-----------|---------|--------------|
-| `implementations/typescript-vitest/` | Unit test layer: Pricing engine + Vitest | `cd implementations/typescript-vitest && pnpm test` |
-| `implementations/react-playwright/` | E2E test layer: React app + Playwright + Hono API | `cd implementations/react-playwright && pnpm test` |
-| `implementations/shared/` | Shared types and utilities | - |
+| `packages/domain/` | Unit test layer: Pricing engine + Vitest | `cd packages/domain && pnpm test` |
+| `packages/server/` | Hono API server | `cd packages/server && pnpm run dev` |
+| `packages/client/` | React frontend app | `cd packages/client && pnpm run dev` |
+| `packages/shared/` | Shared types and test fixtures | - |
+| `test/` | E2E test layer: Playwright tests | `cd test && pnpm test` |
+| `comparison-gherkin/cucumber/` | Gherkin/Cucumber anti-pattern demo | - |
 | `docs/` | Business rules, patterns, and guidelines | - |
 | `reports/` | Generated attestation reports | `pnpm run test:all` |
 
@@ -119,3 +122,41 @@ Distinguish clearly between **Domain Logic** (internal) and **Integration Bounda
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
+
+## 🔄 CI/CD Guidelines
+
+### Running CI Checks Locally
+
+Before pushing, run these commands locally to catch CI failures early:
+
+```bash
+# 1. Run domain tests with coverage
+cd packages/domain && pnpm test:coverage
+
+# 2. Check domain coverage threshold
+cd packages/domain && pnpm coverage:domain
+
+# 3. Run TypeScript type check (test directory)
+cd test && pnpm exec tsc --noEmit
+
+# 4. Run full test suite
+pnpm run test:all
+```
+
+### Common CI Issues
+
+**Issue 1: `coverage:domain` fails with "Found 0 test files"**
+- **Cause**: The `check-domain-coverage.ts` script searches for test files in the old `implementations/` directory
+- **Fix**: Ensure the script uses the correct path: `packages/domain/test/**/*.test.ts`
+
+**Issue 2: `tsc --noEmit` fails with "Cannot find module" or ".ts extension" errors**
+- **Cause**: TypeScript imports with `.ts` extensions conflict with `allowImportingTsExtensions: true` setting
+- **Fix**: Remove `.ts` extensions from all local imports. Change `from './types.ts'` to `from './types'`
+- **Pattern to avoid**: `import { something } from './file.ts'`
+- **Pattern to use**: `import { something } from './file'`
+
+**Issue 3: CI workflow references old paths**
+- **Cause**: `.github/workflows/ci.yml` still references `implementations/typescript-vitest` or `implementations/react-playwright`
+- **Fix**: Update paths in CI workflow:
+  - `implementations/typescript-vitest` → `packages/domain`
+  - `implementations/react-playwright` → `test`
