@@ -91,7 +91,7 @@ it('Invariant: Final Total is always <= Original Total', () => {
 At **Google**, we didn't have "QA Tooling" teams—we had **Engineering Productivity (EngProd)**. Our mission was to be **Dev Accelerators**. We built tools that served the engineer, not the process. This architecture replaces the "Gherkin Burden" with **Type-Safe Test Data Builders**, ensuring testing is a high-speed feedback loop that feels like coding, not data entry.
 
 ### 2. Continuous Attestation (The CBA Lesson)
-In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](implementations/typescript-vitest/reporting-architecture.md) for details):
+In banking, you can't ship without proof. We generate **two complementary artifacts** from every run (see the [**Reporting Architecture**](packages/domain/reporting-architecture.md) for details):
 - **Attestation Report**: Business-rule traceability for auditors. Generated via `npm run reports:attestation`.
 - **Allure Report**: Historical trends and flakiness detection for engineers.
 
@@ -140,7 +140,7 @@ pnpm install
 pnpm run test:all
 
 # 3. Navigate to React app and start dev server
-cd implementations/react-playwright
+cd packages/client
 pnpm run dev
 ```
 
@@ -153,7 +153,7 @@ pnpm run dev
 pnpm run test:unit
 
 # Or from the vitest directory
-cd implementations/typescript-vitest
+cd packages/domain
 pnpm test
 ```
 
@@ -163,7 +163,7 @@ E2E tests use Playwright and require browser binaries. **First-time setup:**
 
 ```bash
 # Install Playwright browsers (one-time, ~130MB download)
-cd implementations/react-playwright
+cd test
 pnpm exec playwright install chromium
 
 # Run E2E tests
@@ -245,7 +245,7 @@ npm run docs:fix
 
 ## 📚 Essential Reading
 
-*   **[Reporting Architecture](implementations/typescript-vitest/reporting-architecture.md)** ⭐ **Viewing Allure reports requires HTTP server** - See this guide
+*   **[Reporting Architecture](packages/domain/reporting-architecture.md)** ⭐ **Viewing Allure reports requires HTTP server** - See this guide
 *   **[The Shift Left Playbook](docs/guides/shift-left-playbook.md)** - How to coach teams through this transition.
 *   **[Attestation Architecture](docs/reference/attestation-architecture.md)** - How we automate compliance.
 *   **[Bug Discovery Evidence](docs/reference/bug-discovery-evidence.md)** - Real-world evidence that invariant tests catch bugs hand-written scenarios miss.
