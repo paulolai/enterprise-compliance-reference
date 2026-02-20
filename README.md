@@ -1,3 +1,23 @@
+# Project Status: Enterprise Reference & AI Pattern Source
+
+> **Context for Reviewers:**
+> This repository is a **Portfolio Artifact** demonstrating "Bank-Grade" engineering rigor. It serves two distinct purposes:
+>
+> 1.  **Enterprise Compliance Reference:** A production-grade implementation of verifying complex business rules in regulated industries (FinTech/Banking). It demonstrates **Attestation**, **Traceability**, and **Property-Based Testing**.
+> 2.  **AI Trust Pattern Foundation:** The core "Invariant Verification" logic (`packages/domain`) is the blueprint for my current work in **Agentic Trust**—using these same rigorous tests to verify AI-generated code.
+>
+> ---
+>
+> **⚠️ Known Enterprise Gaps (Out of Scope):**
+> While this project demonstrates *Software* and *Quality* excellence, the following *Platform* elements were intentionally omitted to maintain portability:
+> *   **Infrastructure:** Kubernetes/Helm (uses Docker Compose), Terraform (uses local config).
+> *   **Security:** OAuth2/OIDC (uses mock auth), HashiCorp Vault (uses `.env`).
+> *   **Observability:** Distributed Tracing/OpenTelemetry (planned for local SigNoz, not implemented).
+>
+> *For the future of this pattern in HealthTech and AI, see [`AI_PATTERN_BLUEPRINT.md`](AI_PATTERN_BLUEPRINT.md).*
+
+---
+
 # Shift Left Reference Architecture: Developer-Native Compliance
 
 **An up-to-date public recreation of the reference implementation built at Commonwealth Bank.**
