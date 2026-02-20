@@ -47,7 +47,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('complete purchase flow from products to confirmation', async ({ page }) => {
     registerE2EMetadata('happy-path-flow', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'Customer can complete purchase from product page to confirmation',
       tags: ['@critical', '@happy-path', '@e2e'],
     });
@@ -77,7 +77,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('cart persists through checkout flow', async ({ page }) => {
     registerE2EMetadata('cart-persistence-checkout', {
-      ruleReference: 'docs/specs/stories/02-cart-management.md',
+      ruleReference: 'pricing-strategy.md §4 - Cart Persistence',
       rule: 'Cart survives navigation through checkout',
       tags: ['@persistence', '@robustness'],
     });
@@ -110,7 +110,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('pricing accuracy displayed in checkout', async ({ page }) => {
     registerE2EMetadata('pricing-display-accuracy', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'Checkout displays pricing matching calculation API',
       tags: ['@pricing', '@compliance'],
     });
@@ -142,7 +142,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('free shipping badge appears when eligible', async ({ page }) => {
     registerE2EMetadata('free-shipping-badge', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'Free shipping badge shown when cart > $100',
       tags: ['@shipping', '@business-rule'],
     });
@@ -165,7 +165,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('express shipping fixed $25 rate', async ({ page }) => {
     registerE2EMetadata('express-fixed-rate', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'Express shipping always $25 regardless of cart value',
       tags: ['@shipping', '@business-rule'],
     });
@@ -194,7 +194,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('back button after checkout leads to confirmation', async ({ page }) => {
     registerE2EMetadata('back-button-checkout', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'Back button after payment redirects to confirmation',
       tags: ['@ux', '@navigation'],
     });
@@ -215,7 +215,7 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
 
   test('guest checkout flow works', async ({ page }) => {
     registerE2EMetadata('guest-checkout', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'User can checkout without login (guest)',
       tags: ['@feature', '@ux'],
     });
@@ -241,7 +241,7 @@ test.describe('VIP Checkout Tests', () => {
 
   test('VIP customer discount applied in checkout', async ({ page }) => {
     registerE2EMetadata('vip-discount-checkout', {
-      ruleReference: 'docs/specs/stories/06-complete-checkout.md',
+      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
       rule: 'VIP customer sees discount applied in checkout',
       tags: ['@vip', '@pricing', '@business-rule'],
     });
