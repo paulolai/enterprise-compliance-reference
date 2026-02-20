@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { invariant } from './fixtures/invariant-helper';
-import { productCatalog } from '@executable-specs/client/store/cartStore';
+import { productCatalog } from '@executable-specs/client/store/cart-store';
 import { injectCartState } from './fixtures/api-seams';
 import { CartBuilder } from '@executable-specs/shared/fixtures';
 

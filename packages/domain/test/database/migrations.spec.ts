@@ -115,7 +115,7 @@ describe('Database Migration Tests', () => {
       expect(run2).toBe(run2);
     });
 
-    it('seed products match cartStore catalog', async () => {
+    it('seed products match cart-store catalog', async () => {
       registerMigrationMetadata('seed-catalog-match', {
         ruleReference: 'docs/specs/stories/04-order-persistence.md',
         rule: 'Seeded products match the frontend product catalog',
