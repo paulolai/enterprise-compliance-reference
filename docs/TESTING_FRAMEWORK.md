@@ -76,14 +76,14 @@ pnpm run test:all
 
 ### API Tests (Dev Mode)
 ```bash
-cd implementations/typescript-vitest
+cd packages/domain
 pnpm install
 pnpm test
 ```
 
 ### GUI Tests (Dev Mode)
 ```bash
-cd implementations/react-playwright
+cd test
 pnpm install
 pnpm exec playwright test
 ```
@@ -118,7 +118,7 @@ For every Business Rule, define a property that must hold true for **ALL** possi
 Every test must log its inputs and outputs to the `tracer` (or Allure) to ensure the generated **Attestation Report** provides a complete audit trail.
 
 ### 3. Shared Truth
-We use a **Shared Core** (`implementations/shared`) for builders, types, and arbitraries. Logic and Tests share the same language.
+We use a **Shared Core** (`packages/shared`) for builders, types, and arbitraries. Logic and Tests share the same language.
 
 ### 4. Dev-Native Velocity
 Tests should run fast and be a development accelerator, not a maintenance burden.
@@ -144,9 +144,9 @@ We strictly separate "Test Data Generation" from "Test Execution". All generator
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| **CartBuilder** | `implementations/shared/fixtures/cart-builder.ts` | Fluent API for creating valid cart states. |
-| **Arbitraries** | `implementations/shared/fixtures/arbitraries.ts` | `fast-check` generators for PBT (covers edge cases). |
-| **Types** | `implementations/shared/src/types.ts` | Zod schemas shared by API, UI, and Tests. |
+| **CartBuilder** | `packages/shared/fixtures/cart-builder.ts` | Fluent API for creating valid cart states. |
+| **Arbitraries** | `packages/shared/fixtures/arbitraries.ts` | `fast-check` generators for PBT (covers edge cases). |
+| **Types** | `packages/shared/src/types.ts` | Zod schemas shared by API, UI, and Tests. |
 
 **Rule:** Never use "magic objects" in tests. Always use the `CartBuilder`.
 
