@@ -182,7 +182,7 @@ invariant('Cart allows quantity updates', {
 });
 
 invariant('Add to cart preserves price at time of add', {
-  ruleReference: 'docs/specs/stories/02-cart-management.md',
+  ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Cart stores price at time item is added, not current live price',
   tags: ['@pricing', '@preservation']
 }, async ({ page }) => {
@@ -210,7 +210,7 @@ invariant('Add to cart preserves price at time of add', {
 });
 
 invariant('Adding same SKU merges quantity, does not duplicate', {
-  ruleReference: 'docs/specs/stories/02-cart-management.md',
+  ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Adding existing SKU increases quantity, not adding duplicate item',
   tags: ['@interaction', '@merge']
 }, async ({ page }) => {
@@ -243,7 +243,7 @@ invariant('Adding same SKU merges quantity, does not duplicate', {
 });
 
 invariant('Cart persists across page reload', {
-  ruleReference: 'docs/specs/stories/02-cart-management.md',
+  ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Cart state is restored after page reload via localStorage',
   tags: ['@persistence', '@robustness']
 }, async ({ page }) => {
@@ -275,7 +275,7 @@ invariant('Cart persists across page reload', {
 });
 
 invariant('Clearing cart removes all items', {
-  ruleReference: 'docs/specs/stories/02-cart-management.md',
+  ruleReference: 'pricing-strategy.md §1 - Base Rules',
   rule: 'Clear cart action removes all items and resets badge',
   tags: ['@interaction', '@reset']
 }, async ({ page }) => {

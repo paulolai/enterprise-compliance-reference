@@ -9,7 +9,7 @@ import { invariant } from './fixtures/invariant-helper';
  */
 
 invariant('Debug index page loads successfully', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Debug index page renders without errors',
   tags: ['@debug', '@page-load']
 }, async ({ page }) => {
@@ -30,7 +30,7 @@ invariant('Debug index page loads successfully', {
 });
 
 invariant('Debug index shows all debug scenarios', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'All debug scenarios are listed with descriptions',
   tags: ['@debug', '@navigation']
 }, async ({ page }) => {
@@ -51,7 +51,7 @@ invariant('Debug index shows all debug scenarios', {
 });
 
 invariant('"Apply Scenario" button works for each scenario', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Clicking apply button applies the debug scenario',
   tags: ['@debug', '@teleport']
 }, async ({ page }) => {
@@ -77,7 +77,7 @@ invariant('"Apply Scenario" button works for each scenario', {
 });
 
 invariant('Reset button clears all state', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Reset button clears cart, user, and session state',
   tags: ['@debug', '@reset']
 }, async ({ page }) => {
@@ -105,7 +105,7 @@ invariant('Reset button clears all state', {
 });
 
 invariant('Links to existing debug pages work', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Navigation links to Cart Debug and Checkout Debug work',
   tags: ['@debug', '@navigation']
 }, async ({ page }) => {
@@ -129,7 +129,7 @@ invariant('Links to existing debug pages work', {
 });
 
 invariant('Debug scenarios include descriptions', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Each scenario has a clear description of what it does',
   tags: ['@debug', '@ux']
 }, async ({ page }) => {
@@ -153,7 +153,7 @@ invariant('Debug scenarios include descriptions', {
 });
 
 invariant('Debug index page is marked as development only', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Page shows warning that this is for development only',
   tags: ['@debug', '@ux', '@safety']
 }, async ({ page }) => {
@@ -171,7 +171,7 @@ invariant('Debug index page is marked as development only', {
 });
 
 invariant('Empty Cart scenario creates empty cart', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'Empty Cart scenario clears all items',
   tags: ['@debug', '@teleport', '@scenario']
 }, async ({ page }) => {
@@ -191,7 +191,7 @@ invariant('Empty Cart scenario creates empty cart', {
 });
 
 invariant('VIP User scenario creates VIP customer', {
-  ruleReference: 'docs/specs/stories/05-debug-page.md',
+  ruleReference: 'pricing-strategy.md §7 - Debug & Testing Tools',
   rule: 'VIP User scenario creates customer with tenure > 2',
   tags: ['@debug', '@teleport', '@scenario']
 }, async ({ page }) => {
