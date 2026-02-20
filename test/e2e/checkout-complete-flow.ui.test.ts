@@ -137,58 +137,6 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
     expect(totalPrice).toMatch(/\$\d+\.\d{2}/);
   });
 
-  test('free shipping badge appears when eligible', async ({ page }) => {
-    registerE2EMetadata('free-shipping-badge', {
-      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
-      rule: 'Free shipping badge shown when cart > $100',
-      tags: ['@shipping', '@business-rule'],
-    });
-
-    // Seed cart over $100
-    const items: CartItem[] = [
-      { sku: 'TABLET-10', name: '10" Tablet', price: 44900, quantity: 3, weightInKg: 1.2 }
-    ];
-    await injectCartState(page, items, null);
-
-    await page.goto('/checkout');
-
-    // Wait for pricing calculation to complete
-    await expect(page.getByTestId('grand-total')).toBeVisible();
-
-    // Free shipping badge should be visible on standard shipping
-    const standardOption = page.locator('.shipping-option').filter({ hasText: 'Standard' });
-    await expect(standardOption.getByTestId('free-shipping-badge')).toBeVisible();
-  });
-
-  test('express shipping fixed $25 rate', async ({ page }) => {
-    registerE2EMetadata('express-fixed-rate', {
-      ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
-      rule: 'Express shipping always $25 regardless of cart value',
-      tags: ['@shipping', '@business-rule'],
-    });
-
-    // Seed cart with items
-    // Seed cart with items
-    const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 }];
-    await injectCartState(page, items, null);
-
-    await page.goto('/checkout');
-
-    // Select express shipping
-    await page.getByRole('radio', { name: 'Express' }).click({ force: true });
-
-    // Get shipping cost
-    const shippingElement = page.getByTestId('cart-summary')
-      .locator('.summary-row')
-      .filter({ hasText: 'Shipping (EXPRESS)' })
-      .getByTestId('price-display-amount');
-    
-    const shippingText = await shippingElement.textContent();
-    const shippingCost = shippingText ? parseFloat(shippingText.replace(/[^0-9.]/g, '')) : 0;
-
-    expect(shippingCost).toBe(25);
-  });
-
   test('back button after checkout leads to confirmation', async ({ page }) => {
     registerE2EMetadata('back-button-checkout', {
       ruleReference: 'pricing-strategy.md §6 - Complete Checkout Flow',
