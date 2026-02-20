@@ -41,13 +41,13 @@ Last generated: 2026-02-18T12:44:13.426Z
 ℹ️ **[INFO]** We strictly distinguish between **Internal APIs** (mocked via Contract-First logic) and **External APIs** (mocked via Record/Replay).
    *ADR-6: Network Mocking Strategy: The "Split Brain"* (The Decision)
 
-✅ **[MUST]** Never Duplicate Builders:** If you need a helper for test data, it belongs in `implementations/shared/fixtures`.
+✅ **[MUST]** Never Duplicate Builders:** If you need a helper for test data, it belongs in `packages/shared/fixtures`.
    *ADR-7: Shared Core Pattern* (Rule)
 
 ✅ **[MUST]** No Magic Objects:** Tests must never use raw `{ name: "item", price: 100 }` literals. Always use `CartBuilder.new()`.
    *ADR-7: Shared Core Pattern* (Rule)
 
-ℹ️ **[INFO]** All test data generation lives in a monorepo-style `implementations/shared` directory, consumed by both API and GUI test suites.
+ℹ️ **[INFO]** All test data generation lives in a monorepo-style `packages/shared` directory, consumed by both API and GUI test suites.
    *ADR-7: Shared Core Pattern* (The Decision)
 
 ✅ **[MUST]** Debug Routes Only for Isolation:** Use them to test specific UI states without navigating through the full user journey.
