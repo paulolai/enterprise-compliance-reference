@@ -3,7 +3,7 @@
 This document is **GENERATED** from `docs/ARCHITECTURE_DECISIONS.md`.
 DO NOT EDIT MANUALLY - Changes will be overwritten on next sync.
 
-Last generated: 2026-02-18T12:44:13.426Z
+Last generated: 2026-02-20T08:50:57.041Z
 
 ---
 
@@ -88,6 +88,9 @@ Last generated: 2026-02-18T12:44:13.426Z
 
 ℹ️ **[INFO]** We use the `Result&lt;T, E&gt;` discriminated union type for explicit error handling instead of throwing exceptions for business logic errors.
    *ADR-10: Result&lt;T, E&gt; Pattern for Error Handling* (The Decision)
+
+ℹ️ **[INFO]** We adopt **shadcn/ui** as the UI framework for this project. Technically, this is not a library dependency but a pattern of copying component source code into our repository. These components are built using **Radix UI** (headless primitives for accessibility/behaviour) and styled with **Tailwind CSS**.
+   *ADR-16: UI Component Architecture: shadcn/ui over Heavy Libraries* (The Decision)
 
 ## Compliance & Reporting
 

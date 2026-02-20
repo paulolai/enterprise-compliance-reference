@@ -64,20 +64,25 @@ This document explains the *Why* behind these decisions, and what alternatives w
     + [Rule](#rule-5)
     + [When to Revisit: Performance-Critical Paths](#when-to-revisit-performance-critical-paths)
     + [References](#references)
-- [III. Compliance & Reporting](#iii-compliance--reporting)
-  * [11. Dual-View Reporting](#11-dual-view-reporting)
+  * [16. UI Component Architecture: shadcn/ui over Heavy Libraries](#16-ui-component-architecture-shadcnui-over-heavy-libraries)
     + [The Decision](#the-decision-10)
     + [Why?](#why-10)
-  * [12. Deep Observability (Mandatory Tracing)](#12-deep-observability-mandatory-tracing)
+    + [Consequences](#consequences)
+    + [Alternatives Rejected](#alternatives-rejected)
+- [III. Compliance & Reporting](#iii-compliance--reporting)
+  * [11. Dual-View Reporting](#11-dual-view-reporting)
     + [The Decision](#the-decision-11)
     + [Why?](#why-11)
+  * [12. Deep Observability (Mandatory Tracing)](#12-deep-observability-mandatory-tracing)
+    + [The Decision](#the-decision-12)
+    + [Why?](#why-12)
     + [Alternative Rejected: Basic Pass/Fail](#alternative-rejected-basic-passfail)
     + [The Pattern](#the-pattern-1)
     + [Verification Rule](#verification-rule)
     + [When to Revisit: Non-Regulated Environments](#when-to-revisit-non-regulated-environments)
   * [13. Dual-Coverage Strategy (Business vs. Code)](#13-dual-coverage-strategy-business-vs-code)
-    + [The Decision](#the-decision-12)
-    + [Why?](#why-12)
+    + [The Decision](#the-decision-13)
+    + [Why?](#why-13)
     + [Implementation](#implementation)
     + [Rule](#rule-6)
     + [Quality Gates](#quality-gates)
@@ -86,8 +91,8 @@ This document explains the *Why* behind these decisions, and what alternatives w
     + [Why? {#why-13}](#why-%23why-13)
     + [Rule {#rule-7}](#rule-%23rule-7)
   * [15. Dependency Version Management: Workspace Catalogs](#15-dependency-version-management-workspace-catalogs)
-    + [The Decision](#the-decision-13)
-    + [Why?](#why-13)
+    + [The Decision](#the-decision-14)
+    + [Why?](#why-14)
     + [Catalog Categories](#catalog-categories)
     + [Rule](#rule-7)
     + [Blocked Updates](#blocked-updates)
@@ -443,6 +448,40 @@ In most business applications, the clarity and safety benefits outweigh the mini
 *   Implementation: `packages/shared/src/result.ts`
 *   Tests: `packages/domain/test/result.spec.ts` (42 tests)
 *   Documentation: `docs/RESULT_PATTERN.md`
+
+---
+
+### 16. UI Component Architecture: shadcn/ui over Heavy Libraries
+**Status:** Accepted
+**Date:** 2026-02-19
+
+#### The Decision
+We adopt **shadcn/ui** as the UI framework for this project.
+
+Technically, this is not a library dependency but a pattern of copying component source code into our repository. These components are built using **Radix UI** (headless primitives for accessibility/behaviour) and styled with **Tailwind CSS**.
+
+#### Why?
+*   **Testing Rigour:** Radix UI primitives guarantee WAI-ARIA compliance. This enforces "Testing by User Behaviour" (e.g., `screen.getByRole('dialog')`) rather than implementation details.
+*   **Code Ownership:** Because the component code lives in our repo (`/components/ui`), we have full control over the implementation. No `node_modules` abstraction layer.
+*   **Decoupled Architecture:** This choice demonstrates the separation of behaviour (Radix) from presentation (Tailwind).
+*   **Visual Standardisation:** Provides a clean, professional aesthetic out-of-the-box.
+
+#### Consequences
+
+**Positive:**
+*   Radix UI primitives guarantee WAI-ARIA compliance
+*   Full code ownership in `/components/ui`
+*   Decoupled behaviour/presentation architecture
+*   Professional visual standard
+
+**Negative:**
+*   Initial boilerplate (more files than a single package)
+*   Manual maintenance (copy-paste upgrades vs `npm update`)
+
+#### Alternatives Rejected
+
+*   **Heavy Component Libraries (MUI):** Rejected - "black box" nature, heavy bundle size, rigid DOM structures.
+*   **Utility-First CSS (Raw Tailwind):** Rejected - high effort to build fully accessible interactive components.
 
 ---
 
