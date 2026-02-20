@@ -1,6 +1,8 @@
 import { expect } from '@playwright/test';
 import { invariant } from './fixtures/invariant-helper';
 import { productCatalog } from '@executable-specs/client/store/cartStore';
+import { injectCartState } from './fixtures/api-seams';
+import { CartBuilder } from '@executable-specs/shared/fixtures';
 
 invariant('Cart total matches calculation result', {
   ruleReference: 'pricing-strategy.md §1 - Base Rules',
@@ -9,18 +11,20 @@ invariant('Cart total matches calculation result', {
 }, async ({ page }) => {
   const product = productCatalog[0];
 
-  await page.goto(`/products/${product.sku}`);
-
-  // Add item to cart
-  await page.getByRole('button', { name: 'Add to Cart' }).click();
-  // Wait for cart badge to update, ensuring state is persisted
-  await page.getByTestId('cart-badge').waitFor({ state: 'visible' });
+  // Use seam for fast state setup
+  const builder = CartBuilder.new()
+    .withItem({
+      name: product.name,
+      price: product.price,
+      sku: product.sku,
+      quantity: 1
+    });
+  
+  const { items, user } = builder.getInputs();
+  await injectCartState(page, items, user);
 
   // Navigate to cart
   await page.goto('/cart');
-
-  // Wait for page to fully load and state to hydrate
-  await page.waitForLoadState('networkidle');
 
   // Check cart total exists and is positive
   const grandTotal = page.getByTestId('grand-total');

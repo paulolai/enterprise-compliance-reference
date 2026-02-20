@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 import { ShippingMethod } from '@executable-specs/domain';
 
 /**
@@ -83,50 +83,48 @@ export const checkoutDriver = (page: Page): CheckoutDriver => ({
     await page.getByRole('link', { name: /back to cart/i }).click();
   },
 
-  // ===== QUERY OPERATIONS =====
+  // ===== QUERY OPERATIONS (Return Locators for Web-First Assertions) =====
 
   /**
-   * Get grand total from UI (in cents)
+   * Get grand total locator for web-first assertion
    */
-  getGrandTotal: async () => {
-    const text = await page.getByTestId('grand-total').textContent();
-    return parseFloat(text?.replace('$', '') || '0');
+  getGrandTotal: () => {
+    return page.getByTestId('grand-total');
   },
 
   /**
-   * Get grand total in cents for direct comparison with pricing engine
+   * Get shipping cost locator
    */
-  getGrandTotalCents: async () => {
-    const text = await page.getByTestId('grand-total').textContent();
-    const dollars = parseFloat(text?.replace('$', '') || '0');
-    return Math.round(dollars * 100);
+  getShippingCost: () => {
+    return page.getByTestId('shipping-cost');
   },
 
   /**
-   * Get shipping cost from UI (in cents)
+   * Get product total locator
    */
-  getShippingCostCents: async () => {
-    const text = await page.getByTestId('shipping-cost').textContent();
-    const dollars = parseFloat(text?.replace('$', '') || '0');
-    return Math.round(dollars * 100);
+  getProductTotal: () => {
+    return page.getByTestId('product-total');
   },
 
   /**
-   * Get product total from UI (in cents)
+   * Get expedited surcharge locator
    */
-  getProductTotalCents: async () => {
-    const text = await page.getByTestId('product-total').textContent();
-    const dollars = parseFloat(text?.replace('$', '') || '0');
-    return Math.round(dollars * 100);
+  getExpeditedSurcharge: () => {
+    return page.getByTestId('expedited-surcharge');
   },
 
   /**
-   * Check if free shipping badge is visible
+   * Get total discount locator
    */
-  isFreeShippingEligible: async () => {
-    const badge = page.getByTestId('free-shipping-badge');
-    const count = await badge.count();
-    return count > 0;
+  getTotalDiscount: () => {
+    return page.getByTestId('total-discount');
+  },
+
+  /**
+   * Get free shipping badge locator
+   */
+  getFreeShippingBadge: () => {
+    return page.getByTestId('free-shipping-badge');
   },
 
   /**
@@ -144,49 +142,24 @@ export const checkoutDriver = (page: Page): CheckoutDriver => ({
   },
 
   /**
-   * Get the expedited surcharge amount (in cents)
+   * Get discount cap warning locator
    */
-  getExpeditedSurchargeCents: async () => {
-    const surchargeText = await page.getByTestId('expedited-surcharge').textContent();
-    if (!surchargeText) return 0;
-
-    const dollars = parseFloat(surchargeText.replace('$', '')) || 0;
-    return Math.round(dollars * 100);
+  getDiscountCapWarning: () => {
+    return page.getByTestId('discount-cap-warning');
   },
 
   /**
-   * Get the total discount amount (in cents)
+   * Get place order button locator
    */
-  getTotalDiscountCents: async () => {
-    const discountText = await page.getByTestId('total-discount').textContent();
-    if (!discountText) return 0;
-
-    const dollars = parseFloat(discountText.match(/-\$([\d.]+)/)?.[1] || '0');
-    return Math.round(dollars * 100);
+  getPlaceOrderButton: () => {
+    return page.getByRole('button', { name: /place order/i });
   },
 
   /**
-   * Check if discount cap warning is visible
+   * Get order items locator
    */
-  isDiscountCapWarningVisible: async () => {
-    const warning = page.getByTestId('discount-cap-warning');
-    return await warning.count() > 0;
-  },
-
-  /**
-   * Place order button is enabled?
-   */
-  isPlaceOrderButtonEnabled: async () => {
-    const button = page.getByRole('button', { name: /place order/i });
-    return await button.isEnabled();
-  },
-
-  /**
-   * Get number of items in order summary
-   */
-  getOrderItemCount: async () => {
-    const items = page.getByTestId('order-item');
-    return await items.count();
+  getOrderItems: () => {
+    return page.getByTestId('order-item');
   }
 });
 
@@ -214,16 +187,15 @@ export interface CheckoutDriver {
   }) => Promise<void>;
   backToCart: () => Promise<void>;
 
-  // Query operations
-  getGrandTotal: () => Promise<number>;
-  getGrandTotalCents: () => Promise<number>;
-  getShippingCostCents: () => Promise<number>;
-  getProductTotalCents: () => Promise<number>;
-  isFreeShippingEligible: () => Promise<boolean>;
+  // Query operations (return Locators for web-first assertions)
+  getGrandTotal: () => Locator;
+  getShippingCost: () => Locator;
+  getProductTotal: () => Locator;
+  getFreeShippingBadge: () => Locator;
+  getExpeditedSurcharge: () => Locator;
+  getTotalDiscount: () => Locator;
+  getDiscountCapWarning: () => Locator;
+  getPlaceOrderButton: () => Locator;
+  getOrderItems: () => Locator;
   isShippingSelected: (method: 'STANDARD' | 'EXPEDITED' | 'EXPRESS') => Promise<boolean>;
-  getExpeditedSurchargeCents: () => Promise<number>;
-  getTotalDiscountCents: () => Promise<number>;
-  isDiscountCapWarningVisible: () => Promise<boolean>;
-  isPlaceOrderButtonEnabled: () => Promise<boolean>;
-  getOrderItemCount: () => Promise<number>;
 }

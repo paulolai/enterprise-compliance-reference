@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 
 /**
  * Intent-Based Cart Driver
@@ -70,104 +70,76 @@ export const cartDriver = (page: Page): CartDriver => ({
     await page.getByRole('link', { name: /continue shopping/i }).click();
   },
 
-  // ===== QUERY OPERATIONS =====
+  // ===== QUERY OPERATIONS (Return Locators for Web-First Assertions) =====
 
   /**
-   * Get cart total from UI (in cents)
+   * Get cart total locator
    */
-  getCartTotal: async () => {
-    const text = await page.getByTestId('cart-total').textContent();
-    return parseFloat(text?.replace('$', '') || '0');
+  getCartTotal: () => {
+    return page.getByTestId('cart-total');
   },
 
   /**
-   * Get cart total in cents for direct comparison with pricing engine
+   * Get VIP badge locator
    */
-  getCartTotalCents: async () => {
-    const text = await page.getByTestId('cart-total').textContent();
-    const dollars = parseFloat(text?.replace('$', '') || '0');
-    return Math.round(dollars * 100);
+  getVipBadge: () => {
+    return page.getByTestId('vip-badge');
   },
 
   /**
-   * Check if VIP badge is visible
+   * Get bulk discount badge locator for an item
    */
-  isVipBadgeVisible: async () => {
-    const badge = page.getByTestId('vip-badge');
-    const count = await badge.count();
-    if (count === 0) return false;
-
-    // Also verify it's visible (not just in DOM)
-    return await badge.isVisible();
+  getBulkDiscountBadge: (sku: string) => {
+    return page.getByTestId(`bulk-badge-${sku}`);
   },
 
   /**
-   * Check if bulk discount badge is visible for an item
+   * Get cart items locator
    */
-  hasBulkDiscount: async (sku: string) => {
-    const badge = page.getByTestId(`bulk-badge-${sku}`);
-    const count = await badge.count();
-    return count > 0;
+  getCartItems: () => {
+    return page.getByTestId('cart-item');
   },
 
   /**
-   * Get line item count
+   * Get specific cart item by SKU
    */
-  getLineItemCount: async () => {
-    const items = page.getByTestId('cart-item');
-    return await items.count();
+  getCartItem: (sku: string) => {
+    return page.getByTestId(`cart-item-${sku}`);
   },
 
   /**
-   * Get the quantity of a specific item
+   * Get cart subtotal locator
    */
-  getItemQuantity: async (sku: string) => {
-    const itemRow = page.getByTestId(`cart-item-${sku}`);
-    const qtyText = await itemRow.getByTestId('item-quantity').textContent();
-    return parseInt(qtyText || '0');
+  getSubtotal: () => {
+    return page.getByTestId('cart-subtotal');
   },
 
   /**
-   * Get the displayed price for a specific item
+   * Get cart discount locator
    */
-  getItemPriceCents: async (sku: string) => {
-    const itemRow = page.getByTestId(`cart-item-${sku}`);
-    const priceText = await itemRow.getByTestId('item-price').textContent();
-    const dollars = parseFloat(priceText?.replace('$', '') || '0');
-    return Math.round(dollars * 100);
+  getTotalDiscount: () => {
+    return page.getByTestId('cart-discount');
   },
 
   /**
-   * Get the bulk discount amount for a specific item
+   * Get item quantity locator
    */
-  getItemBulkDiscountCents: async (sku: string) => {
-    const itemRow = page.getByTestId(`cart-item-${sku}`);
-    const badge = itemRow.getByTestId(`bulk-badge-${sku}`);
-
-    const count = await badge.count();
-    if (count === 0) return 0;
-
-    const discountText = await badge.textContent();
-    const dollars = parseFloat(discountText?.match(/-\$([\d.]+)/)?.[1] || '0');
-    return Math.round(dollars * 100);
+  getItemQuantity: (sku: string) => {
+    return page.getByTestId(`cart-item-${sku}`).getByTestId('item-quantity');
   },
 
   /**
-   * Get subtotal displayed on cart page
+   * Get item price locator
    */
-  getSubtotalCents: async () => {
-    const text = await page.getByTestId('cart-subtotal').textContent();
-    const dollars = parseFloat(text?.replace('$', '') || '0');
-    return Math.round(dollars * 100);
+  getItemPrice: (sku: string) => {
+    return page.getByTestId(`cart-item-${sku}`).getByTestId('item-price');
   },
 
   /**
-   * Get total discount displayed on cart page
+   * Get item SKU locator
    */
-  getTotalDiscountCents: async () => {
-    const text = await page.getByTestId('cart-discount').textContent();
-    const dollars = parseFloat(text?.match(/-\$([\d.]+)/)?.[1] || '0');
-    return Math.round(dollars * 100);
+  getItemSku: (sku: string) => {
+    return page.getByTestId(`cart-item-${sku}`).getByTestId('item-sku');
   },
 
   /**
@@ -208,17 +180,17 @@ export interface CartDriver {
   goToCheckout: () => Promise<void>;
   continueShopping: () => Promise<void>;
 
-  // Query operations
-  getCartTotal: () => Promise<number>;
-  getCartTotalCents: () => Promise<number>;
-  isVipBadgeVisible: () => Promise<boolean>;
-  hasBulkDiscount: (sku: string) => Promise<boolean>;
-  getLineItemCount: () => Promise<number>;
-  getItemQuantity: (sku: string) => Promise<number>;
-  getItemPriceCents: (sku: string) => Promise<number>;
-  getItemBulkDiscountCents: (sku: string) => Promise<number>;
-  getSubtotalCents: () => Promise<number>;
-  getTotalDiscountCents: () => Promise<number>;
+  // Query operations (return Locators for web-first assertions)
+  getCartTotal: () => Locator;
+  getVipBadge: () => Locator;
+  getBulkDiscountBadge: (sku: string) => Locator;
+  getCartItems: () => Locator;
+  getCartItem: (sku: string) => Locator;
+  getSubtotal: () => Locator;
+  getTotalDiscount: () => Locator;
+  getItemQuantity: (sku: string) => Locator;
+  getItemPrice: (sku: string) => Locator;
+  getItemSku: (sku: string) => Locator;
   isEmpty: () => Promise<boolean>;
   getItemSkus: () => Promise<string[]>;
 }

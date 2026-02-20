@@ -24,9 +24,11 @@ invariant('Debug index page loads successfully', {
 
   expect(response.status()).toBeLessThan(400);
 
-  // Check for header - use exact match to avoid strict mode violation
-  const heading = await page.getByRole('heading', { name: 'Debug Index' }).textContent();
-  expect(heading).toBe('Debug Index');
+  // Check for header - use web-first assertion
+  const heading = page.getByRole('heading', { name: 'Debug Index' });
+  await expect(heading).toBeVisible();
+  const headingText = await heading.textContent();
+  expect(headingText).toBe('Debug Index');
 });
 
 invariant('Debug index shows all debug scenarios', {
@@ -96,11 +98,10 @@ invariant('Reset button clears all state', {
     // Navigate back to home to check the cart badge
     await page.goto('/');
 
-    // Verify state is cleared
+    // Verify state is cleared - use web-first assertion
     const cartBadge = page.getByTestId('cart-badge');
-    await cartBadge.waitFor({ state: 'visible' });
-    const badgeText = await cartBadge.textContent();
-    expect(badgeText).toBe('0');
+    await expect(cartBadge).toBeVisible();
+    await expect(cartBadge).toHaveText('0');
   }
 });
 
