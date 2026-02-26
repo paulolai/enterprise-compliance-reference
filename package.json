@@ -2,8 +2,7 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "cd packages/server && pnpm run dev",
-    "test": "pnpm --filter domain test",
-    "test:e2e": "cd test && pnpm test",
+    "test": "pnpm --filter domain test && pnpm --filter server test",
     "db:push": "drizzle-kit push",
     "db:seed": "pnpm --filter server db:seed",
     "prepare": "husky"
