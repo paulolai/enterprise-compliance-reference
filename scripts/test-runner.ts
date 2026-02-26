@@ -18,7 +18,6 @@ console.log(`[Test Runner] Starting Run: ${runId}`);
 console.log(`[Test Runner] Results: ${rawResultsDir}`);
 
 fs.mkdirSync(rawResultsDir, { recursive: true });
-// Subdirectories created by runners, but good to have base
 
 // 2. Set Env Vars
 const env = { 
@@ -27,30 +26,26 @@ const env = {
   REPORT_OUTPUT_DIR: reportOutputDir
 };
 
-try {
-  // 3. Run Unit Tests (Vitest)
-  console.log('\n[Test Runner] 🧪 Running Unit Tests (Vitest)...');
-  // Use 'test:allure' because it uses the config that respects our env var and has the reporter
-  execSync('pnpm run test:allure', { 
-    cwd: path.join(ROOT_DIR, 'packages/domain'), 
-    stdio: 'inherit', 
-    env 
-  });
+const runSuite = (name: string, command: string, cwd: string) => {
+  console.log(`\n[Test Runner] ${name}...`);
+  try {
+    execSync(command, { cwd, stdio: 'inherit', env });
+    console.log(`[Test Runner] ✅ ${name} passed.`);
+  } catch (error) {
+    console.error(`\n[Test Runner] ⚠️ ${name} failed.`);
+  }
+};
 
-  // 4. Run E2E Tests (Playwright)
-  console.log('\n[Test Runner] 🎭 Running E2E Tests (Playwright)...');
-  execSync('pnpm test', { 
-    cwd: path.join(ROOT_DIR, 'test'), 
-    stdio: 'inherit', 
-    env 
-  });
+// 3. Run Unit Tests (Vitest)
+runSuite('🧪 Unit Tests (Domain)', 'pnpm run test:allure', path.join(ROOT_DIR, 'packages/domain'));
 
-} catch (error) {
-  console.error('\n[Test Runner] ⚠️ Tests failed (continuing to report generation)');
-  // We continue to generate report even if tests fail
-}
+// 4. Run Client Component Tests (Vitest)
+runSuite('⚛️ Client Component Tests', 'pnpm exec vitest run --config vitest.config.allure.ts', path.join(ROOT_DIR, 'packages/client'));
 
-// 5. Generate Attestation Report
+// 5. Run E2E & API Tests (Playwright)
+runSuite('🎭 E2E & API Tests (Playwright)', 'pnpm test', path.join(ROOT_DIR, 'test'));
+
+// 6. Generate Attestation Report
 console.log('\n[Test Runner] 📝 Generating Attestation Report...');
 try {
   execSync('node packages/domain/scripts/generate-attestation.js', { 

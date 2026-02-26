@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
-import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
-import type { PricingResult, CartItemWithPriceInCents } from '../../../../shared/src';
+import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
+import type { PricingResult, CartItemWithPriceInCents } from '@executable-specs/shared';
 
 interface Product {
   sku: string;

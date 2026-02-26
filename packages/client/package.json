@@ -44,6 +44,7 @@
     "eslint-plugin-react-refresh": "catalog:",
     "fast-check": "catalog:",
     "globals": "catalog:",
+    "jsdom": "^28.1.0",
     "tailwindcss": "^4.2.0",
     "tsx": "catalog:",
     "typescript": "catalog:",

@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
-import { db, seedProducts } from '@executable-specs/shared/index-server';
-import { products } from '@executable-specs/shared/index-server';
+import { db } from '../../db';
+import { products } from '../../db/schema';
+import { seedProducts } from '../../db/seed';
 import { eq } from 'drizzle-orm';
 import { validateParams, validateQuery } from '../../lib/validation/middleware';
 import { paramSchemas, querySchemas } from '../../lib/validation/schemas';

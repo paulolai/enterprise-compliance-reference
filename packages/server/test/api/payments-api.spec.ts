@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
-import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
+import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
 
 // Helper to register Allure metadata with hierarchy
 function registerApiMetadata(

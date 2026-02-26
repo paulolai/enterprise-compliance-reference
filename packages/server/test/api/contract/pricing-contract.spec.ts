@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { responseSchemas } from '../../../lib/validation/schemas';
+import { responseSchemas } from '../../../../client/src/lib/validation/schemas';
 import { ShippingMethod } from '@executable-specs/shared';
 
 const API_BASE = '/api/pricing';

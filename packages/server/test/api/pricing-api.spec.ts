@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
-import { registerAllureMetadata } from '../../../../shared/fixtures/allure-helpers';
-import { PricingEngine } from '../../../../shared/src';
-import type { CartItem, User } from '../../../../shared/src';
-import { ShippingMethod } from '../../../../shared/src';
+import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
+import { PricingEngine } from '@executable-specs/shared';
+import type { CartItem, User } from '@executable-specs/shared';
+import { ShippingMethod } from '@executable-specs/shared';
 
 // Helper to register Allure metadata with hierarchy
 function registerApiMetadata(

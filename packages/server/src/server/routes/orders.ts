@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { logger } from '../../lib/logger';
 import { randomUUID } from 'crypto';
-import { db, OrderStatus, products, seedProducts } from '@executable-specs/shared/index-server';
-import { orders, orderItems } from '@executable-specs/shared/index-server';
+import { db } from '../../db';
+import { orders, orderItems, products } from '../../db/schema';
+import { seedProducts } from '../../db/seed';
+import { OrderStatus } from '@executable-specs/shared';
 import { eq, inArray } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
