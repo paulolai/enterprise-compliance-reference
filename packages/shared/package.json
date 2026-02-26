@@ -7,8 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./index-server": "./src/index-server.ts",
-    "./fixtures": "./fixtures/index.ts",
-    "./fixtures/allure-helpers": "./fixtures/allure-helpers.ts"
+    "./fixtures": "./fixtures/index.ts"
   },
   "dependencies": {
     "@executable-specs/domain": "workspace:*",

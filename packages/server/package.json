@@ -6,7 +6,8 @@
   "main": "./src/server/index.ts",
   "scripts": {
     "dev": "tsx src/server/standalone.ts",
-    "start": "node dist/server/standalone.js"
+    "start": "node dist/server/standalone.js",
+    "test": "playwright test"
   },
   "dependencies": {
     "@executable-specs/domain": "workspace:*",
@@ -17,8 +18,8 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
-    "allure-playwright": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

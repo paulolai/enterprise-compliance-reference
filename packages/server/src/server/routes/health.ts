@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { isStripeConfigured } from '../../lib/env';
-import { db } from '@executable-specs/shared/index-server';
+import { sqlite } from '../../db';
 import Stripe from 'stripe';
 
 const router = new Hono();
@@ -62,7 +62,7 @@ router.get('/readyz', async (c) => {
 
   // Database connectivity check
   try {
-    await db.$client.prepare('SELECT 1').get();
+    sqlite.prepare('SELECT 1').get();
     checks.database = { status: 'healthy' };
   } catch (error) {
     checks.database = {
@@ -131,7 +131,7 @@ router.get('/livez', async (c) => {
   const checks: Record<string, { status: 'healthy' | 'unhealthy'; message?: string }> = {};
   
   try {
-    await db.$client.prepare('SELECT 1').get();
+    sqlite.prepare('SELECT 1').get();
     checks.database = { status: 'healthy' };
   } catch (error) {
     checks.database = { status: 'unhealthy', message: error instanceof Error ? error.message : 'Error' };

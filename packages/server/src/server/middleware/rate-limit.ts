@@ -153,7 +153,7 @@ function getLimitConfig(path: string): RateLimitConfig {
 export const rateLimit = (): MiddlewareHandler => {
   return async (c, next) => {
     // Skip rate limiting in development/test environment
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       return next();
     }
 

@@ -3,12 +3,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   test: {
-    reporters: [
-      'default',
-      ['allure-vitest/reporter', { resultsDir: '../../allure-results/api' }]
-    ],
     globals: true,
-    setupFiles: ['allure-vitest/setup'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],

@@ -1,43 +1,20 @@
 {
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev:frontend": "cd packages/client && pnpm run dev",
-    "dev:backend": "cd packages/server && pnpm run dev",
-    "test": "cd packages/domain && pnpm test",
-    "test:unit": "cd packages/domain && pnpm test",
+    "dev": "cd packages/server && pnpm run dev",
+    "test": "pnpm --filter domain test",
     "test:e2e": "cd test && pnpm test",
-    "reports:e2e:open": "cd test && pnpm exec playwright show-report reports/html-report",
-    "test:coverage": "cd packages/domain && pnpm run test:coverage",
-    "test:allure": "cd packages/domain && pnpm run test:allure",
-    "reports:allure": "allure generate allure-results/ --clean --output allure-report/",
-    "reports:allure:open": "allure open allure-report/",
-    "reports:allure:serve": "allure serve allure-results/",
-    "reports:attestation": "node packages/domain/scripts/generate-attestation.js",
-    "test:all": "npx tsx scripts/test-runner.ts",
-    "test:ci": "npx tsx scripts/test-runner.ts",
-    "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:seed": "node packages/server/src/db/seed.js",
-    "docs:fix": "find docs -name '*.md' -exec markdown-toc -i {} \\;",
-    "adr:sync": "npx tsx@latest scripts/sync-agents-from-adr.ts",
+    "db:seed": "pnpm --filter server db:seed",
     "prepare": "husky"
-  },
-  "lint-staged": {
-    "docs/ARCHITECTURE_DECISIONS.md": "pnpm run adr:sync",
-    "docs/*.md": "bash -c 'for f in \"$@\"; do markdown-toc -i \"$f\"; done' --",
-    "packages/client/**/*.{ts,tsx}": "bash -c 'cd packages/client && pnpm exec eslint --fix \"$@\"' --"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
-    "drizzle-orm": "^0.45.1",
-    "stripe": "^20.3.1"
+    "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
-    "allure-commandline": "catalog:",
     "drizzle-kit": "^0.31.9",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
-    "markdown-toc": "^1.2.0",
     "tsx": "catalog:"
   }
 }

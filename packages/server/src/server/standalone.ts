@@ -16,7 +16,7 @@ import app from './index';
 import { setupGracefulShutdown } from './shutdown';
 import { logger } from '../lib/logger';
 import { env, getEnvSummary } from '../lib/env';
-import { seedProducts } from '@executable-specs/shared/index-server';
+import { seedProducts } from '../db/seed';
 
 // Ensure products are seeded
 await seedProducts();

@@ -13,9 +13,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:allure": "vitest run --config vitest.config.allure.ts",
-    "test:coverage": "vitest run --coverage",
-    "coverage:domain": "tsx scripts/check-domain-coverage.ts"
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "zod": "catalog:"
@@ -24,7 +22,6 @@
     "@executable-specs/shared": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/runner": "catalog:",
-    "allure-vitest": "catalog:",
     "fast-check": "catalog:",
     "glob": "^11.0.0",
     "tsx": "catalog:",
