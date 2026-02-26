@@ -6,6 +6,7 @@
     "test": "cd packages/domain && pnpm test",
     "test:unit": "cd packages/domain && pnpm test",
     "test:e2e": "cd test && pnpm test",
+    "reports:e2e:open": "cd test && pnpm exec playwright show-report reports/html-report",
     "test:coverage": "cd packages/domain && pnpm run test:coverage",
     "test:allure": "cd packages/domain && pnpm run test:allure",
     "reports:allure": "allure generate allure-results/ --clean --output allure-report/",
