@@ -28,6 +28,7 @@ For layer-specific implementation patterns, see:
   * [A. Code Coverage (Technical)](#a-code-coverage-technical)
   * [B. Domain Coverage (Business)](#b-domain-coverage-business)
 - [Reporting & Attestation](#reporting--attestation)
+  * [Hierarchical Metadata Strategy](#hierarchical-metadata-strategy)
   * [Types of Reports](#types-of-reports)
   * [Attestation Report Content](#attestation-report-content)
   * [Accessing Reports](#accessing-reports)
@@ -176,6 +177,23 @@ Run `pnpm run test:coverage` to generate both reports. The Attestation Report (`
 ## Reporting & Attestation
 
 We treat the Test Report as a **Compliance Artifact**.
+
+### Hierarchical Metadata Strategy
+To enable multi-dimensional reporting (Technical Slicing vs. Business Slicing), we populate both xUnit and BDD hierarchies automatically.
+
+**1. Technical Hierarchy (System Structure):**
+*   **Parent Suite:** **Layer** (e.g., `API Verification`, `GUI Verification`). Derived from the test runner.
+*   **Suite:** **Domain** (e.g., `Pricing`, `Cart`). Derived from filename (`cart.ui.test.ts` -> `Cart`).
+*   **Sub Suite:** **Context**. Derived from the test group or `describe` block.
+
+**2. Business Hierarchy (Behavior):**
+*   **Epic:** **Business Goal** (e.g., `Revenue Protection`). Optional, passed via metadata.
+*   **Feature:** **Domain** (Same as Suite).
+*   **Story:** **Business Rule**. Derived from `ruleReference` (e.g., `pricing-strategy.md §2`).
+
+**Tagging Policy:**
+*   **Tags (`@`)** are reserved exclusively for **Cross-Cutting Concerns** (e.g., `@critical`, `@slow`, `@compliance`).
+*   **Do not** manually add tags for Layer or Domain.
 
 ### Types of Reports
 

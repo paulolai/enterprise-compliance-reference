@@ -144,6 +144,54 @@ Open the attestation report and verify:
 
 ---
 
+## CI/CD Guidelines & Troubleshooting
+
+Before pushing, run these commands locally to catch CI failures early:
+
+```bash
+# 1. Run domain tests with coverage
+cd packages/domain && pnpm test:coverage
+
+# 2. Check domain coverage threshold
+cd packages/domain && pnpm coverage:domain
+
+# 3. Run TypeScript type check (test directory)
+cd test && pnpm exec tsc --noEmit
+
+# 4. Run full test suite
+pnpm run test:all
+```
+
+### Why CI Finds Issues We Miss Locally
+
+CI runs **different tools** and **stricter checks** than local development:
+
+| Check | Local Dev | CI | Why Different? |
+|-------|-----------|-----|----------------|
+| TypeScript | Vitest (permissive) | `tsc --noEmit` (strict) | Vitest allows `.ts` extensions, strict TS doesn't |
+| Coverage | Not run by default | `coverage:domain` script | Custom script with hardcoded paths |
+| Commands | Individual packages | Full workflow chains | CI chains commands we don't run locally |
+
+### Common CI Issues
+
+**Issue 1: `coverage:domain` fails with "Found 0 test files"**
+- **Cause**: The `check-domain-coverage.ts` script searches for test files in the old `implementations/` directory
+- **Fix**: Ensure the script uses the correct path: `packages/domain/test/**/*.test.ts`
+
+**Issue 2: `tsc --noEmit` fails with "Cannot find module" or ".ts extension" errors**
+- **Cause**: TypeScript imports with `.ts` extensions conflict with `allowImportingTsExtensions: true` setting
+- **Fix**: Remove `.ts` extensions from all local imports. Change `from './types.ts'` to `from './types'`
+- **Pattern to avoid**: `import { something } from './file.ts'`
+- **Pattern to use**: `import { something } from './file'`
+
+**Issue 3: CI workflow references old paths**
+- **Cause**: `.github/workflows/ci.yml` still references `packages/domain` or `packages/client`
+- **Fix**: Update paths in CI workflow:
+  - `packages/domain` → `packages/domain`
+  - `packages/client` → `test`
+
+---
+
 ## Next Steps
 
 - **Read the Testing Framework:** [docs/TESTING_FRAMEWORK.md](TESTING_FRAMEWORK.md)
