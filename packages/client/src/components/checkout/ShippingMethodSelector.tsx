@@ -52,7 +52,7 @@ export function ShippingMethodSelector() {
                 <div className="font-medium">{label}</div>
                 <div
                   id={`shipping-${method}-desc`}
-                  className="text-sm text-muted-foreground"
+                  className={`text-sm ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}
                 >
                   {description}
                 </div>

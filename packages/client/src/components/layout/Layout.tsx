@@ -43,18 +43,22 @@ export function Layout() {
             <Link
               to="/cart"
               className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              aria-label="Shopping Cart"
             >
               <div className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 <CartBadge />
               </div>
+              <span className="hidden md:inline">Cart</span>
             </Link>
             
             <Link
               to="/login"
               className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              aria-label="Login"
             >
               <User className="h-5 w-5" />
+              <span className="hidden md:inline">Login</span>
             </Link>
           </nav>
         </div>
