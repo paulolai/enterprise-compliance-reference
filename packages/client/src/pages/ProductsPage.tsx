@@ -64,6 +64,7 @@ export function ProductsPage() {
                   src={getProductImage(product.sku)}
                   alt={product.name}
                   className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  loading="lazy"
                 />
               </div>
               <CardContent className="p-4">

@@ -42,6 +42,7 @@ export function ProductDetail({ sku }: ProductDetailProps) {
           src={getProductImage(sku)}
           alt={product.name}
           className="w-full h-full object-cover"
+          loading="lazy"
         />
       </div>
 

@@ -38,6 +38,7 @@ export function CartItem({ sku }: CartItemProps) {
               src={getProductImage(sku)}
               alt={item.name}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
 

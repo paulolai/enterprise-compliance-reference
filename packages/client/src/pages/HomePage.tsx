@@ -42,6 +42,7 @@ export function HomePage() {
                     src={categoryImages[category] || 'https://placehold.co/400x300/gray/white?text=Category'}
                     alt={category}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    loading="lazy"
                   />
                 </div>
                 <CardHeader>
@@ -70,11 +71,12 @@ export function HomePage() {
             <Link key={product.sku} to={`/products/${product.sku}`}>
               <Card className="group overflow-hidden transition-all hover:shadow-lg h-full" data-testid={`product-card-${product.sku}`}>
                 <div className="aspect-square overflow-hidden bg-muted">
-                  <img
-                    src={getProductImage(product.sku)}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
+                <img
+                  src={getProductImage(product.sku)}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
                 </div>
                 <CardContent className="p-4">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{product.category}</p>

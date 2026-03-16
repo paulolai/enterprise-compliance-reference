@@ -34,6 +34,7 @@ export function ProductCard({ sku }: ProductCardProps) {
           src={getProductImage(sku)}
           alt={product.name}
           className="w-full h-full object-cover transition-transform hover:scale-105"
+          loading="lazy"
         />
       </div>
       <CardContent className="p-4 space-y-2">
