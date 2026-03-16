@@ -122,6 +122,43 @@ Open the attestation report and verify:
 
 ---
 
+## Step 6: Exploratory Testing (Pre-Release)
+
+Before release, perform structured exploratory testing to catch what automated tests miss.
+
+**When to run:**
+- Before major releases
+- After significant UI changes
+- When adding new user flows (checkout, auth, etc.)
+- Periodically (monthly) to catch regression issues
+
+**Duration:** 30 minutes per session
+
+**Process:**
+1. Run static analysis first (security lint, accessibility audit)
+2. Execute weighted random walk (5 min automated + 25 min manual)
+3. Apply multi-perspective review (PM, QA, Security, Accessibility)
+4. Document findings with screenshots
+
+```bash
+# Run the exploratory test
+npx tsx exploratory-test.ts
+
+# Review findings
+cat exploratory-findings/report.json
+```
+
+**What it catches:**
+- UX issues (confusing flows, missing empty states)
+- Security issues (XSS, data exposure)
+- Accessibility issues (missing labels, contrast)
+- Edge cases (empty cart checkout, 404 handling)
+- Visual bugs (broken images, layout issues)
+
+See [docs/exploratory-testing-process.md](exploratory-testing-process.md) for full methodology.
+
+---
+
 ## Common Commands
 
 | Command | Purpose |
@@ -197,3 +234,6 @@ CI runs **different tools** and **stricter checks** than local development:
 - **Read the Testing Framework:** [docs/TESTING_FRAMEWORK.md](TESTING_FRAMEWORK.md)
 - **Learn PBT Patterns:** [docs/API_TESTING_PATTERNS.md](API_TESTING_PATTERNS.md)
 - **Understand Reporting:** [docs/reference/attestation-architecture.md](reference/attestation-architecture.md)
+- **Exploratory Testing:** [docs/exploratory-testing-process.md](exploratory-testing-process.md)
+- **Exploratory Testing Implementation:** [docs/exploratory-testing-implementation.md](exploratory-testing-implementation.md)
+- **Current Issues & Fix Plan:** [docs/exploratory-findings-fix-plan.md](exploratory-findings-fix-plan.md)

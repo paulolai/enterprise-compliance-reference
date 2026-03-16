@@ -65,3 +65,7 @@ reports/
 *.db-shm
 *.db-wal
 *.sqlite
+
+# Exploratory Testing
+exploratory-findings/
+*.exploratory.ts
