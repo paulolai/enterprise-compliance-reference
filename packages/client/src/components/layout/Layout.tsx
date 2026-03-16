@@ -70,7 +70,7 @@ export function Layout() {
       
       <footer className="border-t py-6 md:py-8">
         <div className="container flex flex-col items-center justify-center gap-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 TechHome Direct - Executable Specs Demo</p>
+          <p>&copy; 2025 TechHome Direct. All rights reserved.</p>
         </div>
       </footer>
     </div>
