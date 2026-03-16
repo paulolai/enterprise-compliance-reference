@@ -98,6 +98,95 @@ The project uses `verbatimModuleSyntax: true`. When importing types, you MUST us
 
 ---
 
+## 🎯 Systemic View of Failures (MANDATORY)
+
+When ANY issue is discovered (bug, test failure, manual finding, code review comment), you MUST treat it as a **symptom of a systemic gap**, not just an isolated problem.
+
+### The Pattern
+
+```
+Find Issue → Identify Pattern → Build Detection → Prevent Category
+     ↑                                                     ↓
+   REPEAT ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+```
+
+### Example: From "Title Bug" to "Static Analysis"
+
+**❌ Wrong Approach:**
+- Exploratory test finds: "react-playwright" title
+- Fix: Change title to "TechHome"
+- Result: Next sprint finds "vite.svg" favicon
+
+**✅ Correct Approach:**
+- Exploratory test finds: "react-playwright" title
+- **Pattern:** Placeholder/default content in HTML
+- **Category:** Static Analysis gap
+- **Solution:** Build `validate-html.ts` that checks for ALL placeholders
+- **Result:** Catches title, favicon, meta tags, descriptions in one validator
+
+### Implementation
+
+For EVERY issue found:
+
+1. **Ask:** "What category does this belong to?"
+   - HTML/SEO structure
+   - Accessibility compliance
+   - Performance budgets
+   - Security headers
+   - Placeholder content patterns
+
+2. **Build:** Create/modify the category validator
+   - Don't just fix the one instance
+   - Build detection for the entire category
+
+3. **Document:** Add to validation suite
+   - `scripts/static-analysis/validate-*.ts`
+   - Run in CI before any exploratory testing
+
+### Validation Hierarchy
+
+Issues should be caught at the **cheapest** level:
+
+```
+Static Analysis (CI) → Integration Tests → E2E Tests → Exploratory Testing
+      $10                   $100              $500           $1000+
+```
+
+**Rule:** If exploratory testing finds it, a cheaper method should have caught it.
+
+### Category-Based Validators
+
+```
+scripts/static-analysis/
+├── validate-html.ts          # Titles, meta tags, SEO, favicons
+├── validate-accessibility.ts # axe-core, WCAG compliance
+├── validate-performance.ts   # Bundle size, images, lazy loading
+├── validate-security.ts      # Headers, CSP, dependencies
+└── validate-patterns.ts      # Placeholders, TODOs, mock data
+```
+
+**When adding a new validator:**
+- Document what category it covers
+- List specific checks it performs
+- Run it against current codebase
+- It should FAIL (catching existing issues)
+- Fix issues until it PASSES
+- Add to CI workflow
+
+### Cost Multiplier
+
+| Detection Level | Cost Per Issue | Cumulative Cost |
+|----------------|---------------|-----------------|
+| None (prod bug) | $5,000+ | $5,000+ |
+| Exploratory | $500 | $500 × N issues |
+| Static Analysis | $10 | $10 (catches all) |
+
+**Finding 4 issues via exploratory: $2,000**  
+**Same 4 via static analysis: $40**  
+**Savings: 50x**
+
+---
+
 ## Landing the Plane (Session Completion)
 
 Work is NOT complete until `git push` succeeds.

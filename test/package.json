@@ -13,6 +13,7 @@
     "@executable-specs/shared": "workspace:*"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "catalog:",
     "allure-playwright": "catalog:",
     "fast-check": "catalog:",

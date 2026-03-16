@@ -7,6 +7,35 @@ on:
     branches: [ "main" ]
 
 jobs:
+  validate-static:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate HTML/SEO
+        run: npx tsx scripts/static-analysis/validate-html.ts
+
+      - name: Check HTML Validation Status
+        if: failure()
+        run: |
+          echo "❌ HTML validation failed - see logs above for details"
+          echo "This catches issues like placeholder titles that shouldn't require exploratory testing"
+
   test-api:
     name: API Tests with Coverage
     runs-on: ubuntu-latest
