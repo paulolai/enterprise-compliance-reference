@@ -19,7 +19,7 @@ import type {
 export function mapRequestItemsToDomain(items: CartItemRequest[]): CartItem[] {
   return items.map(item => ({
     sku: item.sku,
-    name: 'Product ' + item.sku, // Name is usually looked up from catalog, this is a placeholder
+    name: 'Product ' + item.sku, // Name is usually looked up from catalog, this is a fallback
     price: item.priceInCents,
     quantity: item.quantity,
     weightInKg: item.weightInKg

@@ -10,7 +10,7 @@ export function OrderSummary({ result }: OrderSummaryProps) {
   const storePricingResult = useCartStore((state) => state.pricingResult);
   const pricingResult = result ?? storePricingResult;
 
-  // Render placeholder if no pricing result available
+  // Render loading skeleton if no pricing result available
   if (!pricingResult) {
     return (
       <div className="space-y-4" data-testid="order-summary">

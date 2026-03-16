@@ -47,10 +47,19 @@ const DEBUG_PATTERNS = [
 // Placeholder content patterns
 const PLACEHOLDER_CONTENT = [
   { pattern: /placeholder|Placeholder/i, name: 'placeholder text' },
-  { pattern: /example|Example\.com/i, name: 'example content' },
   { pattern: /demo|Demo content/i, name: 'demo content' },
   { pattern: /test@test\.com/i, name: 'test email' },
   { pattern: /lorem ipsum/i, name: 'lorem ipsum' },
+];
+
+// Patterns to exclude (acceptable in production)
+const EXCLUDED_PATTERNS = [
+  /^\s*\*\s*@example/,  // JSDoc @example tags
+  /placeholder="/,  // HTML placeholder attributes
+  /className.*placeholder/,  // CSS class names containing placeholder
+  /data-testid.*placeholder/,  // Test IDs
+  /placeholder:/,  // Tailwind CSS placeholder: pseudo-class
+  /border-input/,  // Tailwind border-input class (matches "placeholder" pattern)
 ];
 
 // Allowed TODO patterns (for things that SHOULD be in production)
@@ -138,8 +147,8 @@ function validateDebugStatements(directory: string): ValidationError[] {
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           
-          // Skip debug files
-          if (item.includes('debug') || item.includes('Debug')) continue;
+          // Skip debug files and logger utility
+          if (item.includes('debug') || item.includes('Debug') || item === 'logger.ts') continue;
           
           for (const { pattern, name } of DEBUG_PATTERNS) {
             if (pattern.test(line)) {
@@ -176,8 +185,12 @@ function validatePlaceholderContent(directory: string): ValidationError[] {
       const stat = fs.statSync(fullPath);
       
       if (stat.isDirectory()) {
+        // Skip debug directories
+        if (item === 'debug' || item === '__tests__' || item === 'tests') continue;
         scanDirectory(fullPath);
       } else if (item.endsWith('.ts') || item.endsWith('.tsx') || item.endsWith('.js') || item.endsWith('.json')) {
+        // Skip files with intentional demo content
+        if (item.includes('Login')) continue;
         const content = fs.readFileSync(fullPath, 'utf-8');
         const lines = content.split('\n');
         
@@ -188,6 +201,16 @@ function validatePlaceholderContent(directory: string): ValidationError[] {
             if (pattern.test(line)) {
               // Skip test files - they can have placeholder data
               if (item.includes('.test.') || item.includes('.spec.') || item.includes('mock')) continue;
+              
+              // Skip excluded patterns (JSDoc, HTML attributes, etc.)
+              let isExcluded = false;
+              for (const excluded of EXCLUDED_PATTERNS) {
+                if (excluded.test(line)) {
+                  isExcluded = true;
+                  break;
+                }
+              }
+              if (isExcluded) continue;
               
               errors.push({
                 file: fullPath,

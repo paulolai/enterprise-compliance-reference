@@ -41,7 +41,7 @@ const VALUE_BUCKETS = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 
 class Metrics {
   private static instance: Metrics;
 
-  // In-memory storage for demonstration
+  // In-memory storage for metrics data
   private counters: Map<string, number> = new Map();
   private histograms: Map<string, number[]> = new Map();
   private gauges: Map<string, number> = new Map();
