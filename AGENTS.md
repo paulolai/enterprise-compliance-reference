@@ -181,6 +181,145 @@ Earlier detection is cheaper:
 
 ---
 
+## 🧪 Exploratory Testing Protocol
+
+Exploratory testing is NOT about finding and fixing individual bugs. It's about discovering **systemic gaps** in the testing strategy.
+
+### The Exploratory Testing Cycle
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  EXPLORE → DISCOVER → IDENTIFY PATTERN → BUILD DETECTION   │
+│      ↑                                                     │
+│      └─────────────────────────────────────────────────────┘
+```
+
+**Critical Rule:** NEVER fix bugs during exploratory testing. Document them, identify the pattern, and build detection instead.
+
+### Phase 1: Explore
+
+**Goal:** Use the application as a real user would
+
+**Activities:**
+- Start the application (if it starts)
+- Navigate through key flows
+- Try edge cases
+- Watch for errors in console and network
+- Document behavior, NOT fixes
+
+**Output:** `docs/exploratory-testing-report.md`
+
+### Phase 2: Discover
+
+**Goal:** Find issues without fixing them
+
+**Questions to ask for each issue:**
+1. What category does this belong to? (import, config, env, security)
+2. What would catch this entire category?
+3. Is this symptom or root cause?
+
+**STOP HERE.** Do not fix. Document in:
+- `docs/exploratory-testing-report.md` - What was found
+- `docs/issue-fixes-log.md` - How to fix (if known)
+
+### Phase 3: Identify Pattern
+
+**Goal:** Find the systemic gap that allowed this issue
+
+**Common patterns:**
+- **Import/Export Issues** → Missing module contract tests
+- **Environment Assumptions** → Missing environment validation
+- **Configuration Errors** → Missing startup validation
+- **Security Headers** → Missing security contract tests
+
+### Phase 4: Build Detection
+
+**Goal:** Create tests that catch the ENTIRE CATEGORY of issues
+
+**NOT this:**
+```typescript
+// ❌ Fragile - specific to one bug
+test('health.ts should import db from correct path', () => {
+  expect(healthImports.db).toBe('../../db');
+});
+```
+
+**DO this:**
+```typescript
+// ✅ General-purpose - catches any import issue
+test('server should start without throwing', async () => {
+  const server = spawn('tsx', ['src/server/standalone.ts']);
+  await waitForServer(server);
+  // If ANYTHING is broken, server fails to start
+});
+```
+
+**Create these artifacts:**
+
+1. **General-Purpose Tests** - Catches entire categories
+   - `packages/*/test/*.integration.test.ts`
+   - Test behavior, not implementation
+   - Validate contracts, not specific code
+
+2. **Static Analysis** - Fast pattern detection
+   - `scripts/static-analysis/validate-*.ts`
+   - Pattern-based, not file-specific
+   - Run in CI before tests
+
+3. **Documentation** - How to fix patterns
+   - `docs/issue-fixes-log.md`
+   - Pattern → Solution mapping
+   - Reference for when tests fail
+
+### Phase 5: Validate Detection
+
+**Goal:** Prove the tests actually catch bugs
+
+**Method:**
+1. Intentionally introduce bugs
+2. Run tests
+3. Verify tests fail with clear messages
+4. Restore original code
+5. Document results
+
+**Script:** `scripts/introduce-bugs.sh`
+
+**Results:** `docs/bug-detection-test-results.md`
+
+### Exploratory Testing Checklist
+
+- [ ] Start application and document behavior
+- [ ] Navigate key user flows
+- [ ] Document all issues found (don't fix!)
+- [ ] Categorize each issue
+- [ ] Identify systemic gaps
+- [ ] Build general-purpose tests
+- [ ] Create static analysis validators
+- [ ] Validate tests catch bugs
+- [ ] Document fixes separately
+- [ ] Update issue-fixes-log.md
+- [ ] Commit and push
+
+### Example: From Exploratory Testing to Prevention
+
+**What happened:**
+1. Exploratory testing found broken imports when server wouldn't start
+2. Pattern: Module contract violations
+3. Solution: Server startup integration test
+4. Validation: Introduced bugs, verified test caught them
+5. Result: All future import issues caught in <10 seconds
+
+**Artifacts created:**
+- `packages/server/test/server-startup.integration.test.ts`
+- `packages/server/test/module-contracts.integration.test.ts`
+- `scripts/static-analysis/validate-server-startup.ts`
+- `docs/issue-fixes-log.md`
+- `docs/bug-detection-test-results.md`
+
+**ROI:** 10 minutes of exploratory testing → prevents infinite regressions
+
+---
+
 ## Landing the Plane (Session Completion)
 
 Work is NOT complete until `git push` succeeds.
