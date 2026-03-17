@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { isStripeConfigured } from '../../lib/env';
-import { db } from '@executable-specs/shared/index-server';
+import { db } from '../../db';
 import Stripe from 'stripe';
 
 const router = new Hono();

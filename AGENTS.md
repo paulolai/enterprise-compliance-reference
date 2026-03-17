@@ -149,7 +149,6 @@ Issues should be caught at the **cheapest** level:
 
 ```
 Static Analysis (CI) → Integration Tests → E2E Tests → Exploratory Testing
-      $10                   $100              $500           $1000+
 ```
 
 **Rule:** If exploratory testing finds it, a cheaper method should have caught it.
@@ -175,15 +174,10 @@ scripts/static-analysis/
 
 ### Cost Multiplier
 
-| Detection Level | Cost Per Issue | Cumulative Cost |
-|----------------|---------------|-----------------|
-| None (prod bug) | $5,000+ | $5,000+ |
-| Exploratory | $500 | $500 × N issues |
-| Static Analysis | $10 | $10 (catches all) |
-
-**Finding 4 issues via exploratory: $2,000**  
-**Same 4 via static analysis: $40**  
-**Savings: 50x**
+Earlier detection is cheaper:
+- Static Analysis catches issues at the source
+- Exploratory testing catches them in user-facing scenarios  
+- Production bugs are most expensive to fix
 
 ---
 
