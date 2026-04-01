@@ -8,9 +8,6 @@ import { validateParams, validateQuery } from '../../lib/validation/middleware';
 import { paramSchemas, querySchemas } from '../../lib/validation/schemas';
 
 const router = new Hono();
-// ... (omitted GET / as it doesn't use query)
-// Wait, I should include enough context for replace.
-
 
 /**
  * GET /api/products
