@@ -19,6 +19,7 @@
     "@playwright/test": "catalog:",
     "allure-playwright": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.1.2"
   }
 }
