@@ -67,6 +67,14 @@ export class MockStripe {
       },
 
       cancel: async (id: string) => {
+         if (id === 'pi_nonexistent') {
+           const error = new Stripe.errors.StripeInvalidRequestError({
+              message: 'No such payment_intent: ' + id,
+              type: 'invalid_request_error'
+           }) as Stripe.errors.StripeInvalidRequestError;
+           throw error;
+         }
+
          return {
             id: id,
             object: 'payment_intent',
