@@ -3,7 +3,18 @@ import {
   ShippingMethod,
   LoginRequestSchema,
   RegisterRequestSchema,
+  ShippingAddressSchema,
+  PricingResultSchema,
 } from '@executable-specs/shared';
+
+const CartItemSchema = z.object({
+  sku: z.string(),
+  name: z.string(),
+  price: z.number().optional(),
+  priceInCents: z.number().optional(),
+  quantity: z.number(),
+  weightInKg: z.number(),
+});
 
 export const requestSchemas = {
   calculatePricing: z.object({
@@ -48,17 +59,10 @@ export const requestSchemas = {
 
   createOrder: z.object({
     userId: z.string(),
-    items: z.array(z.object({
-      sku: z.string(),
-      name: z.string(),
-      price: z.number().optional(),
-      priceInCents: z.number().optional(),
-      quantity: z.number(),
-      weightInKg: z.number(),
-    })),
+    items: z.array(CartItemSchema),
     total: z.number(),
-    pricingResult: z.any(),
-    shippingAddress: z.any(),
+    pricingResult: PricingResultSchema,
+    shippingAddress: ShippingAddressSchema,
     stripePaymentIntentId: z.string(),
   }),
 
@@ -66,13 +70,13 @@ export const requestSchemas = {
     amount: z.number(),
     cartId: z.string(),
     userId: z.string(),
-    cartItems: z.array(z.any()),
+    cartItems: z.array(CartItemSchema),
   }),
 
   confirmPayment: z.object({
     paymentIntentId: z.string(),
-    cartItems: z.array(z.any()),
-    shippingAddress: z.any(),
+    cartItems: z.array(CartItemSchema),
+    shippingAddress: ShippingAddressSchema,
   }),
 
   cancelPayment: z.object({
