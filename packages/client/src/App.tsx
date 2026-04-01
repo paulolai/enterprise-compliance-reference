@@ -14,6 +14,7 @@ import { CheckoutDebugPage } from './pages/debug/CheckoutDebugPage';
 import { DebugIndexPage } from './pages/debug/DebugIndexPage';
 import { AuthProvider } from './providers/AuthProvider';
 import { Toaster } from 'react-hot-toast';
+import { isDebugEnabled } from './lib/env';
 import './index.css';
 
 function App() {
@@ -33,9 +34,13 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Debug routes for visual debugging and QA */}
-            <Route path="/debug" element={<DebugIndexPage />} />
-            <Route path="/debug/cart-view" element={<CartDebugPage />} />
-            <Route path="/debug/checkout" element={<CheckoutDebugPage />} />
+            {isDebugEnabled && (
+              <>
+                <Route path="/debug" element={<DebugIndexPage />} />
+                <Route path="/debug/cart-view" element={<CartDebugPage />} />
+                <Route path="/debug/checkout" element={<CheckoutDebugPage />} />
+              </>
+            )}
 
             {/* Catch-all 404 route */}
             <Route path="*" element={<NotFoundPage />} />

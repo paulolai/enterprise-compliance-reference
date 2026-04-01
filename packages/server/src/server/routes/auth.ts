@@ -3,6 +3,7 @@ import { logger } from '../../lib/logger';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';
 import type { LoginRequest } from '../../lib/validation/schemas';
+import { isProduction } from '../../lib/env';
 
 /**
  * Mock Authentication Routes
@@ -21,6 +22,14 @@ const USERS = new Map([
 ]);
 
 const router = new Hono();
+
+// Add production guard to all auth routes (mock/demo only)
+router.all('/*', async (c, next) => {
+  if (isProduction) {
+    return c.json({ error: 'Auth endpoints disabled in production' }, 404);
+  }
+  await next();
+});
 
 router.post('/login', validateBody(requestSchemas.login), async (c) => {
   try {
