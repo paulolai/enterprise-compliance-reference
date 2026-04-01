@@ -5,24 +5,19 @@
  * Not specific to the issues we found - will catch similar issues in the future
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { spawn } from 'child_process';
+import { test, expect } from '@playwright/test';
+import { spawn, ChildProcess } from 'child_process';
 import { resolve } from 'path';
 
-describe('Server Startup', () => {
-  let serverProcess: ReturnType<typeof spawn>;
-  let serverUrl: string;
+test.describe('Server Startup', () => {
+  let serverProcess: ChildProcess;
   
-  it('should start without throwing', async () => {
-    // GENERAL TEST: Does the server start?
-    // Catches: ANY import error, ANY syntax error, ANY missing dependency
-    const startTime = Date.now();
-    
+  test.beforeAll(async () => {
     serverProcess = spawn('npx', ['tsx', 'src/server/standalone.ts'], {
       cwd: resolve(__dirname, '../'),
       env: {
         ...process.env,
-        PORT: '3001', // Use different port for testing
+        PORT: '3001',
         NODE_ENV: 'test'
       }
     });
@@ -38,7 +33,7 @@ describe('Server Startup', () => {
       errorOutput += data.toString();
     });
     
-    // Wait for server to start or fail
+    // Wait for server to start
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Server failed to start within 10 seconds'));
@@ -53,7 +48,6 @@ describe('Server Startup', () => {
         }
       });
       
-      // Check for successful startup message
       const checkInterval = setInterval(() => {
         if (output.includes('Server listening') || output.includes('listening on')) {
           clearTimeout(timeout);
@@ -62,14 +56,23 @@ describe('Server Startup', () => {
         }
       }, 100);
     });
-    
-    const startupTime = Date.now() - startTime;
-    console.log(`Server started in ${startupTime}ms`);
-    
-    expect(startupTime).toBeLessThan(10000);
-  }, 15000);
+  });
   
-  it('should respond to health check', async () => {
+  test.afterAll(async () => {
+    if (serverProcess) {
+      serverProcess.kill();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  });
+  
+  test('should start without throwing', async () => {
+    // GENERAL TEST: Does the server start?
+    // Catches: ANY import error, ANY syntax error, ANY missing dependency
+    expect(serverProcess).toBeTruthy();
+    expect(serverProcess.exitCode).toBeNull();
+  });
+  
+  test('should respond to health check', async () => {
     // GENERAL TEST: Can we hit an endpoint?
     // Catches: ANY routing issue, ANY middleware error
     const response = await fetch('http://localhost:3001/health');
@@ -81,7 +84,7 @@ describe('Server Startup', () => {
     expect(body).toHaveProperty('timestamp');
   });
   
-  it('should load all API routes without errors', async () => {
+  test('should load all API routes without errors', async () => {
     // GENERAL TEST: Are all API routes registered?
     // Catches: ANY route registration failure, ANY import error in routes
     const routes = [
@@ -94,22 +97,12 @@ describe('Server Startup', () => {
     
     for (const route of routes) {
       const response = await fetch(`http://localhost:3001${route}`);
-      // Should not be 404 (route not found) or 500 (error in route)
       expect(response.status).not.toBe(404);
       
       if (response.status === 500) {
         const text = await response.text();
         throw new Error(`Route ${route} returned 500: ${text}`);
       }
-    }
-  });
-  
-  afterAll(async () => {
-    // Cleanup: kill server process
-    if (serverProcess) {
-      serverProcess.kill();
-      // Wait for process to exit
-      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   });
 });

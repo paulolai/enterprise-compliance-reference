@@ -119,15 +119,9 @@ describe('Module Contracts', () => {
     for (const entry of entryPoints) {
       const entryPath = resolve(__dirname, '../', entry);
       
-      if (!require.resolve(entryPath)) {
-        missingExports.push(`Cannot resolve ${entry}`);
-        continue;
-      }
-      
       try {
-        // Try to require the module - this will fail if imports are broken
-        delete require.cache[require.resolve(entryPath)];
-        require(entryPath);
+        // Try to dynamically import the module - this will fail if imports are broken
+        await import(`file://${entryPath}`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         missingExports.push(`${entry}: ${message}`);
