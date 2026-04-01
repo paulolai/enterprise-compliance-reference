@@ -169,6 +169,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId: 'pi_1234567890', // Test PaymentIntent ID
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
@@ -208,6 +217,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId: 'pi_1234567890',
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
@@ -249,6 +267,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId: 'pi_failed_123', // Simulate failed payment
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
@@ -287,6 +314,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId: 'pi_nonexistent',
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
@@ -321,6 +357,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId: 'pi_card_declined',
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
@@ -362,6 +407,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId,
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
@@ -387,6 +441,15 @@ test.describe('Payments API Integration Tests', () => {
         data: {
           paymentIntentId,
           cartItems: items,
+          pricingResult: {
+            originalTotal: 8900,
+            bulkDiscount: 0,
+            vipDiscount: 0,
+            totalDiscount: 0,
+            finalTotal: 8900,
+            grandTotal: 8900,
+            shipping: 0,
+          },
           shippingAddress: {
             street: '123 Test St',
             city: 'Test City',
