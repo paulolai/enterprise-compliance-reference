@@ -7,7 +7,7 @@
  */
 
 import { readFileSync, existsSync } from 'fs';
-import { glob } from 'glob';
+import * as glob from 'glob';
 import { join, dirname, resolve } from 'path';
 
 interface ImportIssue {
@@ -34,7 +34,7 @@ async function validateImports() {
   console.log('🔍 Import Validator\n');
   
   // Find all TypeScript files in server package
-  const files = await glob('packages/server/src/**/*.ts', {
+  const files = glob.sync('packages/server/src/**/*.ts', {
     absolute: true,
     cwd: process.cwd()
   });

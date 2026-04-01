@@ -7,7 +7,7 @@
  */
 
 import { readFileSync, existsSync } from 'fs';
-import { glob } from 'glob';
+import * as glob from 'glob';
 import { join } from 'path';
 
 interface StartupIssue {
@@ -52,12 +52,17 @@ async function validateServerStartup() {
   console.log('Scanning for common startup failure patterns...\n');
   
   for (const rule of DETECTION_RULES) {
-    const files = await glob(rule.filePattern, {
+    const files = glob.sync(rule.filePattern, {
       absolute: true,
       cwd: process.cwd()
     });
     
     for (const file of files) {
+      // Skip test files - they often intentionally reference patterns for testing
+      if (file.includes('.test.') || file.includes('.spec.') || file.includes('/test/')) {
+        continue;
+      }
+      
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
       
