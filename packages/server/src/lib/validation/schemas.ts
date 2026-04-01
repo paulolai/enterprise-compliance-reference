@@ -77,6 +77,7 @@ export const requestSchemas = {
     paymentIntentId: z.string(),
     cartItems: z.array(CartItemSchema),
     shippingAddress: ShippingAddressSchema,
+    pricingResult: PricingResultSchema,
   }),
 
   cancelPayment: z.object({

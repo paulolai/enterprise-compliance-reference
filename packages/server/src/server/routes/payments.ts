@@ -102,7 +102,7 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
   }
 
   try {
-    const { paymentIntentId, cartItems, shippingAddress } = (c.get('validatedBody' as never) as unknown) as ConfirmPaymentRequest;
+    const { paymentIntentId, cartItems, shippingAddress, pricingResult } = (c.get('validatedBody' as never) as unknown) as ConfirmPaymentRequest;
 
     // Check if order already exists (idempotency)
     const existingOrders = await db
@@ -156,10 +156,12 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
     const orderId = `order_${randomUUID()}`;
     const now = Date.now();
 
-    // Use domain function to map line items
-    const pricingResult = {
+    // Map cart items to line items using domain logic
+    const lineItems = mapCartToLineItems(cartItems, pricingResult);
+
+    const storedPricingResult = {
       originalTotal: total,
-      lineItems: mapCartToLineItems(cartItems),
+      lineItems,
     };
 
     const newOrder = {
@@ -167,7 +169,7 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
       userId,
       status: OrderStatus.PAID,
       total,
-      pricingResult: JSON.stringify(pricingResult),
+      pricingResult: JSON.stringify(storedPricingResult),
       shippingAddress: JSON.stringify(shippingAddress),
       stripePaymentIntentId: paymentIntentId,
       createdAt: now,
@@ -177,7 +179,7 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
     await db.insert(orders).values(newOrder);
 
     // Create order item records
-    for (const item of cartItems) {
+    for (const item of lineItems) {
       const orderItemId = `order_item_${randomUUID()}`;
       const newOrderItem = {
         id: orderItemId,
@@ -185,8 +187,8 @@ router.post('/confirm', validateBody(requestSchemas.confirmPayment), async (c) =
         sku: item.sku,
         quantity: item.quantity,
         price: item.priceInCents,
-        weightInKg: Math.round(item.weightInKg * 100), // Store as int * 100
-        discount: 0, // No discount applied
+        weightInKg: Math.round(item.weightInKg * 100),
+        discount: item.bulkDiscount,
         createdAt: now,
       };
 
