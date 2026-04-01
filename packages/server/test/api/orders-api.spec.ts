@@ -471,7 +471,7 @@ test.describe('Orders API Integration Tests', () => {
         const createResult = await createResponse.json() as { orderId: string };
         createdOrderIds.push(createResult.orderId);
 
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       const response = await request.get(`${API_BASE}/user/${userId}`);
@@ -484,6 +484,12 @@ test.describe('Orders API Integration Tests', () => {
       const userOrders = result.orders.filter((o: { id: string }) => createdOrderIds.includes(o.id));
       expect(userOrders.length).toBe(3);
 
+      // Verify descending order: last-created order (total=9602) should be first
+      expect(userOrders[0].total).toBe(9602);
+      expect(userOrders[1].total).toBe(9601);
+      expect(userOrders[2].total).toBe(9600);
+
+      // Also verify createdAt timestamps are descending
       for (let i = 0; i < userOrders.length - 1; i++) {
         const current = new Date(userOrders[i].createdAt);
         const next = new Date(userOrders[i + 1].createdAt);
