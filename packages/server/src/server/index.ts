@@ -11,6 +11,16 @@ import { rateLimit } from './middleware/rate-limit';
 import { metrics } from '../lib/metrics';
 import { healthRouter } from './routes/health';
 
+export {
+  pricingRouter,
+  authRouter,
+  debugRouter,
+  ordersRouter,
+  productsRouter,
+  paymentsRouter,
+  healthRouter,
+};
+
 const app = new Hono();
 
 app.use('*', cors());
