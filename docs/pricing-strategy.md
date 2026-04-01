@@ -149,3 +149,46 @@ Result: ShipmentInfo
 **See:**
 - UI tests: `test/e2e/auth-validation.ui.properties.test.ts`
 
+## 7. Checkout Validation Rules
+
+### 7.1 Shipping Address Validation
+**Goal:** Ensure complete and valid shipping information for order delivery.
+- **Rule:** All shipping address fields must be provided and valid before order can be placed.
+- **Invariant:**
+  - Full name must be at least 2 characters
+  - Street address is required (non-empty)
+  - City is required (non-empty)
+  - State is required (non-empty)
+  - ZIP code must be at least 4 characters
+  - Form submission is blocked if any validation fails
+  - Validation errors display inline per field
+  - Errors clear when user corrects input
+
+**See:**
+- UI tests: `test/e2e/checkout-validation.ui.properties.test.ts`
+
+### 7.2 Payment Card Validation
+**Goal:** Validate payment information format before processing.
+- **Rule:** Payment card fields must pass format validation before order can be placed.
+- **Invariant:**
+  - Card number must be at least 13 digits
+  - Expiry date must be in MM/YY format
+  - CVC must be at least 3 digits
+  - Form submission is blocked if any validation fails
+  - Validation errors display inline per field
+
+**See:**
+- UI tests: `test/e2e/checkout-validation.ui.properties.test.ts`
+
+### 7.3 Pricing API Error Handling
+**Goal:** Gracefully handle pricing API failures during checkout.
+- **Rule:** If pricing API fails, checkout must show error state and prevent order placement.
+- **Invariant:**
+  - Order summary shows error state when pricing API fails
+  - Place Order button is disabled during error state
+  - Pricing is recalculated on each checkout page visit
+  - User cannot proceed with invalid pricing
+
+**See:**
+- UI tests: `test/e2e/checkout-validation.ui.properties.test.ts`
+
