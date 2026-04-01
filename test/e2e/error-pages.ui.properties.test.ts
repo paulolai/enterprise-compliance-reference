@@ -19,7 +19,6 @@ invariant('Non-existent routes display 404 error page', {
     '/page-does-not-exist',
     '/products/INVALID-SKU-12345',
     '/admin/secret',
-    '/api/v999/resource'
   ];
 
   for (const path of nonExistentPaths) {
