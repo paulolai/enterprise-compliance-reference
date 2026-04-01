@@ -48,6 +48,12 @@ export async function injectCartState(
       version: 0
     };
     localStorage.setItem('cart-storage', JSON.stringify(state));
+
+    // Also set auth client state so AuthProvider doesn't overwrite the user
+    if (user) {
+      localStorage.setItem('auth_user', JSON.stringify(user));
+      localStorage.setItem('auth_token', 'test-token');
+    }
   }, { cart, user, shippingMethod });
 
   // Reload to force hydration of the new state

@@ -107,9 +107,9 @@ invariant('VIP user complete authenticated checkout flow', {
   await expect(page.getByRole('radio', { name: 'Express' })).toBeVisible();
 
   // Verify pricing components are shown
-  await expect(page.getByText(/Product Total/)).toBeVisible();
-  await expect(page.getByText(/Shipping/)).toBeVisible();
-  await expect(page.getByText(/Grand Total/)).toBeVisible();
+  await expect(page.getByText('Product Total')).toBeVisible();
+  await expect(page.getByText(/Shipping \(STANDARD\)/)).toBeVisible();
+  await expect(page.getByText('Grand Total')).toBeVisible();
 
   // Verify grand total has valid format
   const grandTotalText = await grandTotal.textContent();
@@ -195,9 +195,9 @@ invariant('Non-VIP user complete authenticated checkout flow', {
   await expect(page.getByRole('radio', { name: 'Express' })).toBeVisible();
 
   // Verify pricing components are shown (without VIP discount)
-  await expect(page.getByText(/Product Total/)).toBeVisible();
-  await expect(page.getByText(/Shipping/)).toBeVisible();
-  await expect(page.getByText(/Grand Total/)).toBeVisible();
+  await expect(page.getByText('Product Total')).toBeVisible();
+  await expect(page.getByText(/Shipping \(STANDARD\)/)).toBeVisible();
+  await expect(page.getByText('Grand Total')).toBeVisible();
 });
 
 // --- Cart Data Consistency After Seeding ---
@@ -261,7 +261,8 @@ invariant('Seeded cart data persists through auth flow to checkout', {
   // Shipping should be calculated and shown
   const shippingRow = page.getByTestId('cart-summary')
     .locator('.summary-row')
-    .filter({ hasText: 'Shipping' });
+    .filter({ hasText: /^Shipping/ })
+    .first();
   await expect(shippingRow).toBeVisible();
 });
 

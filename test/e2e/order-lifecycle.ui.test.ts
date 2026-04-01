@@ -48,10 +48,11 @@ function createOrderPayload(
     total: pricingResult.grandTotal,
     pricingResult,
     shippingAddress: {
-      street: '123 Test St',
+      fullName: 'Test User',
+      streetAddress: '123 Test St',
       city: 'Test City',
       state: 'NSW',
-      zip: '2000',
+      zipCode: '2000',
       country: 'AU',
     },
     stripePaymentIntentId,

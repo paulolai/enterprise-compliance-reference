@@ -36,7 +36,7 @@ router.post('/login', validateBody(requestSchemas.login), async (c) => {
     const { email, password } = (c.get('validatedBody' as never) as unknown) as LoginRequest;
 
     const user = USERS.get(email);
-    if (user && password === 'password') {
+    if (user && password.length >= 8) {
       // Return user without password and with a mock access token
       const { email: userEmail, name, tenureYears } = user;
       const userWithoutPassword = { email: userEmail, name, tenureYears };

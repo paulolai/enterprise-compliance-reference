@@ -91,7 +91,7 @@ invariant('Registration with new email succeeds', {
   // Fill in registration form
   await page.getByLabel('Name').fill('New User');
   await page.getByLabel('Email').fill(uniqueEmail);
-  await page.getByLabel('Password').fill('password');
+  await page.getByLabel('Password').fill('password1');
   await page.getByRole('button', { name: 'Create Account' }).click();
 
   // Should navigate to cart after successful registration
