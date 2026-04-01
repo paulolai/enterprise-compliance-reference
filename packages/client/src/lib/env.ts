@@ -16,6 +16,13 @@
 
 import { z } from 'zod';
 
+const isBrowser = typeof window !== 'undefined' && typeof process === 'undefined';
+
+const getEnvVar = (key: string, defaultValue?: string): string | undefined => {
+  if (isBrowser) return defaultValue;
+  return process.env[key] ?? defaultValue;
+};
+
 /**
  * Environment Schema
  *
@@ -67,13 +74,17 @@ export type Env = z.infer<typeof envSchema>;
  * Transform functions normalize values (e.g., CORS_ORIGINS string to array).
  */
 const rawEnv = {
-  // Pass through existing env vars
-  ...process.env,
-
-  // Transform boolean-like strings to actual booleans
-  ENABLE_DEBUG_ENDPOINTS: parseBoolean(process.env.ENABLE_DEBUG_ENDPOINTS, true),
-  ENABLE_PAYMENTS: parseBoolean(process.env.ENABLE_PAYMENTS, true),
-  CI: parseBoolean(process.env.CI, false),
+  // Pass through existing env vars (browser-safe)
+  NODE_ENV: getEnvVar('NODE_ENV', 'development'),
+  PORT: getEnvVar('PORT', '5173'),
+  DATABASE_PATH: getEnvVar('DATABASE_PATH', './data/shop.db'),
+  STRIPE_SECRET_KEY: getEnvVar('STRIPE_SECRET_KEY'),
+  STRIPE_WEBHOOK_SECRET: getEnvVar('STRIPE_WEBHOOK_SECRET'),
+  CORS_ORIGINS: getEnvVar('CORS_ORIGINS', 'http://localhost:5173'),
+  LOG_LEVEL: getEnvVar('LOG_LEVEL', 'info'),
+  CI: getEnvVar('CI'),
+  ENABLE_DEBUG_ENDPOINTS: parseBoolean(getEnvVar('ENABLE_DEBUG_ENDPOINTS'), true),
+  ENABLE_PAYMENTS: parseBoolean(getEnvVar('ENABLE_PAYMENTS'), true),
 };
 
 /**
@@ -151,7 +162,7 @@ export const isDebugEnabled = env.ENABLE_DEBUG_ENDPOINTS && !isProduction;
  * Useful for generating absolute URLs in responses
  */
 export const getAppUrl = (): string => {
-  const host = process.env.HOST || 'localhost';
+  const host = isBrowser ? 'localhost' : (process.env.HOST || 'localhost');
   const protocol = isProduction ? 'https' : 'http';
   return `${protocol}://${host}:${env.PORT}`;
 };
