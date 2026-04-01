@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { HomePage } from './pages/HomePage';
 import { ProductsPage } from './pages/ProductsPage';
@@ -8,6 +8,7 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { CartDebugPage } from './pages/debug/CartDebugPage';
 import { CheckoutDebugPage } from './pages/debug/CheckoutDebugPage';
 import { DebugIndexPage } from './pages/debug/DebugIndexPage';
@@ -35,9 +36,10 @@ function App() {
             <Route path="/debug" element={<DebugIndexPage />} />
             <Route path="/debug/cart-view" element={<CartDebugPage />} />
             <Route path="/debug/checkout" element={<CheckoutDebugPage />} />
-          </Route>
 
-          <Route path="*" element={<Navigate to="/" />} />
+            {/* Catch-all 404 route */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>
