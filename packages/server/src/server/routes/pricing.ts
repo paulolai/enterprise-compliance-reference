@@ -4,7 +4,6 @@ import { PricingEngine } from '@executable-specs/shared';
 import { validateBody } from '../../lib/validation/middleware';
 import { requestSchemas } from '../../lib/validation/schemas';
 import type { CalculatePricingRequest } from '../../lib/validation/schemas';
-import { z } from 'zod';
 
 const router = new Hono();
 
@@ -15,14 +14,6 @@ router.post('/calculate', validateBody(requestSchemas.calculatePricing), async (
     const result = PricingEngine.calculate(items, user || { tenureYears: 0 }, method);
     return c.json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ 
-        error: 'VALIDATION_ERROR', 
-        message: 'Domain validation failed', 
-        statusCode: 400,
-        fields: error.flatten().fieldErrors
-      }, 400);
-    }
     logger.error('Pricing calculation failed', error, { action: 'calculate' });
     return c.json({ error: 'Calculation failed' }, 500);
   }

@@ -6,42 +6,6 @@ import Stripe from 'stripe';
 const router = new Hono();
 
 /**
- * Latency tracking for detailed health metrics
- */
-interface LatencyBucket {
-  count: number;
-  totalMs: number;
-  maxMs: number;
-  minMs: number;
-}
-const latencyBuckets = new Map<string, LatencyBucket>();
-
-function recordLatency(action: string, durationMs: number): void {
-  const bucket = latencyBuckets.get(action) || {
-    count: 0,
-    totalMs: 0,
-    maxMs: -Infinity,
-    minMs: Infinity,
-  };
-  bucket.count++;
-  bucket.totalMs += durationMs;
-  bucket.maxMs = Math.max(bucket.maxMs, durationMs);
-  bucket.minMs = Math.min(bucket.minMs, durationMs);
-  latencyBuckets.set(action, bucket);
-}
-
-function getLatencySummary(action: string): { count: number; avgMs: number; maxMs: number; minMs: number } | null {
-  const bucket = latencyBuckets.get(action);
-  if (!bucket || bucket.count === 0) return null;
-  return {
-    count: bucket.count,
-    avgMs: bucket.totalMs / bucket.count,
-    maxMs: bucket.maxMs === -Infinity ? 0 : bucket.maxMs,
-    minMs: bucket.minMs === Infinity ? 0 : bucket.minMs,
-  };
-}
-
-/**
  * GET /health
  * Simple liveness probe - returns 200 if the app is running.
  */
@@ -122,7 +86,7 @@ router.get('/readyz', async (c) => {
 
 /**
  * GET /livez
- * Detailed health status including latency bucketing and resource metrics.
+ * Detailed health status including resource metrics.
  */
 router.get('/livez', async (c) => {
   // Reuse readiness checks logic (simplified for inline)
@@ -135,13 +99,6 @@ router.get('/livez', async (c) => {
     checks.database = { status: 'healthy' };
   } catch (error) {
     checks.database = { status: 'unhealthy', message: error instanceof Error ? error.message : 'Error' };
-  }
-
-  // Latency metrics
-  const actions = ['calculate_pricing', 'create_order', 'get_products', 'create_payment_intent'];
-  const latencies: Record<string, { count: number; avgMs: number; maxMs: number; minMs: number } | null> = {};
-  for (const action of actions) {
-    latencies[action] = getLatencySummary(action);
   }
 
   const memoryUsage = process.memoryUsage();
@@ -162,9 +119,7 @@ router.get('/livez', async (c) => {
       },
     },
     dependencies: checks,
-    latency: latencies,
   }, 200);
 });
 
-export { recordLatency };
 export { router as healthRouter };
