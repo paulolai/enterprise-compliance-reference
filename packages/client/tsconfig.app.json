@@ -21,7 +21,17 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@executable-specs/shared": ["../shared/src"],
+      "@executable-specs/shared/fixtures": ["../shared/fixtures"],
+      "@executable-specs/domain": ["../domain/src"],
+      "@/lib/*": ["src/lib/*"],
+      "@/components/*": ["src/components/*"]
+    }
   },
   "include": ["src"]
 }
