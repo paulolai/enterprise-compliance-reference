@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { ShippingMethod } from '@executable-specs/shared';
+import { 
+  ShippingMethod,
+  LoginRequestSchema,
+  RegisterRequestSchema,
+} from '@executable-specs/shared';
 
 export const requestSchemas = {
   calculatePricing: z.object({
@@ -17,16 +21,9 @@ export const requestSchemas = {
     method: z.nativeEnum(ShippingMethod).optional(),
   }),
 
-  login: z.object({
-    email: z.string().email(),
-    password: z.string().min(1),
-  }),
+  login: LoginRequestSchema,
 
-  register: z.object({
-    email: z.string().email(),
-    name: z.string().min(1),
-    password: z.string().min(1),
-  }),
+  register: RegisterRequestSchema,
 
   seedAuth: z.object({
     email: z.string(),

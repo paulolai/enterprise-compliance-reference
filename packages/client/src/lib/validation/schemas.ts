@@ -19,6 +19,8 @@ import {
   PricingResultSchema,
   ShippingMethodSchema,
   UserSchema,
+  LoginRequestSchema,
+  ShippingAddressSchema,
 } from '@executable-specs/shared';
 import {
   CartItemSchema,
@@ -67,13 +69,9 @@ export type PaginationQuery = z.infer<typeof PaginationQuerySchema>;
 // --------------------------------------------------------------------------
 
 /**
- * Login request schema
+ * Login request schema - imported from shared
+ * @see packages/shared/src/modules/validation.ts
  */
-export const LoginRequestSchema = z.object({
-  email: EmailSchema,
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
 /**
@@ -110,16 +108,9 @@ export const SetShippingRequestSchema = z.object({
 export type SetShippingRequest = z.infer<typeof SetShippingRequestSchema>;
 
 /**
- * Shipping address schema
+ * Shipping address schema - imported from shared
+ * @see packages/shared/src/modules/validation.ts
  */
-export const ShippingAddressSchema = z.object({
-  street: NonEmptyStringSchema,
-  city: NonEmptyStringSchema,
-  state: NonEmptyStringSchema,
-  zip: z.string().min(3),
-  country: z.string().min(2).max(2).default('AU'),
-});
-
 export type ShippingAddress = z.infer<typeof ShippingAddressSchema>;
 
 // --------------------------------------------------------------------------
