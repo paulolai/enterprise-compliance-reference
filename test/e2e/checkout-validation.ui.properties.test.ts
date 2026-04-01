@@ -1,23 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { invariant } from './fixtures/invariant-helper';
 
-test.describe.skip('Checkout Validation UI Tests', () => {
+test.describe('Checkout Validation UI Tests', () => {
   test.beforeEach(async ({ context }) => {
     // Clear localStorage and cookies before each test
     await context.clearCookies();
   });
 
-  // SKIPPED: These tests verify checkout form validation features that are not yet implemented.
-  // The implementation requires:
-  // - Form validation logic in CheckoutPage.tsx (shipping fields, payment fields)
-  // - Error message display for validation failures
-  // - Pricing API error handling with disabled place order button
-  // - Products page with working "Add to Cart" buttons
-  // See pricing-strategy.md §6-7 for the business rules.
-  // TODO: Enable these tests when checkout validation is implemented.
-
   invariant('Checkout requires shipping address fields', {
-    ruleReference: 'pricing-strategy.md §6 - Checkout Data Validation',
+    ruleReference: 'pricing-strategy.md §7.1 - Shipping Address Validation',
     rule: 'Checkout cannot proceed unless all shipping fields are provided',
     tags: ['@checkout', '@validation', '@customer-experience']
   }, async ({ page }) => {
@@ -42,7 +33,7 @@ test.describe.skip('Checkout Validation UI Tests', () => {
   });
 
   invariant('Checkout requires payment fields', {
-    ruleReference: 'pricing-strategy.md §6 - Checkout Data Validation',
+    ruleReference: 'pricing-strategy.md §7.2 - Payment Card Validation',
     rule: 'Checkout cannot proceed unless payment information is valid',
     tags: ['@checkout', '@validation', '@customer-experience']
   }, async ({ page }) => {
@@ -71,7 +62,7 @@ test.describe.skip('Checkout Validation UI Tests', () => {
   });
 
   invariant('Checkout displays error when pricing API fails', {
-    ruleReference: 'pricing-strategy.md §7 - Checkout Pricing Recalculation',
+    ruleReference: 'pricing-strategy.md §7.3 - Pricing API Error Handling',
     rule: 'If pricing API fails, checkout must show error state',
     tags: ['@checkout', '@validation', '@revenue-protection']
   }, async ({ page }) => {
@@ -98,7 +89,7 @@ test.describe.skip('Checkout Validation UI Tests', () => {
   });
 
   invariant('Checkout recalculates pricing on each visit', {
-    ruleReference: 'pricing-strategy.md §7 - Checkout Pricing Recalculation',
+    ruleReference: 'pricing-strategy.md §7.3 - Pricing API Error Handling',
     rule: 'Pricing must be recalculated and validated on each checkout page visit',
     tags: ['@checkout', '@pricing', '@customer-experience']
   }, async ({ page }) => {
@@ -109,19 +100,19 @@ test.describe.skip('Checkout Validation UI Tests', () => {
     // Navigate to checkout first time
     await page.goto('/checkout');
     
-    // Wait for pricing to load
-    await expect(page.getByTestId('order-summary')).not.toContainText('Loading');
+    // Wait for pricing to load (wait for grand total to appear)
+    await expect(page.getByTestId('order-summary')).toContainText('$');
     const firstTotal = await page.getByTestId('order-summary').textContent();
     
-    // Go back to products and add more items
-    await page.goto('/products');
-    await page.getByRole('button', { name: /Add to Cart/i }).first().click();
+    // Add more items via debug page
+    await page.goto('/debug');
+    await page.getByTestId('scenario-card-add-item').getByRole('button').click();
     
     // Navigate to checkout again
     await page.goto('/checkout');
     
     // Wait for pricing to recalculate
-    await expect(page.getByTestId('order-summary')).not.toContainText('Loading');
+    await expect(page.getByTestId('order-summary')).toContainText('$');
     const secondTotal = await page.getByTestId('order-summary').textContent();
     
     // Totals should be different after adding items
