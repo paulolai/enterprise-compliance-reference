@@ -26,8 +26,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
-  // TypeScript type check temporarily disabled for restructure
-  // Re-enable after full migration: globalSetup: './playwright.global-setup.ts',
+  globalSetup: './playwright.global-setup.ts',
 
   webServer: {
     command: 'pnpm --filter @executable-specs/client run dev',
