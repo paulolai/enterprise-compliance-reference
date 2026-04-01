@@ -271,29 +271,69 @@ test.describe('Orders API Integration Tests', () => {
         name: 'Order retrieval with items',
       });
 
-      // First, assume an order exists (would need setup in a real test)
-      const orderId = 'order_test_123';
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'SMART-WATCH', name: 'Smart Watch', priceInCents: 19900, quantity: 1, weightInKg: 0.2 },
+      ];
 
-      const response = await request.get(`${API_BASE}/${orderId}`);
+      const pricingResult: PricingResult = {
+        originalTotal: 28800, subtotalAfterBulk: 28800, isCapped: false,
+        finalTotal: 28800,
+        grandTotal: 28800 + 700,
+        totalDiscount: 0,
+        volumeDiscountTotal: 0,
+        vipDiscount: 0,
+        lineItems: [],
+        shipment: { method: 'STANDARD',
+          baseShipping: 700,
+          weightSurcharge: 0,
+          expeditedSurcharge: 0,
+          totalShipping: 700,
+          isFreeShipping: false,
+        },
+      };
 
-      if (response.status() === 501) {
+      const createResponse = await request.post(API_BASE, {
+        data: {
+          userId: 'test-user-get-order',
+          items,
+          total: 29500,
+          pricingResult,
+          shippingAddress: {
+            street: '123 Test St',
+            city: 'Test City',
+            state: 'NSW',
+            zip: '2000',
+            country: 'AU',
+          },
+          stripePaymentIntentId: 'pi_test_get_order',
+        },
+      });
+
+      if (createResponse.status() === 501) {
         test.skip(true, 'Orders API not implemented yet');
         return;
       }
 
-      // In a real test, we'd create an order first
-      // For now, we expect either 404 (not found) or 200 (found)
-      expect([200, 404]).toContain(response.status());
+      expect(createResponse.status()).toBe(200);
+      const createResult = await createResponse.json() as { orderId: string };
+      const orderId = createResult.orderId;
 
-      if (response.status() === 200) {
-        const result = await response.json();
-        expect(result).toHaveProperty('id');
-        expect(result).toHaveProperty('userId');
-        expect(result).toHaveProperty('total');
-        expect(result).toHaveProperty('status');
-        expect(result).toHaveProperty('items');
-        expect(Array.isArray(result.items)).toBe(true);
-      }
+      const response = await request.get(`${API_BASE}/${orderId}`);
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result).toHaveProperty('id');
+      expect(result.id).toBe(orderId);
+      expect(result).toHaveProperty('userId');
+      expect(result.userId).toBe('test-user-get-order');
+      expect(result).toHaveProperty('total');
+      expect(result.total).toBe(29500);
+      expect(result).toHaveProperty('status');
+      expect(result.status).toBe('paid');
+      expect(result).toHaveProperty('items');
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(result.items.length).toBe(2);
     });
   });
 
@@ -306,24 +346,61 @@ test.describe('Orders API Integration Tests', () => {
         name: 'User orders retrieval',
       });
 
-      const userId = 'test-user-123';
+      const userId = 'test-user-orders-list';
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+      ];
 
-      const response = await request.get(`${API_BASE}/user/${userId}`);
+      const pricingResult: PricingResult = {
+        originalTotal: 8900, subtotalAfterBulk: 8900, isCapped: false,
+        finalTotal: 8900,
+        grandTotal: 8900 + 700,
+        totalDiscount: 0,
+        volumeDiscountTotal: 0,
+        vipDiscount: 0,
+        lineItems: [],
+        shipment: { method: 'STANDARD',
+          baseShipping: 700,
+          weightSurcharge: 0,
+          expeditedSurcharge: 0,
+          totalShipping: 700,
+          isFreeShipping: false,
+        },
+      };
 
-      if (response.status() === 501) {
+      const createResponse = await request.post(API_BASE, {
+        data: {
+          userId,
+          items,
+          total: 9600,
+          pricingResult,
+          shippingAddress: {
+            street: '123 Test St',
+            city: 'Test City',
+            state: 'NSW',
+            zip: '2000',
+            country: 'AU',
+          },
+          stripePaymentIntentId: 'pi_test_user_orders_list',
+        },
+      });
+
+      if (createResponse.status() === 501) {
         test.skip(true, 'Orders API not implemented yet');
         return;
       }
 
-      expect([200, 404]).toContain(response.status());
+      expect(createResponse.status()).toBe(200);
 
-      if (response.status() === 200) {
-        const result = await response.json();
-        expect(result).toHaveProperty('orders');
-        expect(result).toHaveProperty('userId');
-        expect(result.userId).toBe(userId);
-        expect(Array.isArray(result.orders)).toBe(true);
-      }
+      const response = await request.get(`${API_BASE}/user/${userId}`);
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result).toHaveProperty('orders');
+      expect(result).toHaveProperty('userId');
+      expect(result.userId).toBe(userId);
+      expect(Array.isArray(result.orders)).toBe(true);
+      expect(result.orders.length).toBeGreaterThanOrEqual(1);
     });
 
     test('orders ordered by date descending', async ({ request }) => {
@@ -334,26 +411,76 @@ test.describe('Orders API Integration Tests', () => {
         name: 'Orders ordered by date',
       });
 
-      const userId = 'test-user-456';
+      const userId = 'test-user-sorting';
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+      ];
 
-      const response = await request.get(`${API_BASE}/user/${userId}`);
+      const pricingResult: PricingResult = {
+        originalTotal: 8900, subtotalAfterBulk: 8900, isCapped: false,
+        finalTotal: 8900,
+        grandTotal: 8900 + 700,
+        totalDiscount: 0,
+        volumeDiscountTotal: 0,
+        vipDiscount: 0,
+        lineItems: [],
+        shipment: { method: 'STANDARD',
+          baseShipping: 700,
+          weightSurcharge: 0,
+          expeditedSurcharge: 0,
+          totalShipping: 700,
+          isFreeShipping: false,
+        },
+      };
 
-      if (response.status() === 501) {
-        test.skip(true, 'Orders API not implemented yet');
-        return;
+      const paymentIntents = ['pi_sort_1', 'pi_sort_2', 'pi_sort_3'];
+      const totals = [9600, 9601, 9602];
+      const createdOrderIds: string[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const createResponse = await request.post(API_BASE, {
+          data: {
+            userId,
+            items,
+            total: totals[i],
+            pricingResult,
+            shippingAddress: {
+              street: '123 Test St',
+              city: 'Test City',
+              state: 'NSW',
+              zip: '2000',
+              country: 'AU',
+            },
+            stripePaymentIntentId: paymentIntents[i],
+          },
+        });
+
+        if (createResponse.status() === 501) {
+          test.skip(true, 'Orders API not implemented yet');
+          return;
+        }
+
+        expect(createResponse.status()).toBe(200);
+        const createResult = await createResponse.json() as { orderId: string };
+        createdOrderIds.push(createResult.orderId);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      if (response.status() === 200) {
-        const result = await response.json();
+      const response = await request.get(`${API_BASE}/user/${userId}`);
+      expect(response.status()).toBe(200);
 
-        if (result.orders.length > 1) {
-          // Verify orders are sorted by createdAt descending
-          for (let i = 0; i < result.orders.length - 1; i++) {
-            const current = new Date(result.orders[i].createdAt);
-            const next = new Date(result.orders[i + 1].createdAt);
-            expect(current.getTime()).toBeGreaterThanOrEqual(next.getTime());
-          }
-        }
+      const result = await response.json();
+      expect(Array.isArray(result.orders)).toBe(true);
+      expect(result.orders.length).toBeGreaterThanOrEqual(3);
+
+      const userOrders = result.orders.filter((o: { id: string }) => createdOrderIds.includes(o.id));
+      expect(userOrders.length).toBe(3);
+
+      for (let i = 0; i < userOrders.length - 1; i++) {
+        const current = new Date(userOrders[i].createdAt);
+        const next = new Date(userOrders[i + 1].createdAt);
+        expect(current.getTime()).toBeGreaterThanOrEqual(next.getTime());
       }
     });
   });
@@ -367,21 +494,111 @@ test.describe('Orders API Integration Tests', () => {
         name: 'Cascade delete',
       });
 
-      // This would require setting up an order first
-      const orderId = 'order_test_delete';
+      const items: CartItemWithPriceInCents[] = [
+        { sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', priceInCents: 8900, quantity: 1, weightInKg: 0.1 },
+        { sku: 'SMART-WATCH', name: 'Smart Watch', priceInCents: 19900, quantity: 1, weightInKg: 0.2 },
+      ];
 
-      const response = await request.delete(`${API_BASE}/${orderId}`);
+      const pricingResult: PricingResult = {
+        originalTotal: 28800, subtotalAfterBulk: 28800, isCapped: false,
+        finalTotal: 28800,
+        grandTotal: 28800 + 700,
+        totalDiscount: 0,
+        volumeDiscountTotal: 0,
+        vipDiscount: 0,
+        lineItems: [],
+        shipment: { method: 'STANDARD',
+          baseShipping: 700,
+          weightSurcharge: 0,
+          expeditedSurcharge: 0,
+          totalShipping: 700,
+          isFreeShipping: false,
+        },
+      };
 
-      if (response.status() === 501) {
+      const createResponse = await request.post(API_BASE, {
+        data: {
+          userId: 'test-user-delete',
+          items,
+          total: 29500,
+          pricingResult,
+          shippingAddress: {
+            street: '123 Test St',
+            city: 'Test City',
+            state: 'NSW',
+            zip: '2000',
+            country: 'AU',
+          },
+          stripePaymentIntentId: 'pi_test_delete_cascade',
+        },
+      });
+
+      if (createResponse.status() === 501) {
         test.skip(true, 'Orders API not implemented yet');
         return;
       }
 
-      expect([200, 204, 404]).toContain(response.status());
+      expect(createResponse.status()).toBe(200);
+      const createResult = await createResponse.json() as { orderId: string };
+      const orderId = createResult.orderId;
 
-      // Verify the order is gone
-      const getResponse = await request.get(`${API_BASE}/${orderId}`);
-      expect(getResponse.status()).toBe(404);
+      const getOrderResponse = await request.get(`${API_BASE}/${orderId}`);
+      expect(getOrderResponse.status()).toBe(200);
+      const getOrderResult = await getOrderResponse.json();
+      expect(Array.isArray(getOrderResult.items)).toBe(true);
+      expect(getOrderResult.items.length).toBe(2);
+
+      const deleteResponse = await request.delete(`${API_BASE}/${orderId}`);
+      expect(deleteResponse.status()).toBe(200);
+
+      const verifyGetResponse = await request.get(`${API_BASE}/${orderId}`);
+      expect(verifyGetResponse.status()).toBe(404);
+    });
+  });
+
+  test.describe('GET /api/products/:sku', () => {
+    test('GET returns product by SKU', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/04-order-persistence.md',
+        rule: 'Get product by SKU returns product details',
+        tags: ['@comprehensive'],
+        name: 'Product retrieval by SKU',
+      });
+
+      const response = await request.get('/api/products/WIRELESS-EARBUDS');
+
+      if (response.status() === 501) {
+        test.skip(true, 'Products API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result).toHaveProperty('sku');
+      expect(result.sku).toBe('WIRELESS-EARBUDS');
+      expect(result).toHaveProperty('name');
+      expect(result).toHaveProperty('priceInCents');
+      expect(result).toHaveProperty('weightInKg');
+      expect(result).toHaveProperty('category');
+    });
+
+    test('GET returns 404 for unknown SKU', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/04-order-persistence.md',
+        rule: 'Get product by unknown SKU returns 404',
+        tags: ['@validation'],
+        name: 'Product not found by SKU',
+      });
+
+      const response = await request.get('/api/products/NONEXISTENT-SKU-999');
+
+      if (response.status() === 501) {
+        test.skip(true, 'Products API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBe(404);
     });
   });
 
