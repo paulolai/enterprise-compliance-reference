@@ -139,7 +139,6 @@ test.describe('Complete Checkout Flow E2E Tests', () => {
       tags: ['@ux', '@navigation'],
     });
 
-    // Seed cart
     // Seed cart with items
     const items: CartItem[] = [{ sku: 'WIRELESS-EARBUDS', name: 'Wireless Earbuds', price: 8900, quantity: 1, weightInKg: 0.1 }];
     await injectCartState(page, items, null);
