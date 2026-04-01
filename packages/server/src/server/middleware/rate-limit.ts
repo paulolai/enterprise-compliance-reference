@@ -84,9 +84,12 @@ function getClientId(c: Context): string {
   const xRealIp = c.req.header('x-real-ip');
   if (xRealIp) return xRealIp;
 
-  // Fallback: use a generic identifier
-  // In production, this should never happen behind a proper reverse proxy
-  return c.req.header('user-agent') || 'anonymous';
+  // Fallback: use a fixed server-wide identifier.
+  // Using User-Agent would be spoofable (attackers could rotate to create unlimited buckets).
+  // A fixed identifier means all clients without proper IP headers share one rate limit bucket,
+  // which is safer than per-client spoofable identifiers.
+  // In production, this should never happen behind a proper reverse proxy.
+  return 'unknown-client';
 }
 
 /**
