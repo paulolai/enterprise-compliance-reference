@@ -63,6 +63,7 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
   const [pricingError, setPricingError] = React.useState(false);
+  const [orderError, setOrderError] = React.useState<string | null>(null);
 
   // Form state - controlled inputs
   const [fullName, setFullName] = React.useState('');
@@ -160,11 +161,62 @@ export function CheckoutPage() {
     }
 
     setIsPlacingOrder(true);
-    // Simulate order placement
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    useCartStore.getState().clear();
-    navigate('/products?order=success');
-    setIsPlacingOrder(false);
+    setOrderError(null);
+
+    try {
+      const store = useCartStore.getState();
+      const pricingResult = store.pricingResult;
+
+      if (!pricingResult) {
+        setOrderError('Pricing data is missing. Please refresh the page.');
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      const userId = user?.email ?? `guest_${crypto.randomUUID()}`;
+
+      const orderPayload = {
+        userId,
+        items: store.items.map((item) => ({
+          sku: item.sku,
+          name: item.name,
+          priceInCents: item.price,
+          quantity: item.quantity,
+          weightInKg: item.weightInKg,
+        })),
+        total: pricingResult.grandTotal,
+        pricingResult,
+        shippingAddress: {
+          fullName,
+          streetAddress,
+          city,
+          state,
+          zipCode,
+        },
+        stripePaymentIntentId: crypto.randomUUID(),
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setOrderError(data.error ?? 'Failed to place order. Please try again.');
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      store.clear();
+      navigate(`/order-confirmation/${data.orderId}`);
+    } catch (error) {
+      logger.error('Order submission failed', error, { page: 'checkout' });
+      setOrderError('Network error. Please check your connection and try again.');
+      setIsPlacingOrder(false);
+    }
   };
 
   const clearError = (field: keyof ValidationErrors) => {
@@ -190,6 +242,13 @@ export function CheckoutPage() {
         <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
           <AlertCircle className="h-4 w-4" />
           Unable to calculate pricing. Please try again later.
+        </div>
+      )}
+
+      {orderError && (
+        <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+          <AlertCircle className="h-4 w-4" />
+          {orderError}
         </div>
       )}
 

@@ -74,7 +74,7 @@ function createOrderPayload(
   items: CartItemWithPriceInCents[];
   total: number;
   pricingResult: PricingResult;
-  shippingAddress: { street: string; city: string; state: string; zip: string; country: string };
+  shippingAddress: { fullName: string; streetAddress: string; city: string; state: string; zipCode: string; country: string };
   stripePaymentIntentId: string;
 } {
   const pricingResult = buildPricingResult(items);
@@ -84,10 +84,11 @@ function createOrderPayload(
     total: pricingResult.grandTotal,
     pricingResult,
     shippingAddress: {
-      street: `${Math.floor(Math.random() * 9999)} Test St`,
+      fullName: 'Test User',
+      streetAddress: `${Math.floor(Math.random() * 9999)} Test St`,
       city: 'Test City',
       state: 'NSW',
-      zip: '2000',
+      zipCode: '2000',
       country: 'AU',
     },
     stripePaymentIntentId,
