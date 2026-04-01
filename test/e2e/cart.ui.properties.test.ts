@@ -50,8 +50,6 @@ invariant('Cart badge shows correct item count', {
   await page.getByRole('button', { name: 'Add to Cart' }).click();
   // Wait for badge to reflect the updated count
   await expect(page.getByTestId('cart-badge')).toHaveText('2');
-
-  await expect(page.getByTestId('cart-badge')).toHaveText('2');
 });
 
 invariant('VIP badge shown for VIP users', {
