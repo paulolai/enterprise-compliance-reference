@@ -71,6 +71,22 @@ export const DebugIndexPage = () => {
       },
     },
     {
+      id: 'add-item',
+      name: 'Add Single Item',
+      description: 'Adds 1 Wireless Earbuds to current cart',
+      action: () => {
+        addItem({
+          sku: 'WIRELESS-EARBUDS',
+          name: 'Wireless Earbuds',
+          price: 8900,
+          quantity: 1,
+          weightInKg: 0.1,
+        });
+        setShippingMethod(ShippingMethod.STANDARD);
+        setFeedback('Item added to cart!');
+      },
+    },
+    {
       id: 'standard-shipping',
       name: 'Standard Shipping',
       description: 'Sets shipping method to Standard ($10)',
