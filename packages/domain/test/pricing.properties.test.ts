@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { verifyInvariant } from './fixtures/invariant-helper';
-import { CartItem, User, PricingResult } from '../src';
+import type { CartItem, User, PricingResult } from '../src';
 
 describe('Pricing Engine: Mathematical Invariants', () => {
 

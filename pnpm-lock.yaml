@@ -273,6 +273,9 @@ importers:
       '@vitest/runner':
         specifier: 'catalog:'
         version: 4.0.18
+      '@vitest/utils':
+        specifier: ^4.1.2
+        version: 4.1.2
       allure-vitest:
         specifier: 'catalog:'
         version: 3.4.5(@vitest/runner@4.0.18)(allure-playwright@3.4.5(@playwright/test@1.58.2))(vitest@4.0.18(@types/node@25.2.3)(jiti@2.6.1)(jsdom@28.1.0)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -1704,6 +1707,9 @@ packages:
   '@vitest/pretty-format@4.0.18':
     resolution: {integrity: sha512-P24GK3GulZWC5tz87ux0m8OADrQIUVDPIjjj65vBXYG17ZeU3qD7r+MNZ1RNv4l8CGU2vtTRqixrOi9fYk/yKw==}
 
+  '@vitest/pretty-format@4.1.2':
+    resolution: {integrity: sha512-dwQga8aejqeuB+TvXCMzSQemvV9hNEtDDpgUKDzOmNQayl2OG241PSWeJwKRH3CiC+sESrmoFd49rfnq7T4RnA==}
+
   '@vitest/runner@4.0.18':
     resolution: {integrity: sha512-rpk9y12PGa22Jg6g5M3UVVnTS7+zycIGk9ZNGN+m6tZHKQb7jrP7/77WfZy13Y/EUDd52NDsLRQhYKtv7XfPQw==}
 
@@ -1715,6 +1721,9 @@ packages:
 
   '@vitest/utils@4.0.18':
     resolution: {integrity: sha512-msMRKLMVLWygpK3u2Hybgi4MNjcYJvwTb0Ru09+fOyCXIgT5raYP041DRRdiJiI3k/2U6SEbAETB3YtBrUkCFA==}
+
+  '@vitest/utils@4.1.2':
+    resolution: {integrity: sha512-xw2/TiX82lQHA06cgbqRKFb5lCAy3axQ4H4SoUFhUsg+wztiet+co86IAMDtF6Vm1hc7J6j09oh/rgDn+JdKIQ==}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -3311,6 +3320,10 @@ packages:
     resolution: {integrity: sha512-PSkbLUoxOFRzJYjjxHJt9xro7D+iilgMX/C9lawzVuYiIdcihh9DXmVibBe8lmcFrRi/VzlPjBxbN7rH24q8/Q==}
     engines: {node: '>=14.0.0'}
 
+  tinyrainbow@3.1.0:
+    resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
+    engines: {node: '>=14.0.0'}
+
   tldts-core@7.0.23:
     resolution: {integrity: sha512-0g9vrtDQLrNIiCj22HSe9d4mLVG3g5ph5DZ8zCKBr4OtrspmNB6ss7hVyzArAeE88ceZocIEGkyW1Ime7fxPtQ==}
 
@@ -4722,6 +4735,10 @@ snapshots:
     dependencies:
       tinyrainbow: 3.0.3
 
+  '@vitest/pretty-format@4.1.2':
+    dependencies:
+      tinyrainbow: 3.1.0
+
   '@vitest/runner@4.0.18':
     dependencies:
       '@vitest/utils': 4.0.18
@@ -4739,6 +4756,12 @@ snapshots:
     dependencies:
       '@vitest/pretty-format': 4.0.18
       tinyrainbow: 3.0.3
+
+  '@vitest/utils@4.1.2':
+    dependencies:
+      '@vitest/pretty-format': 4.1.2
+      convert-source-map: 2.0.0
+      tinyrainbow: 3.1.0
 
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
@@ -6256,6 +6279,8 @@ snapshots:
       picomatch: 4.0.3
 
   tinyrainbow@3.0.3: {}
+
+  tinyrainbow@3.1.0: {}
 
   tldts-core@7.0.23: {}
 

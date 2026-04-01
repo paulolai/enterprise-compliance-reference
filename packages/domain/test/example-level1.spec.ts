@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { PricingEngine, CartItem, User } from '../../shared/src';
+import { PricingEngine } from '../../shared/src';
+import type { CartItem, User } from '../../shared/src';
 import { verifyExample } from './fixtures/invariant-helper';
 
 /**

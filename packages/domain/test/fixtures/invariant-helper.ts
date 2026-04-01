@@ -1,6 +1,7 @@
 import * as fc from 'fast-check';
 import { expect } from 'vitest';
-import { PricingEngine, CartItem, User, ShippingMethod, PricingResult } from '../../src';
+import { PricingEngine, ShippingMethod } from '../../src';
+import type { CartItem, User, PricingResult } from '../../src';
 import { cartArb, userArb, shippingMethodArb } from '../../../shared/fixtures';
 import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
 import { tracer } from '../modules/tracer';

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { PricingEngine, CartItem, User, ShippingMethod } from '../src';
+import { PricingEngine, ShippingMethod } from '../src';
+import type { CartItem, User } from '../src';
 import { tracer } from './modules/tracer';
 
 /**

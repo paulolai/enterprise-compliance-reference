@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { PricingEngine, CartItem, User, ShippingMethod } from '../../shared/src';
+import { PricingEngine, ShippingMethod } from '../../shared/src';
+import type { CartItem, User } from '../../shared/src';
 import { registerPrecondition, logPrecondition } from './fixtures/invariant-helper';
 
 describe('Preconditions: Input Validation & Edge Cases', () => {

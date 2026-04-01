@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ShippingMethod, CartItem, User, PricingResult } from '../src';
+import { ShippingMethod } from '../src';
+import type { CartItem, User, PricingResult } from '../src';
 import { verifyShippingInvariant } from './fixtures/invariant-helper';
 
 /**

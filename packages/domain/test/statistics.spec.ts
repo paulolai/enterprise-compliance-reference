@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { tracer } from './modules/tracer';
-import { PricingEngine, CartItem, User, ShippingMethod } from '../src';
+import { PricingEngine, ShippingMethod } from '../src';
+import type { CartItem, User } from '../src';
 import { cartArb, userArb, shippingMethodArb } from '@executable-specs/shared/fixtures';
 import { verifyInvariant, verifyShippingInvariant } from './fixtures/invariant-helper';
 

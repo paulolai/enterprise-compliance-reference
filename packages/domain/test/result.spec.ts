@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  Result,
-  Success,
-  Failure,
   success,
   failure,
   isSuccess,
@@ -20,8 +17,14 @@ import {
   fromNullable,
   fromZod
 } from '../src';
+import type {
+  Result,
+  Success,
+  Failure
+} from '../src';
 import { CartItemSchema } from '../src';
-import { PricingEngine, CartItem, User } from '../src';
+import { PricingEngine } from '../src';
+import type { CartItem, User } from '../src';
 import { z } from 'zod';
 
 describe('Result Pattern: Error Handling', () => {

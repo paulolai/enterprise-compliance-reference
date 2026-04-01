@@ -1,9 +1,9 @@
-import { Reporter, TestRunEndReason } from 'vitest/reporters';
-import { SerializedError } from '@vitest/utils';
+import type { Reporter, TestRunEndReason } from 'vitest/reporters';
+import type { SerializedError } from '@vitest/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DomainCoverageParser } from '../domain-coverage/domain-coverage-parser';
-import type { DomainCoverageResult } from '@executable-specs/shared';
+import type { DomainCoverageResult } from '../../../shared/src/modules/domain-coverage';
 
 interface File {
   filepath: string;
@@ -72,7 +72,7 @@ export default class CoverageReporter implements Reporter {
 
     for (const rule of coverage.rules) {
       const status = rule.covered ? '✅' : '❌';
-      const testList = rule.tests.map(t => `\`${t.testName}\``).join(', ');
+      const testList = rule.tests.map((t: { testName: string }) => `\`${t.testName}\``).join(', ');
       md += `| ${rule.ruleReference} | ${status} | ${testList} |\n`;
     }
 

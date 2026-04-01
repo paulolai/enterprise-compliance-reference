@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { tracer } from './modules/tracer';
 import AttestationReporter from './reporters/attestation-reporter';
-import { RunnerTestFile } from 'vitest';
+import type { RunnerTestFile } from 'vitest';
 import os from 'os';
 
 describe('Report Generation Validation', () => {
