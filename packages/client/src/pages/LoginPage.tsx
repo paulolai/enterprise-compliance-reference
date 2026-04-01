@@ -7,21 +7,74 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 
+interface ValidationErrors {
+  email?: string;
+  password?: string;
+}
+
+function validateEmail(email: string): string | undefined {
+  if (!email) return 'Email is required';
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return 'Please enter a valid email address';
+  return undefined;
+}
+
+function validatePassword(password: string): string | undefined {
+  if (!password) return 'Password is required';
+  if (password.length < 6) return 'Password must be at least 6 characters';
+  return undefined;
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('new@customer.com');
   const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
+  const validateForm = (): boolean => {
+    const errors: ValidationErrors = {};
+
+    const emailError = validateEmail(email);
+    if (emailError) errors.email = emailError;
+
+    const passwordError = validatePassword(password);
+    if (passwordError) errors.password = passwordError;
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Client-side validation
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       await authClient.login(email, password);
       navigate('/cart');
     } catch {
       setError('Invalid credentials. Try vip@techhome.com or new@customer.com');
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    // Clear validation error when user types
+    if (validationErrors.email) {
+      setValidationErrors(prev => ({ ...prev, email: undefined }));
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    // Clear validation error when user types
+    if (validationErrors.password) {
+      setValidationErrors(prev => ({ ...prev, password: undefined }));
     }
   };
 
@@ -47,17 +100,24 @@ export function LoginPage() {
               {error}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="email-input">Email</Label>
               <Input
                 id="email-input"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => handleEmailChange(e.target.value)}
                 required
                 data-testid="email-input"
+                aria-invalid={!!validationErrors.email}
+                aria-describedby={validationErrors.email ? 'email-error' : undefined}
               />
+              {validationErrors.email && (
+                <p id="email-error" className="text-sm text-destructive" data-testid="email-error">
+                  {validationErrors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -66,10 +126,17 @@ export function LoginPage() {
                 id="password-input"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 required
                 data-testid="password-input"
+                aria-invalid={!!validationErrors.password}
+                aria-describedby={validationErrors.password ? 'password-error' : undefined}
               />
+              {validationErrors.password && (
+                <p id="password-error" className="text-sm text-destructive" data-testid="password-error">
+                  {validationErrors.password}
+                </p>
+              )}
             </div>
 
             <Button type="submit" className="w-full" data-testid="login-button">

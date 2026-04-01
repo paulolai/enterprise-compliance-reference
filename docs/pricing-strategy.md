@@ -120,3 +120,32 @@ Result: ShipmentInfo
   └─ grandTotal = finalProductTotal + shipment.totalShipping
 ```
 
+---
+
+## 6. Form Validation Rules
+
+### 6.1 Login Form Validation
+**Goal:** Prevent invalid login attempts and provide clear user feedback.
+- **Rule:** Login form must validate email format and password length before submission.
+- **Invariant:** 
+  - Email must match valid email format (contains @ and domain)
+  - Password must be at least 6 characters
+  - Form submission is blocked if validation fails
+  - Validation errors display inline per field
+
+**See:**
+- UI tests: `test/e2e/auth-validation.ui.properties.test.ts`
+
+### 6.2 Registration Form Validation
+**Goal:** Ensure user data quality and security at registration.
+- **Rule:** Registration form must validate all fields with specific constraints before submission.
+- **Invariant:**
+  - Name must be at least 2 characters
+  - Email must match valid email format
+  - Password must be at least 8 characters with at least one letter and one number
+  - Form submission is blocked if any validation fails
+  - Validation errors display inline per field
+
+**See:**
+- UI tests: `test/e2e/auth-validation.ui.properties.test.ts`
+
