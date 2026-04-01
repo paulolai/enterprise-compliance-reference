@@ -5,7 +5,7 @@ export function CartBadge() {
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <span className="cart-badge" data-testid="cart-badge">
+    <span className="cart-badge" data-testid="cart-badge" role="status" aria-label={`${count} items in cart`}>
       {count}
     </span>
   );
