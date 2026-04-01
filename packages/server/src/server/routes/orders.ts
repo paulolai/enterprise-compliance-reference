@@ -5,7 +5,7 @@ import { db } from '../../db';
 import { orders, orderItems, products } from '../../db/schema';
 import { seedProducts } from '../../db/seed';
 import { OrderStatus } from '@executable-specs/shared';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, desc } from 'drizzle-orm';
 import { validateBody, validateParams } from '../../lib/validation/middleware';
 import { requestSchemas, paramSchemas } from '../../lib/validation/schemas';
 import type { CreateOrderRequest, GetOrderRequest } from '../../lib/validation/schemas';
@@ -144,7 +144,7 @@ router.get('/user/:userId', async (c) => {
   try {
     const userId = c.req.param('userId');
 
-    const userOrders = await db.select().from(orders).where(eq(orders.userId, userId));
+    const userOrders = await db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
 
     return c.json({
       userId,
