@@ -469,4 +469,155 @@ test.describe('Payments API Integration Tests', () => {
       expect(orderId2).toBe(orderId1);
     });
   });
+
+  test.describe('POST /api/payments/cancel', () => {
+    test('cancel returns paymentIntentId and canceled status', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/03-payment-processing.md',
+        rule: 'Cancel PaymentIntent returns canceled status',
+        tags: ['@critical'],
+        name: 'PaymentIntent cancellation',
+      });
+
+      const response = await request.post(`${API_BASE}/cancel`, {
+        data: {
+          paymentIntentId: 'pi_1234567890',
+        },
+      });
+
+      if (response.status() === 501) {
+        test.skip(true, 'Payments API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result.paymentIntentId).toBe('pi_1234567890');
+      expect(result.status).toBe('canceled');
+    });
+
+    test('cancel with reason parameter', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/03-payment-processing.md',
+        rule: 'Cancel PaymentIntent accepts optional reason',
+        tags: ['@comprehensive'],
+        name: 'Cancellation with reason',
+      });
+
+      const response = await request.post(`${API_BASE}/cancel`, {
+        data: {
+          paymentIntentId: 'pi_1234567890',
+          reason: 'requested_by_customer',
+        },
+      });
+
+      if (response.status() === 501) {
+        test.skip(true, 'Payments API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result.paymentIntentId).toBe('pi_1234567890');
+      expect(result.status).toBe('canceled');
+    });
+
+    test('cancel with invalid PaymentIntent ID returns error', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/03-payment-processing.md',
+        rule: 'Invalid PaymentIntent ID returns error on cancel',
+        tags: ['@validation'],
+        name: 'Invalid cancellation ID',
+      });
+
+      const response = await request.post(`${API_BASE}/cancel`, {
+        data: {
+          paymentIntentId: 'pi_nonexistent',
+        },
+      });
+
+      if (response.status() === 501) {
+        test.skip(true, 'Payments API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBeGreaterThanOrEqual(400);
+
+      const result = await response.json();
+      expect(result.error).toBeTruthy();
+    });
+  });
+
+  test.describe('GET /api/payments/intent/:id', () => {
+    test('retrieve returns PaymentIntent status with expected fields', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/03-payment-processing.md',
+        rule: 'Retrieve PaymentIntent returns status and details',
+        tags: ['@critical'],
+        name: 'PaymentIntent retrieval',
+      });
+
+      const response = await request.get(`${API_BASE}/intent/pi_1234567890`);
+
+      if (response.status() === 501) {
+        test.skip(true, 'Payments API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result.paymentIntentId).toBe('pi_1234567890');
+      expect(result.status).toBeTruthy();
+      expect(result.amount).toBe(8900);
+      expect(result.currency).toBe('aud');
+      expect(result.createdAt).toBeTruthy();
+      expect(result.metadata).toBeTruthy();
+    });
+
+    test('retrieve non-existent PaymentIntent returns error', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/03-payment-processing.md',
+        rule: 'Non-existent PaymentIntent returns 404',
+        tags: ['@validation'],
+        name: 'Non-existent PaymentIntent retrieval',
+      });
+
+      const response = await request.get(`${API_BASE}/intent/pi_nonexistent`);
+
+      if (response.status() === 501) {
+        test.skip(true, 'Payments API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBeGreaterThanOrEqual(400);
+
+      const result = await response.json();
+      expect(result.error).toBeTruthy();
+    });
+
+    test('retrieve failed PaymentIntent shows correct status', async ({ request }) => {
+      registerApiMetadata({
+        ruleReference: 'docs/specs/stories/03-payment-processing.md',
+        rule: 'Retrieve PaymentIntent reflects actual status',
+        tags: ['@comprehensive'],
+        name: 'Failed PaymentIntent status',
+      });
+
+      const response = await request.get(`${API_BASE}/intent/pi_failed_123`);
+
+      if (response.status() === 501) {
+        test.skip(true, 'Payments API not implemented yet');
+        return;
+      }
+
+      expect(response.status()).toBe(200);
+
+      const result = await response.json();
+      expect(result.paymentIntentId).toBe('pi_failed_123');
+      expect(result.status).toBe('requires_payment_method');
+    });
+  });
 });
