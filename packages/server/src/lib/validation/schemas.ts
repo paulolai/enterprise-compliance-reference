@@ -8,7 +8,7 @@ import {
 } from '@executable-specs/shared';
 
 const CartItemSchema = z.object({
-  sku: z.string(),
+  sku: z.string().min(1),
   name: z.string(),
   price: z.number().optional(),
   priceInCents: z.number().optional(),
@@ -19,12 +19,12 @@ const CartItemSchema = z.object({
 export const requestSchemas = {
   calculatePricing: z.object({
     items: z.array(z.object({
-      sku: z.string(),
+      sku: z.string().min(1),
       name: z.string(),
       price: z.number().optional(),
       priceInCents: z.number().optional(),
-      quantity: z.number(),
-      weightInKg: z.number(),
+      quantity: z.number().positive(),
+      weightInKg: z.number().nonnegative(),
     })),
     user: z.object({
       tenureYears: z.number(),
@@ -46,8 +46,8 @@ export const requestSchemas = {
       name: z.string(),
       price: z.number().optional(),
       priceInCents: z.number().optional(),
-      quantity: z.number(),
-      weightInKg: z.number(),
+      quantity: z.number().positive(),
+      weightInKg: z.number().nonnegative(),
     })).optional(),
     user: z.object({
       email: z.string().optional(),
