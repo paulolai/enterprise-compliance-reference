@@ -55,7 +55,9 @@ export function ProductsPage() {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <section aria-label="Product listings">
+        <h2 className="sr-only">{categoryFilter === 'All' ? 'All Products' : categoryFilter}</h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredProducts.map((product) => (
           <Link key={product.sku} to={`/products/${product.sku}`}>
             <Card className="group overflow-hidden transition-all hover:shadow-lg h-full" data-testid={`product-card-${product.sku}`}>
@@ -75,7 +77,8 @@ export function ProductsPage() {
             </Card>
           </Link>
         ))}
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
