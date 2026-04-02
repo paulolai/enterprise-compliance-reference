@@ -147,3 +147,113 @@ docker compose -f docker-compose.observability.yml down
 # View logs
 docker compose -f docker-compose.observability.yml logs -f otel-collector
 ```
+
+## Worker Isolation Contract
+
+### The Problem
+
+Vitest runs tests in parallel workers (controlled by `VITEST_POOL_ID`). Each worker process has its own in-memory `InvariantSpanProcessor` instance. The `AttestationReporter` runs in the main process and cannot directly access worker-local memory. Without a cross-process data sharing mechanism, OTel telemetry data collected by workers would be lost before the reporter generates attestation reports.
+
+### The Solution
+
+File-based persistence with worker-specific files. Each worker writes its OTel data to a uniquely named file in a shared temporary directory. The reporter reads and merges all worker files after all tests complete.
+
+This eliminates race conditions (no shared mutable state) and ensures complete data capture regardless of worker count or scheduling.
+
+### File Naming Convention
+
+| File Type | Pattern | Example |
+|-----------|---------|---------|
+| Directory | `/tmp/vitest-otel-data/` | — |
+| Summaries | `summaries-{workerId}.json` | `summaries-1.json`, `summaries-42.json` |
+| Metadata | `metadata-{workerId}.json` | `metadata-1.json`, `metadata-42.json` |
+
+The `workerId` is resolved as `process.env.VITEST_POOL_ID` (set by Vitest) or falls back to `process.pid` for non-Vitest contexts.
+
+### Write Path
+
+**File:** `packages/domain/test/setup/otel-test-setup.ts`
+
+1. On initialization: creates `/tmp/vitest-otel-data/` if it doesn't exist
+2. On `afterAll` hook: calls `persistOtelData()` which:
+   - Retrieves metadata and summaries from the worker's `InvariantSpanProcessor`
+   - Skips writing if both are empty (prevents empty workers from overwriting valid data)
+   - Writes `metadata-{workerId}.json` as an array of `{ name, ruleReference, rule, tags }` entries
+   - Writes `summaries-{workerId}.json` as an array of `InvariantSummary` objects
+3. The `afterAll` hook also triggers `shutdownOtel()` to clean up the OTel SDK
+
+```
+Worker Process                          File System
+┌─────────────────────┐                 ┌──────────────────────────────┐
+│ InvariantSpanProcessor│  afterAll()    │ /tmp/vitest-otel-data/       │
+│  ├─ getMetadata()     ├──────────────►│   summaries-1.json           │
+│  └─ getSummaries()    │               │   metadata-1.json            │
+└─────────────────────┘                 │   summaries-2.json           │
+                                        │   metadata-2.json            │
+                                        │   ...                        │
+                                        └──────────────────────────────┘
+```
+
+### Read Path
+
+**File:** `packages/domain/test/reporters/attestation-reporter.ts`
+
+The `readPersistedOtelData()` function (lines 39-95) executes in the main process when the reporter's `onTestRunEnd` fires:
+
+1. Reads all `metadata-*.json` files from `/tmp/vitest-otel-data/`
+2. Reads all `summaries-*.json` files from the same directory
+3. If the directory doesn't exist, returns empty collections (graceful degradation)
+4. Returns merged `{ metadata, summaries }` for report generation
+
+### Merge Logic
+
+**Metadata:** First-write-wins. If multiple workers record metadata for the same invariant name, the first encountered entry is kept. This is safe because metadata (rule reference, rule text, tags) is identical across workers for the same invariant.
+
+**Summaries:** Aggregated by `name` field:
+
+| Field | Merge Strategy |
+|-------|---------------|
+| `totalRuns` | Summed across workers |
+| `passed` | `false` if **any** worker reported failure |
+| `failureReason` | Taken from the failing worker |
+| `edgeCasesCovered.*` | Summed across workers (each counter type) |
+
+This ensures the attestation report reflects the complete picture: total executions across all workers, with failures surfacing correctly.
+
+```
+Reporter (Main Process)
+┌─────────────────────────────────────────────────────┐
+│ readPersistedOtelData()                             │
+│                                                     │
+│  Read summaries-1.json ─┐                           │
+│  Read summaries-2.json ─┤  Merge by name:            │
+│  Read summaries-3.json ─┤   ├─ sum totalRuns         │
+│                         └──►├─ fail if any failed    │
+│                              └─ sum edge cases       │
+│                                                     │
+│  Read metadata-1.json  ─┐                           │
+│  Read metadata-2.json  ─┤  First-write-wins          │
+│  Read metadata-3.json  ─┘  (deduplicate by name)     │
+│                                                     │
+│  → Return merged { metadata, summaries }             │
+└─────────────────────────────────────────────────────┘
+```
+
+### Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| Empty worker (no invariants executed) | `persistOtelData()` returns early — no file written, no overwrite of other workers' data |
+| Missing `/tmp/vitest-otel-data/` directory | `readPersistedOtelData()` returns empty collections; reporter logs a warning but continues |
+| Read errors on individual files | Caught and ignored per-file; other files still processed |
+| Same invariant name across workers | Summaries aggregated (totalRuns summed, edgeCasesCovered summed); metadata deduplicated |
+
+### Verification
+
+The isolation contract is verified by `packages/domain/test/otel-worker-isolation.test.ts`, which:
+
+1. Creates OTel spans in the current worker
+2. Asserts worker-specific files are written (`summaries-{workerId}.json`, `metadata-{workerId}.json`)
+3. Simulates a second worker by writing `summaries-999.json`
+4. Runs the merge logic and asserts both workers' data is present in the merged result
+5. Cleans up simulated files after verification
