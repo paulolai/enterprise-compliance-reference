@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { getInvariantProcessor } from '@executable-specs/shared/modules/otel-setup';
+import { getInvariantProcessor } from '@executable-specs/shared';
 import { InMemorySpanExporter } from '@opentelemetry/sdk-trace-base';
 
 interface File {
