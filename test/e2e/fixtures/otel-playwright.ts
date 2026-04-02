@@ -80,13 +80,28 @@ export function persistPlaywrightOtelData(): void {
   fs.writeFileSync(workerSummariesFile, JSON.stringify(summaries, null, 2));
 }
 
-export async function shutdownPlaywrightOtel(): Promise<void> {
-  // Persist data before shutdown
-  persistPlaywrightOtelData();
+let isShuttingDown = false;
 
-  await shutdownOtel();
-  tracer = null;
-  invariantProcessor = null;
+export async function shutdownPlaywrightOtel(): Promise<void> {
+  // Prevent multiple simultaneous shutdown calls
+  if (isShuttingDown) {
+    return;
+  }
+  isShuttingDown = true;
+
+  try {
+    // Persist data before shutdown
+    persistPlaywrightOtelData();
+
+    await shutdownOtel();
+  } catch (error) {
+    // Ignore shutdown errors (e.g., if already shut down)
+    console.log('[OTel] Shutdown completed or already shut down');
+  } finally {
+    tracer = null;
+    invariantProcessor = null;
+    isShuttingDown = false;
+  }
 }
 
 export function getPlaywrightTracer(): Tracer {

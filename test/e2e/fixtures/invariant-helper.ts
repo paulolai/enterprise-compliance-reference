@@ -26,9 +26,19 @@ test.beforeAll(async ({ browser }) => {
   await context.close();
 });
 
-test.afterAll(async () => {
-  await shutdownPlaywrightOtel();
+// Reset state before each test to prevent auth/session leakage between tests
+test.beforeEach(async ({ page }) => {
+  // Clear all browser storage to ensure test isolation
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.context().clearCookies();
 });
+
+// Note: OTel shutdown is handled by Playwright's global teardown
+// to avoid race conditions when multiple test files import this module
 
 export interface PageBuilderState {
   cart: CartItem[];
