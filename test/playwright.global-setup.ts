@@ -9,11 +9,18 @@
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { setupPlaywrightOtel, shutdownPlaywrightOtel } from './e2e/fixtures/otel-playwright';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default async function globalSetup() {
+  console.log('🔍 Initializing OpenTelemetry for Playwright tests...');
+
+  // Initialize OTel before any tests run
+  setupPlaywrightOtel({ serviceName: 'executable-specs-e2e', mode: 'test' });
+  console.log('✅ OpenTelemetry initialized');
+
   console.log('🔍 Running TypeScript type check before Playwright tests...');
 
   try {
@@ -35,10 +42,20 @@ export default async function globalSetup() {
     const err = error as { stdout?: string; stderr?: string; message?: string };
     console.error(err.stdout || err.stderr || err.message);
 
+    // Shutdown OTel before throwing
+    await shutdownPlaywrightOtel();
+
     // Rethrow to prevent tests from running
     throw new Error(
       'TypeScript type check failed. Fix the type errors above before running Playwright tests. ' +
       'You can run manually with: npx tsc --noEmit'
     );
   }
+
+  // Return teardown function to be called after all tests complete
+  return async () => {
+    console.log('🧹 Shutting down OpenTelemetry...');
+    await shutdownPlaywrightOtel();
+    console.log('✅ OpenTelemetry shutdown complete');
+  };
 }

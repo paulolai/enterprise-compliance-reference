@@ -5,6 +5,15 @@ import * as fc from 'fast-check';
 import type { CartItem, User } from '@executable-specs/domain';
 import { ShippingMethod } from '@executable-specs/domain';
 import { registerAllureMetadata } from '@executable-specs/shared/fixtures/allure-helpers';
+import { emitInvariantSpan, setupPlaywrightOtel, shutdownPlaywrightOtel } from './otel-playwright';
+
+// Initialize OTel for this test worker
+// Note: Playwright global setup runs in a separate process, so we initialize here
+try {
+  setupPlaywrightOtel({ serviceName: 'executable-specs-e2e', mode: 'test' });
+} catch (error) {
+  console.error('[OTel Init Error]', error);
+}
 
 // Clear localStorage before the first test to ensure clean state
 test.beforeAll(async ({ browser }) => {
@@ -15,6 +24,10 @@ test.beforeAll(async ({ browser }) => {
     localStorage.clear();
   });
   await context.close();
+});
+
+test.afterAll(async () => {
+  await shutdownPlaywrightOtel();
 });
 
 export interface PageBuilderState {
@@ -32,7 +45,7 @@ export interface InvariantMetadata {
 
 function deriveHierarchyFromPath(filePath: string): { parentSuite: string, suite: string, feature: string } {
   const fileName = filePath.split('/').pop() || '';
-  
+
   // Domain tag from filename (e.g. "cart" from "cart.ui.properties.test.ts")
   const parts = fileName.split('.');
   let domain = 'General';
@@ -65,20 +78,21 @@ export function invariant(
   testFunction: (args: { page: Page, request: APIRequestContext }, testInfo: TestInfo) => Promise<void>
 ) {
   test(title, async ({ page, request }, testInfo) => {
+
     // 0. Auto-derive Hierarchy
-    const specPath = testInfo.titlePath[0] || ''; 
+    const specPath = testInfo.titlePath[0] || '';
     const hierarchy = deriveHierarchyFromPath(specPath);
     const combinedTags = metadata.tags || [];
 
-    const finalMetadata = { 
-      ...metadata, 
+    const finalMetadata = {
+      ...metadata,
       ...hierarchy,
-      tags: combinedTags 
+      tags: combinedTags
     };
 
     // 1. Register Metadata for Attestation Report
     registerAllureMetadata(allure, finalMetadata);
-    
+
     // 2. Add Native Playwright Annotations
     testInfo.annotations.push({ type: 'rule', description: metadata.rule });
     testInfo.annotations.push({ type: 'reference', description: metadata.ruleReference });
@@ -90,10 +104,53 @@ export function invariant(
     page.on('pageerror', err => {
       console.log(`[Browser Exception] ${err.message}`);
     });
-    
-    // 3. Execute Test
-    await testFunction({ page, request }, testInfo);
+
+    // 3. Execute Test with OTel span
+    const spanInput = {
+      pageUrl: page.url(),
+    };
+
+    try {
+      await testFunction({ page, request }, testInfo);
+
+      // Emit passed span with output
+      const spanOutput = {
+        pageUrl: page.url(),
+      };
+
+      emitInvariantSpan(title, {
+        ruleReference: metadata.ruleReference,
+        rule: metadata.rule,
+        tags: metadata.tags,
+        input: spanInput,
+        output: spanOutput,
+      }, 'passed');
+    } catch (error) {
+      // Emit failed span with error
+      const spanOutput = {
+        pageUrl: page.url(),
+      };
+
+      emitInvariantSpan(title, {
+        ruleReference: metadata.ruleReference,
+        rule: metadata.rule,
+        tags: metadata.tags,
+        input: spanInput,
+        output: spanOutput,
+      }, 'failed', error instanceof Error ? error : new Error(String(error)));
+
+      // Re-throw to fail the test
+      throw error;
+    }
   });
+}
+
+/**
+ * Flush OTel spans after test execution.
+ * Call this in test.afterEach if needed.
+ */
+export async function flushSpans(): Promise<void> {
+  await shutdownPlaywrightOtel();
 }
 
 export class PageBuilder {

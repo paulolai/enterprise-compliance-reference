@@ -1,4 +1,4 @@
-import { setupOtel, getInvariantProcessor, shutdownOtel } from '@executable-specs/shared';
+import { setupOtel, getInvariantProcessor, shutdownOtel } from '@executable-specs/shared/index-server';
 import { afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
