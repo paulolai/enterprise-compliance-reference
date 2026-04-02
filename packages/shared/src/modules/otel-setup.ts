@@ -3,7 +3,7 @@ import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentation
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { InMemorySpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
-import { InvariantSpanProcessor } from './invariant-span-processor';
+import { InvariantSpanProcessor, PricingEdgeCaseStrategy } from './invariant-span-processor';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
 export interface OtelConfig {
@@ -31,7 +31,7 @@ export function setupOtel(config: OtelConfig) {
 
   if (config.mode === 'test') {
     spanExporter = traceExporter as InMemorySpanExporter;
-    invariantProcessor = new InvariantSpanProcessor();
+    invariantProcessor = new InvariantSpanProcessor({ edgeCaseStrategy: new PricingEdgeCaseStrategy() });
   }
 
   const spanProcessors = config.mode === 'test'

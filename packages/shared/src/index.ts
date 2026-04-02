@@ -12,5 +12,6 @@ export * from './modules/validation';
 
 // OTel setup and invariant processing
 export { setupOtel, shutdownOtel, getInvariantProcessor } from './modules/otel-setup';
-export { InvariantSpanProcessor } from './modules/invariant-span-processor';
+export { InvariantSpanProcessor, DefaultEdgeCaseStrategy, PricingEdgeCaseStrategy } from './modules/invariant-span-processor';
+export type { EdgeCaseStrategy } from './modules/invariant-span-processor';
 export type { OtelConfig } from './modules/otel-setup';

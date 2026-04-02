@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { InvariantSpanProcessor } from '../src/modules/invariant-span-processor';
+import { InvariantSpanProcessor, PricingEdgeCaseStrategy } from '../src/modules/invariant-span-processor';
 import { SpanStatusCode } from '@opentelemetry/api';
 import { BasicTracerProvider, InMemorySpanExporter, SimpleSpanProcessor, AlwaysOnSampler } from '@opentelemetry/sdk-trace-base';
 
@@ -9,7 +9,7 @@ describe('InvariantSpanProcessor', () => {
   let provider: BasicTracerProvider;
 
   beforeEach(() => {
-    processor = new InvariantSpanProcessor();
+    processor = new InvariantSpanProcessor({ edgeCaseStrategy: new PricingEdgeCaseStrategy() });
     exporter = new InMemorySpanExporter();
     provider = new BasicTracerProvider({
       spanProcessors: [processor, new SimpleSpanProcessor(exporter)],

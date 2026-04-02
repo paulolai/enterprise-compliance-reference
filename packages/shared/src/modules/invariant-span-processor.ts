@@ -5,16 +5,56 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+export interface EdgeCaseStrategy {
+  update(summary: InvariantSummary, attrs: Record<string, unknown>): void;
+}
+
+export class DefaultEdgeCaseStrategy implements EdgeCaseStrategy {
+  update(_summary: InvariantSummary, _attrs: Record<string, unknown>): void {
+    // No-op — domains that don't need edge case tracking use this
+  }
+}
+
+export class PricingEdgeCaseStrategy implements EdgeCaseStrategy {
+  update(summary: InvariantSummary, attrs: Record<string, unknown>): void {
+    const tenureYears = (attrs['invariant.user.tenureYears'] as number) ?? 0;
+    const quantities = attrs['invariant.item.quantities'] as number[] | undefined;
+    const isFreeShipping = attrs['invariant.shipment.isFreeShipping'] as boolean | undefined;
+    const isCapped = attrs['invariant.isCapped'] as boolean | undefined;
+    const shippingMethod = attrs['invariant.shippingMethod'] as string | undefined;
+
+    if (tenureYears > 2) summary.edgeCasesCovered.vipUsers++;
+    else summary.edgeCasesCovered.nonVipUsers++;
+
+    if (tenureYears === 2) summary.edgeCasesCovered.exactlyTwoYearTenure++;
+
+    quantities?.forEach(q => {
+      if (q >= 3) summary.edgeCasesCovered.bulkItems++;
+      else summary.edgeCasesCovered.nonBulkItems++;
+    });
+
+    if (isFreeShipping) summary.edgeCasesCovered.freeShippingQualifying++;
+    else summary.edgeCasesCovered.freeShippingNotQualifying++;
+
+    if (isCapped) summary.edgeCasesCovered.discountCapHit++;
+
+    if (shippingMethod === 'EXPRESS') summary.edgeCasesCovered.expressShipping++;
+    else if (shippingMethod === 'EXPEDITED') summary.edgeCasesCovered.expeditedShipping++;
+  }
+}
+
 export class InvariantSpanProcessor implements SpanProcessor {
   private summaries: Map<string, InvariantSummary> = new Map();
   private metadata: Map<string, { ruleReference: string; rule: string; tags: string[] }> = new Map();
   private runDir: string;
+  private edgeCaseStrategy: EdgeCaseStrategy;
 
-  constructor() {
+  constructor(options: { edgeCaseStrategy?: EdgeCaseStrategy } = {}) {
     this.runDir = path.join(os.tmpdir(), 'vitest-otel-data');
     if (!fs.existsSync(this.runDir)) {
       fs.mkdirSync(this.runDir, { recursive: true });
     }
+    this.edgeCaseStrategy = options.edgeCaseStrategy ?? new DefaultEdgeCaseStrategy();
   }
 
   forceFlush(): Promise<void> { return Promise.resolve(); }
@@ -65,36 +105,10 @@ export class InvariantSpanProcessor implements SpanProcessor {
     }
 
     // Extract edge case data from span attributes
-    this.updateEdgeCases(summary, attrs);
+    this.edgeCaseStrategy.update(summary, attrs);
 
     // Persist immediately so reporter can read data in real-time
     this.persistToDisk();
-  }
-
-  private updateEdgeCases(summary: InvariantSummary, attrs: Record<string, unknown>) {
-    const tenureYears = (attrs['invariant.user.tenureYears'] as number) ?? 0;
-    const quantities = attrs['invariant.item.quantities'] as number[] | undefined;
-    const isFreeShipping = attrs['invariant.shipment.isFreeShipping'] as boolean | undefined;
-    const isCapped = attrs['invariant.isCapped'] as boolean | undefined;
-    const shippingMethod = attrs['invariant.shippingMethod'] as string | undefined;
-
-    if (tenureYears > 2) summary.edgeCasesCovered.vipUsers++;
-    else summary.edgeCasesCovered.nonVipUsers++;
-
-    if (tenureYears === 2) summary.edgeCasesCovered.exactlyTwoYearTenure++;
-
-    quantities?.forEach(q => {
-      if (q >= 3) summary.edgeCasesCovered.bulkItems++;
-      else summary.edgeCasesCovered.nonBulkItems++;
-    });
-
-    if (isFreeShipping) summary.edgeCasesCovered.freeShippingQualifying++;
-    else summary.edgeCasesCovered.freeShippingNotQualifying++;
-
-    if (isCapped) summary.edgeCasesCovered.discountCapHit++;
-
-    if (shippingMethod === 'EXPRESS') summary.edgeCasesCovered.expressShipping++;
-    else if (shippingMethod === 'EXPEDITED') summary.edgeCasesCovered.expeditedShipping++;
   }
 
   getSummaries(): InvariantSummary[] {
