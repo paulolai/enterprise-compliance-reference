@@ -5,7 +5,7 @@
 export * from '@executable-specs/domain';
 
 // Shared utilities
-export * from './modules/tracer';
+export * from './modules/tracer-types';
 
 // Shared validation schemas (single source of truth)
 export * from './modules/validation';

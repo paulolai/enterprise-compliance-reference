@@ -1,6 +1,6 @@
 import type { Span, SpanProcessor, ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import type { Context } from '@opentelemetry/api';
-import type { InvariantSummary } from './tracer';
+import type { InvariantSummary } from './tracer-types';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
