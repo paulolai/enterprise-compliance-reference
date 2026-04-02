@@ -257,3 +257,63 @@ The isolation contract is verified by `packages/domain/test/otel-worker-isolatio
 3. Simulates a second worker by writing `summaries-999.json`
 4. Runs the merge logic and asserts both workers' data is present in the merged result
 5. Cleans up simulated files after verification
+
+---
+
+## Span Attribute Contract
+
+This section formalizes the contract for all span attributes used by invariant helpers, the `InvariantSpanProcessor`, and reporters. This is the single source of truth for span attribute naming, types, and usage.
+
+### Naming Convention
+
+All invariant-related span attributes use the `invariant.` prefix namespace. This namespace gate is used by `InvariantSpanProcessor.onEnd()` — any span without `invariant.ruleReference` is ignored.
+
+### Complete Attribute Table
+
+| Attribute | Type | Set By | Read By | Description |
+|-----------|------|--------|---------|-------------|
+| `invariant.ruleReference` | string | All invariant helpers | InvariantSpanProcessor, Reporter | Business rule location (e.g. "pricing-strategy.md §3") |
+| `invariant.rule` | string | All invariant helpers | InvariantSpanProcessor, Reporter | Human-readable rule text |
+| `invariant.tags` | string[] | All invariant helpers | InvariantSpanProcessor, Reporter | Serenity-style tags |
+| `invariant.user.tenureYears` | number | verifyInvariant, verifyShippingInvariant | InvariantSpanProcessor | User tenure for VIP edge case tracking |
+| `invariant.item.quantities` | number[] | verifyInvariant, verifyShippingInvariant | InvariantSpanProcessor | Per-item quantities for bulk detection |
+| `invariant.item.count` | number | verifyInvariant, verifyShippingInvariant | — | Total item count in cart |
+| `invariant.originalTotal` | number | verifyInvariant, verifyShippingInvariant | — | Cart original total in cents |
+| `invariant.finalTotal` | number | verifyInvariant, verifyShippingInvariant | — | Final total after discounts in cents |
+| `invariant.totalDiscount` | number | verifyInvariant, verifyShippingInvariant | — | Total discount amount in cents |
+| `invariant.isCapped` | boolean | verifyInvariant, verifyShippingInvariant | InvariantSpanProcessor | Safety valve triggered |
+| `invariant.shipment.isFreeShipping` | boolean | verifyInvariant, verifyShippingInvariant | InvariantSpanProcessor | Free shipping qualified |
+| `invariant.shipment.totalShipping` | number | verifyInvariant, verifyShippingInvariant | — | Total shipping cost in cents |
+| `invariant.shippingMethod` | string | verifyInvariant, verifyShippingInvariant | InvariantSpanProcessor | STANDARD / EXPEDITED / EXPRESS |
+| `invariant.input` | string (JSON) | verifyExample, logPrecondition | — | Serialized test input |
+| `invariant.output` | string (JSON) | verifyExample, logPrecondition | — | Serialized test output |
+
+### Span Naming Convention
+
+| Span Pattern | Example | Set By |
+|--------------|---------|--------|
+| Invariant execution | `"VIP discount applied"` | verifyInvariant, verifyShippingInvariant, verifyExample |
+| Registration | `invariant.register:{name}` | registerInvariant (called by verifyInvariant, verifyShippingInvariant) |
+| Precondition | `precondition:{name}` | registerPrecondition |
+| Precondition log | `precondition.log:{name}` | logPrecondition |
+
+### Required vs Optional
+
+**Required for InvariantSpanProcessor:**
+- `invariant.ruleReference` — Gate attribute. Without it, the span is ignored entirely (`InvariantSpanProcessor.onEnd()` returns early).
+
+**Required for Reporter:**
+- `invariant.ruleReference` — Links report entry to business rule
+- `invariant.rule` — Human-readable description in report
+- `invariant.tags` — Categorization and filtering
+
+**Optional (edge case tracking):**
+- All other attributes — Used by `InvariantSpanProcessor.updateEdgeCases()` for coverage metrics. Absence does not break processing; missing values default to safe fallbacks (0, false, undefined).
+
+### Source Locations
+
+| Component | File |
+|-----------|------|
+| Attribute setters | `packages/domain/test/fixtures/invariant-helper.ts` |
+| Attribute readers | `packages/shared/src/modules/invariant-span-processor.ts` |
+| OTel setup | `packages/domain/test/setup/otel-test-setup.ts` |
