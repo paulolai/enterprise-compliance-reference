@@ -111,9 +111,34 @@ The rate limiting middleware skips in dev/test only when `NODE_ENV` is set. The 
 
 | Suite | Status | Count |
 |-------|--------|-------|
-| Domain tests | ✅ | 144 passed, 1 skipped |
+| Domain tests | ✅ | 156 passed, 1 skipped |
 | Client tests | ✅ | 10 passed |
 | E2E + API tests | ✅ | 175 passed |
 | TypeScript | ✅ | 0 errors (5 packages) |
 
 **Full suite:** `pnpm run test:all` — all passing with attestation report generated.
+
+---
+
+## OTel Cleanup Session (2026-04-02)
+
+Following the E2E fix, a review identified leftover OTel migration debt. The following was completed:
+
+### Completed
+
+| Item | What Was Done |
+|------|--------------|
+| **Delete old tracer code** | Removed `TestTracer` class from `packages/shared` (203 lines) and `packages/domain/test` (407 lines). Deleted `tracer.spec.ts` (119 lines) and `report-generation.spec.ts` (165 lines). Extracted types to `tracer-types.ts`. |
+| **Create OTEL_GUIDE.md** | Full observability guide with architecture, quick start, SigNoz queries, migration notes. |
+| **Document worker isolation** | Added `/tmp/vitest-otel-data/` contract: file naming (`summaries-{workerId}.json`, `metadata-{workerId}.json`), write path, read path, merge logic. |
+| **Fix shared package OTel exports** | Added `setupOtel`, `shutdownOtel`, `getInvariantProcessor`, `InvariantSpanProcessor`, `OtelConfig` to barrel exports. Updated consumers to use `@executable-specs/shared` instead of deep imports. |
+| **Formalize span attribute contract** | Added 15-attribute table with Set By/Read By columns, naming conventions, required vs optional classification. |
+| **Decouple InvariantSpanProcessor** | Extracted pricing-specific edge case logic into `PricingEdgeCaseStrategy`. Processor now accepts pluggable `EdgeCaseStrategy` with `DefaultEdgeCaseStrategy` (no-op) default. |
+
+### Remaining (Lower Priority)
+
+| Item | Effort | Notes |
+|------|--------|-------|
+| **E2E/Playwright OTel integration** | High | Playwright `invariant()` helper doesn't emit OTel spans yet — outside the Vitest invariant pipeline |
+| **SigNoz stack verification** | Medium | `docker-compose.observability.yml` exists but hasn't been run against the app |
+| **JsonlFileExporter hardening** | Low | Already adequate — proper shutdown, write stream buffering. OTel SDK handles batching at its layer |
