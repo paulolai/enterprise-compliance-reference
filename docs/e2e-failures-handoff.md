@@ -192,3 +192,61 @@ Attestation Reporter merges all worker files
   ↓
 Unified attestation report with E2E + domain test data
 ```
+
+---
+
+## CI Flakiness Fixes (2026-04-03)
+
+### Issues Found in CI
+
+**Issue 1: 401 Unauthorized Errors**
+- Auth state leaked between parallel tests in CI (2 workers, fully parallel)
+- JWT tokens and session data persisted across tests
+- Caused intermittent authentication failures
+
+**Issue 2: OTel `afterAll` Hook Timeouts**
+- `shutdownPlaywrightOtel()` called from `test.afterAll` in `invariant-helper.ts`
+- Multiple test files imported the module, causing competing shutdown calls
+- Hook timeout of 10s exceeded when tests ran in parallel
+
+### Fixes Applied
+
+**1. Test Isolation** (`test/e2e/fixtures/invariant-helper.ts`)
+```typescript
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.context().clearCookies();
+});
+```
+- Clears all browser storage before each test
+- Prevents auth/session leakage between tests
+
+**2. Idempotent OTel Shutdown** (`test/e2e/fixtures/otel-playwright.ts`)
+```typescript
+let isShuttingDown = false;
+
+export async function shutdownPlaywrightOtel(): Promise<void> {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  // ... shutdown logic
+}
+```
+- Prevents concurrent shutdown attempts
+- Guard flag ensures single execution
+
+**3. Global Teardown Only** (`test/e2e/fixtures/invariant-helper.ts`)
+- Removed `test.afterAll` hook (runs per file, causes races)
+- Kept shutdown only in `playwright.global-setup.ts` global teardown
+- Returns teardown function from `globalSetup()`
+
+### Results
+
+| Before CI Fix | After CI Fix |
+|---------------|--------------|
+| 62 failed, 113 passed | **175 passed, 0 failed** |
+| 401 errors, hook timeouts | Stable across multiple runs |
+| Flaky auth tests | Consistent test isolation |
