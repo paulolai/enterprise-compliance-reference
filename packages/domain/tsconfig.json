@@ -1,9 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": ".",
     "outDir": "./dist",
-    "composite": true,
     "baseUrl": ".",
     "paths": {
       "@executable-specs/shared": ["../shared/src"],
@@ -12,8 +10,5 @@
       "@executable-specs/shared/fixtures/*": ["../shared/fixtures/*"]
     }
   },
-  "include": ["src/**/*", "test/**/*"],
-  "references": [
-    { "path": "../shared" }
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }

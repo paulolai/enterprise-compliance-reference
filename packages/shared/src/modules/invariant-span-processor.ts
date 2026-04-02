@@ -1,10 +1,21 @@
 import type { Span, SpanProcessor, ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import type { Context } from '@opentelemetry/api';
 import type { InvariantSummary } from './tracer';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 export class InvariantSpanProcessor implements SpanProcessor {
   private summaries: Map<string, InvariantSummary> = new Map();
   private metadata: Map<string, { ruleReference: string; rule: string; tags: string[] }> = new Map();
+  private runDir: string;
+
+  constructor() {
+    this.runDir = path.join(os.tmpdir(), 'vitest-otel-data');
+    if (!fs.existsSync(this.runDir)) {
+      fs.mkdirSync(this.runDir, { recursive: true });
+    }
+  }
 
   forceFlush(): Promise<void> { return Promise.resolve(); }
   shutdown(): Promise<void> { return Promise.resolve(); }
@@ -55,6 +66,9 @@ export class InvariantSpanProcessor implements SpanProcessor {
 
     // Extract edge case data from span attributes
     this.updateEdgeCases(summary, attrs);
+
+    // Persist immediately so reporter can read data in real-time
+    this.persistToDisk();
   }
 
   private updateEdgeCases(summary: InvariantSummary, attrs: Record<string, unknown>) {
@@ -94,5 +108,18 @@ export class InvariantSpanProcessor implements SpanProcessor {
   clear(): void {
     this.summaries.clear();
     this.metadata.clear();
+  }
+
+  private persistToDisk(): void {
+    try {
+      const metadataEntries = Array.from(this.metadata.entries()).map(([name, data]) => ({
+        name,
+        ...data
+      }));
+      fs.writeFileSync(path.join(this.runDir, 'metadata.json'), JSON.stringify(metadataEntries, null, 2));
+      fs.writeFileSync(path.join(this.runDir, 'summaries.json'), JSON.stringify(Array.from(this.summaries.values()), null, 2));
+    } catch {
+      // Silent fail - reporter will handle missing data
+    }
   }
 }

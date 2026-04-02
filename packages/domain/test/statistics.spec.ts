@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getInvariantProcessor } from '@executable-specs/shared';
+import { getInvariantProcessor } from '@executable-specs/shared/modules/otel-setup';
 import { PricingEngine, ShippingMethod } from '../src';
 import type { CartItem, User } from '../src';
 import { cartArb, userArb, shippingMethodArb } from '@executable-specs/shared/fixtures';
@@ -12,7 +12,7 @@ interface TagCoverage {
   passed: boolean;
 }
 
-function computeTagCoverage(summaries: ReturnType<ReturnType<typeof getInvariantProcessor>['getSummaries']>): TagCoverage[] {
+function computeTagCoverage(summaries: ReturnType<NonNullable<ReturnType<typeof getInvariantProcessor>>['getSummaries']>): TagCoverage[] {
   const tagsMap = new Map<string, TagCoverage>();
   for (const summary of summaries) {
     for (const tag of summary.tags) {

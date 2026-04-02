@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { getInvariantProcessor } from '@executable-specs/shared';
+import { getInvariantProcessor } from '@executable-specs/shared/modules/otel-setup';
 import { InMemorySpanExporter } from '@opentelemetry/sdk-trace-base';
 
 interface File {
@@ -35,32 +35,57 @@ function getTaskType(task: RunnerTask): string {
   return (task as any).type as string;
 }
 
-// Read OTel data from persisted files
+// Read OTel data from persisted files (merges all worker files)
 function readPersistedOtelData(): { metadata: Map<string, { ruleReference: string; rule: string; tags: string[] }>; summaries: any[] } {
   const runDir = path.join(os.tmpdir(), 'vitest-otel-data');
   const metadata = new Map<string, { ruleReference: string; rule: string; tags: string[] }>();
   const summaries: any[] = [];
 
+  if (!fs.existsSync(runDir)) return { metadata, summaries };
+
+  // Read all worker metadata files
   try {
-    const metadataPath = path.join(runDir, 'metadata.json');
-    if (fs.existsSync(metadataPath)) {
-      const entries = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+    const files = fs.readdirSync(runDir);
+    const metadataFiles = files.filter(f => f.startsWith('metadata-') && f.endsWith('.json'));
+    for (const file of metadataFiles) {
+      const entries = JSON.parse(fs.readFileSync(path.join(runDir, file), 'utf-8'));
       for (const entry of entries) {
-        metadata.set(entry.name, {
-          ruleReference: entry.ruleReference,
-          rule: entry.rule,
-          tags: entry.tags
-        });
+        if (!metadata.has(entry.name)) {
+          metadata.set(entry.name, {
+            ruleReference: entry.ruleReference,
+            rule: entry.rule,
+            tags: entry.tags
+          });
+        }
       }
     }
   } catch (e) {
     // Ignore
   }
 
+  // Read all worker summaries files
   try {
-    const summariesPath = path.join(runDir, 'summaries.json');
-    if (fs.existsSync(summariesPath)) {
-      summaries.push(...JSON.parse(fs.readFileSync(summariesPath, 'utf-8')));
+    const files = fs.readdirSync(runDir);
+    const summariesFiles = files.filter(f => f.startsWith('summaries-') && f.endsWith('.json'));
+    for (const file of summariesFiles) {
+      const workerSummaries = JSON.parse(fs.readFileSync(path.join(runDir, file), 'utf-8'));
+      // Merge summaries by name (aggregate totalRuns from same invariant across workers)
+      for (const summary of workerSummaries) {
+        const existing = summaries.find(s => s.name === summary.name);
+        if (existing) {
+          existing.totalRuns += summary.totalRuns;
+          if (!summary.passed) {
+            existing.passed = false;
+            existing.failureReason = summary.failureReason;
+          }
+          // Merge edge cases
+          for (const key of Object.keys(existing.edgeCasesCovered)) {
+            existing.edgeCasesCovered[key] += summary.edgeCasesCovered[key] || 0;
+          }
+        } else {
+          summaries.push(summary);
+        }
+      }
     }
   } catch (e) {
     // Ignore

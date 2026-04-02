@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -15,22 +15,76 @@ describe('Module Contracts', () => {
     // GENERAL TEST: Verify all imports from shared module are resolvable
     // Catches: Refactored shared modules, moved exports, renamed symbols
     
+    // Build the set of available exports by combining direct exports and re-exports
     const sharedModulePath = resolve(__dirname, '../../shared/src/index.ts');
     const sharedContent = readFileSync(sharedModulePath, 'utf-8');
     
-    // Extract exports from shared module
-    const exportMatches = sharedContent.match(/export\s+(?:const|function|class|type|interface)\s+(\w+)/g) || [];
-    const reExportMatches = sharedContent.match(/export\s*\{([^}]+)\}/g) || [];
+    const availableExports = new Set<string>();
     
-    const availableExports = new Set([
-      ...exportMatches.map(m => m.split(/\s+/).pop()!),
-      ...reExportMatches.flatMap(m => 
-        m.replace(/export\s*\{|\}/g, '').split(',').map(s => s.trim().split(/\s+as\s+/).pop()!)
-      )
-    ]);
+    // Direct exports: export { foo, bar } or export const/function/class/type/interface
+    const directExports = sharedContent.match(/export\s+(?:const|function|class|type|interface|enum)\s+(\w+)/g) || [];
+    for (const m of directExports) {
+      const name = m.split(/\s+/).pop();
+      if (name) availableExports.add(name);
+    }
+    
+    const reExportBlocks = sharedContent.match(/export\s*\{([^}]+)\}/g) || [];
+    for (const block of reExportBlocks) {
+      const names = block.replace(/export\s*\{|\}/g, '').split(',').map(s => s.trim().split(/\s+as\s+/).pop()!);
+      for (const name of names) {
+        if (name) availableExports.add(name);
+      }
+    }
+    
+    // Re-exports from other packages: export * from '...'
+    // For these, we need to check the actual module's exports
+    const reExportFromMatches = sharedContent.match(/export\s+\*\s+from\s+['"]([^'"]+)['"]/g) || [];
+    for (const reExport of reExportFromMatches) {
+      const pkgMatch = reExport.match(/from\s+['"]([^'"]+)['"]/);
+      if (pkgMatch) {
+        const pkgPath = pkgMatch[1];
+        // For local modules (starting with ./), read the file directly
+        if (pkgPath.startsWith('./')) {
+          const modFilePath = resolve(__dirname, '../../shared/src', pkgPath + '.ts');
+          try {
+            const modContent = readFileSync(modFilePath, 'utf-8');
+            const modExports = modContent.match(/export\s+(?:const|function|class|type|interface|enum|const\s+)\s+(\w+)/g) || [];
+            for (const m of modExports) {
+              const name = m.split(/\s+/).pop();
+              if (name) availableExports.add(name);
+            }
+          } catch {
+            // File might not exist or might be a directory index
+          }
+        }
+        // For workspace packages, read their index.ts
+        else if (pkgPath === '@executable-specs/domain') {
+          const domainIndexPath = resolve(__dirname, '../../domain/src/index.ts');
+          const domainContent = readFileSync(domainIndexPath, 'utf-8');
+          // Domain uses export * from './types' etc.
+          const domainReExports = domainContent.match(/export\s+\*\s+from\s+['"]\.\/([^'"]+)['"]/g) || [];
+          for (const de of domainReExports) {
+            const modMatch = de.match(/from\s+['"]\.\/([^'"]+)['"]/);
+            if (modMatch) {
+              const modPath = resolve(__dirname, '../../domain/src', modMatch[1] + '.ts');
+              try {
+                const modContent = readFileSync(modPath, 'utf-8');
+                const modExports = modContent.match(/export\s+(?:const|function|class|type|interface|enum)\s+(\w+)/g) || [];
+                for (const m of modExports) {
+                  const name = m.split(/\s+/).pop();
+                  if (name) availableExports.add(name);
+                }
+              } catch {
+                // Skip if file doesn't exist
+              }
+            }
+          }
+        }
+      }
+    }
     
     // Find all files that import from shared
-    const serverFiles = await glob('src/**/*.ts', {
+    const serverFiles = globSync('src/**/*.ts', {
       cwd: resolve(__dirname, '../'),
       absolute: true
     });
@@ -39,15 +93,16 @@ describe('Module Contracts', () => {
     
     for (const file of serverFiles) {
       const content = readFileSync(file, 'utf-8');
-      const importMatches = content.match(/from\s+['"]@executable-specs\/shared[^'"]*['"]/g) || [];
       
-      for (const importLine of importMatches) {
-        // Extract what's being imported
-        const importPattern = /import\s*\{([^}]+)\}/;
-        const match = content.match(importPattern);
+      // Match full import statements from shared
+      const importStatements = content.match(/import\s+(?:type\s+)?\{([^}]+)\}\s+from\s+['"]@executable-specs\/shared[^'"]*['"]/g) || [];
+      
+      for (const importStmt of importStatements) {
+        const importPattern = /\{([^}]+)\}/;
+        const match = importStmt.match(importPattern);
         
         if (match) {
-          const importedNames = match[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop()!);
+          const importedNames = match[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop()!).filter(n => n);
           
           for (const name of importedNames) {
             // Check if this export exists in shared module
@@ -76,7 +131,7 @@ describe('Module Contracts', () => {
       'import.meta.glob'
     ];
     
-    const serverFiles = await glob('src/**/*.ts', {
+    const serverFiles = globSync('src/**/*.ts', {
       cwd: resolve(__dirname, '../'),
       absolute: true
     });

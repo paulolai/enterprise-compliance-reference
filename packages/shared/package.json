@@ -8,7 +8,9 @@
     ".": "./src/index.ts",
     "./index-server": "./src/index-server.ts",
     "./fixtures": "./fixtures/index.ts",
-    "./fixtures/allure-helpers": "./fixtures/allure-helpers.ts"
+    "./fixtures/allure-helpers": "./fixtures/allure-helpers.ts",
+    "./modules/otel-setup": "./src/modules/otel-setup.ts",
+    "./modules/invariant-span-processor": "./src/modules/invariant-span-processor.ts"
   },
   "dependencies": {
     "@executable-specs/domain": "workspace:*",
