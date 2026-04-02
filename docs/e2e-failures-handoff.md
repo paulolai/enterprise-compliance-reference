@@ -139,6 +139,56 @@ Following the E2E fix, a review identified leftover OTel migration debt. The fol
 
 | Item | Effort | Notes |
 |------|--------|-------|
-| **E2E/Playwright OTel integration** | High | Playwright `invariant()` helper doesn't emit OTel spans yet — outside the Vitest invariant pipeline |
+| ~~**E2E/Playwright OTel integration**~~ | ~~High~~ | ✅ **COMPLETED** — See E2E OTel Integration section below |
 | **SigNoz stack verification** | Medium | `docker-compose.observability.yml` exists but hasn't been run against the app |
 | **JsonlFileExporter hardening** | Low | Already adequate — proper shutdown, write stream buffering. OTel SDK handles batching at its layer |
+
+---
+
+## E2E/Playwright OTel Integration (2026-04-03)
+
+### Status: ✅ COMPLETED
+
+Playwright E2E tests now emit OTel spans that integrate with the attestation pipeline.
+
+### Implementation
+
+**Files Created:**
+| File | Purpose |
+|------|---------|
+| `test/e2e/fixtures/otel-playwright.ts` | Playwright OTel setup module using shared `InvariantSpanProcessor` |
+| `test/e2e/fixtures/invariant-helper.ts` | Updated to emit OTel spans via `emitInvariantSpan()` |
+| `test/playwright.global-setup.ts` | Initializes OTel before tests, graceful shutdown after |
+
+**Key Changes:**
+1. **Module-level OTel initialization** — Each Playwright worker process initializes OTel via `setupPlaywrightOtel()` at module load time
+2. **Span persistence** — Uses shared `InvariantSpanProcessor` which persists to `/tmp/vitest-otel-data/summaries-playwright-{pid}.json`
+3. **Per-test span emission** — Each `invariant()` test call emits a span with `invariant.ruleReference`, `invariant.rule`, `invariant.tags` attributes
+4. **Worker isolation** — Each worker writes to unique PID-based files, merged by attestation reporter
+
+**Import Path Changes:**
+- Server/test code must import OTel from `@executable-specs/shared/index-server` (not barrel export)
+- This prevents browser bundle contamination from Node.js-only OTel modules
+
+### Results
+
+- **OTel spans emitted**: 60+ worker processes create OTel data during E2E runs
+- **Data persistence**: Each E2E test creates spans with rule references, tags, and pass/fail status
+- **Attestation integration**: Playwright data automatically merged with domain test data in reports
+- **No browser contamination**: OTel modules properly excluded from client bundle
+
+### Architecture
+
+```
+Playwright Test Worker
+  ↓
+invariant() wrapper calls emitInvariantSpan()
+  ↓
+Shared InvariantSpanProcessor aggregates
+  ↓
+Persists to /tmp/vitest-otel-data/summaries-playwright-{pid}.json
+  ↓
+Attestation Reporter merges all worker files
+  ↓
+Unified attestation report with E2E + domain test data
+```
