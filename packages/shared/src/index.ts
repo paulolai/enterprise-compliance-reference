@@ -9,6 +9,3 @@ export * from './modules/tracer';
 
 // Shared validation schemas (single source of truth)
 export * from './modules/validation';
-
-// OTel setup
-export { setupOtel, shutdownOtel, getInvariantProcessor } from './modules/otel-setup';

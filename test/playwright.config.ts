@@ -28,19 +28,31 @@ export default defineConfig({
 
   globalSetup: './playwright.global-setup.ts',
 
-  webServer: {
-    command: 'pnpm --filter @executable-specs/client run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-    retries: 2,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    env: {
-      MOCK_STRIPE: 'true',
-      ...(process.env.DEBUG_HONO ? { DEBUG_HONO: 'true', DEBUG_ROUTES: 'true' } : {}),
+  webServer: [
+    {
+      command: 'pnpm --filter @executable-specs/server run dev',
+      url: 'http://localhost:3000/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60 * 1000,
+      retries: 2,
+      stdout: 'pipe',
+      stderr: 'pipe',
+      env: {
+        MOCK_STRIPE: 'true',
+        PORT: '3000',
+        NODE_ENV: 'test',
+      },
     },
-  },
+    {
+      command: 'pnpm --filter @executable-specs/client run dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60 * 1000,
+      retries: 2,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+  ],
 
   projects: [
     {

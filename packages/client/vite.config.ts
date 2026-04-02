@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import devServer from '@hono/vite-dev-server'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
+
+const API_SERVER = process.env.API_SERVER_URL || 'http://localhost:3000'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,26 +14,22 @@ export default defineConfig({
       '@executable-specs/shared': path.resolve(__dirname, '../shared/src'),
       '@executable-specs/shared/fixtures': path.resolve(__dirname, '../shared/fixtures'),
       '@executable-specs/domain': path.resolve(__dirname, '../domain/src'),
-      // Server package aliases for dev server
-      '@executable-specs/server': path.resolve(__dirname, '../server/src'),
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'zod', 'zustand', 'hono'],
-    exclude: [
-      '@executable-specs/shared',
-      'fast-check',
-      'better-sqlite3',
-      'drizzle-orm',
-      'stripe',
-    ],
+    include: ['react', 'react-dom', 'react-router-dom', 'zod', 'zustand'],
+  },
+  server: {
+    proxy: {
+      '/api': { target: API_SERVER, changeOrigin: true },
+      '/health': { target: API_SERVER, changeOrigin: true },
+      '/readyz': { target: API_SERVER, changeOrigin: true },
+      '/livez': { target: API_SERVER, changeOrigin: true },
+      '/metrics': { target: API_SERVER, changeOrigin: true },
+    },
   },
   plugins: [
     react(),
     tailwindcss(),
-    devServer({
-      entry: '../server/src/server/index.ts',
-      exclude: [/^\/(?!api|health|readyz|livez).*/], // Only handle API and health routes
-    }),
   ],
 })
