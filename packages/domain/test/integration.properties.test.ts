@@ -3,7 +3,6 @@ import * as fc from 'fast-check';
 import { PricingEngine, ShippingMethod } from '../src';
 import { cartArb, userArb } from '@executable-specs/shared/fixtures';
 import { registerAllureMetadata } from '@executable-specs/shared/fixtures/allure-helpers';
-import { tracer } from './modules/tracer';
 
 describe('Integration: Multi-Rule Interactions', () => {
 
@@ -21,7 +20,6 @@ describe('Integration: Multi-Rule Interactions', () => {
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          tracer.log(expect.getState().currentTestName!, { items, user }, result);
 
           const expectedBulkDiscount = result.lineItems.reduce((sum, li) => {
             return sum + (li.quantity >= 3 ? Math.round(li.originalPrice * li.quantity * 0.15) : 0);
@@ -69,7 +67,6 @@ describe('Integration: Multi-Rule Interactions', () => {
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user, ShippingMethod.STANDARD);
-          tracer.log(expect.getState().currentTestName!, { items, user, method: ShippingMethod.STANDARD }, result);
 
           expect(result.shipment.isFreeShipping).toBe(result.finalTotal > 10000);
 
@@ -100,7 +97,6 @@ describe('Integration: Multi-Rule Interactions', () => {
           const originalSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
           const totalWeight = items.reduce((sum, item) => sum + (item.weightInKg * item.quantity), 0);
           const result = PricingEngine.calculate(items, user, method);
-          tracer.log(expect.getState().currentTestName!, { items, user, method }, result);
 
           if (method === ShippingMethod.EXPRESS) {
             expect(result.shipment.isFreeShipping).toBe(false);
@@ -146,7 +142,6 @@ describe('Integration: Multi-Rule Interactions', () => {
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          tracer.log(expect.getState().currentTestName!, { items, user }, result);
 
           expect(result.finalTotal).toBeLessThanOrEqual(result.originalTotal);
           const calculatedTotalDiscount = result.volumeDiscountTotal + result.vipDiscount;
@@ -213,14 +208,6 @@ describe('Integration: Multi-Rule Interactions', () => {
 
     for (const test of boundaryTests) {
       const result = PricingEngine.calculate(test.items, test.user, test.method);
-      
-      // Log boundary cases
-      tracer.log(expect.getState().currentTestName!, { 
-        scenario: test.name,
-        items: test.items, 
-        user: test.user, 
-        method: test.method 
-      }, result);
 
       console.log(`\nBoundary Test: ${test.name}`);
       console.log(`  Original Total: $${(result.originalTotal / 100).toFixed(2)}`);
@@ -249,7 +236,6 @@ describe('Integration: Multi-Rule Interactions', () => {
         userArb,
         (items, user) => {
           const result = PricingEngine.calculate(items, user);
-          tracer.log(expect.getState().currentTestName!, { items, user }, result);
 
           const calculatedOriginalTotal = result.lineItems.reduce(
             (sum, li) => sum + li.originalPrice * li.quantity,

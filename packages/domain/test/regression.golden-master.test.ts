@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PricingEngine, ShippingMethod } from '../src';
 import type { CartItem, User } from '../src';
-import { tracer } from './modules/tracer';
 
 /**
  * Golden Master Testing Pattern
@@ -316,7 +315,6 @@ describe('Regression: Golden Master Tests', () => {
   goldenMasterCases.forEach((testCase, index) => {
     it(`GM${String(index + 1).padStart(3, '0')}: ${testCase.name}`, () => {
       const result = PricingEngine.calculate(testCase.cart, testCase.user, testCase.method);
-      tracer.log(expect.getState().currentTestName!, { items: testCase.cart, user: testCase.user, method: testCase.method }, result);
 
       expect(result.originalTotal).toBe(testCase.expected.originalTotal);
       expect(result.volumeDiscountTotal).toBe(testCase.expected.volumeDiscountTotal);
@@ -351,7 +349,6 @@ describe('Regression: Golden Master Tests', () => {
       const user: User = { tenureYears: 3 };
 
       const result = PricingEngine.calculate(cart, user);
-      tracer.log(expect.getState().currentTestName!, { items: cart, user }, result);
 
       // All values should be integers
       expect(Number.isInteger(result.originalTotal)).toBe(true);
@@ -387,7 +384,6 @@ describe('Regression: Golden Master Tests', () => {
       const user: User = { tenureYears: 0 };
 
       const result = PricingEngine.calculate(cart, user);
-      tracer.log(expect.getState().currentTestName!, { items: cart, user }, result);
 
       expect(result.volumeDiscountTotal).toBe(4500); // 30K * 0.15
       expect(result.finalTotal).toBe(25500);
@@ -404,7 +400,6 @@ describe('Regression: Golden Master Tests', () => {
       const user: User = { tenureYears: 2 }; // Exactly at threshold (NOT eligible)
 
       const result = PricingEngine.calculate(cart, user);
-      tracer.log(expect.getState().currentTestName!, { items: cart, user }, result);
 
       expect(result.vipDiscount).toBe(0);
       expect(result.finalTotal).toBe(10000);
@@ -421,7 +416,6 @@ describe('Regression: Golden Master Tests', () => {
       const user: User = { tenureYears: 0 };
 
       const result = PricingEngine.calculate(cart, user, ShippingMethod.STANDARD);
-      tracer.log(expect.getState().currentTestName!, { items: cart, user, method: ShippingMethod.STANDARD }, result);
 
       expect(result.shipment.isFreeShipping).toBe(false); // Exactly $100 does NOT qualify
       expect(result.shipment.totalShipping).toBe(900);
