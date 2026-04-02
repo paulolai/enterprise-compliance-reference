@@ -168,6 +168,7 @@ We enforce quality through a dual-coverage strategy (See [**ADR 13: Dual-Coverag
 - **Metric:** Percentage of Rules in `pricing-strategy.md` verified by at least one test.
 - **Gate:** Visible in the Attestation Report.
 - **Goal:** Ensure no "dead requirements" exist (features specified but not tested).
+- **Scope:** Includes tests from `packages/domain/test/` (API/unit) and `test/e2e/` (GUI/E2E). Tests using `invariant()` (Playwright wrapper) are automatically detected via their `ruleReference` metadata.
 
 **Verification:**
 Run `pnpm run test:coverage` to generate both reports. The Attestation Report (`attestation-full.html`) displays a consolidated view.

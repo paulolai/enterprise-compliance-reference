@@ -211,9 +211,10 @@ CI runs **different tools** and **stricter checks** than local development:
 
 ### Common CI Issues
 
-**Issue 1: `coverage:domain` fails with "Found 0 test files"**
-- **Cause**: The `check-domain-coverage.ts` script searches for test files in the old `implementations/` directory
-- **Fix**: Ensure the script uses the correct path: `packages/domain/test/**/*.test.ts`
+**Issue 1: `coverage:domain` fails with "Found 0 test files" or uncovered rules**
+- **Cause**: The `check-domain-coverage.ts` script only scans `packages/domain/test/` by default. E2E tests in `test/e2e/` must be explicitly included.
+- **Fix**: Ensure the script includes both patterns: `packages/domain/test/**/*.test.ts` and `test/e2e/**/*.test.ts`
+- **Note**: Tests using the Playwright `invariant()` wrapper are detected via `ruleReference` metadata in their source code
 
 **Issue 2: `tsc --noEmit` fails with "Cannot find module" or ".ts extension" errors**
 - **Cause**: TypeScript imports with `.ts` extensions conflict with `allowImportingTsExtensions: true` setting

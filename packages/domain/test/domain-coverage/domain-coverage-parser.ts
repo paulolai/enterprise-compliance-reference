@@ -135,7 +135,7 @@ export class DomainCoverageParser {
 
       const lines = content.split('\n');
       for (const line of lines) {
-        const testMatch = line.match(/(?:it|test)\s*\(\s*['"`]([^'"`]+)['"`]/);
+        const testMatch = line.match(/(?:it|test|invariant)\s*\(\s*['"`]([^'"`]+)['"`]/);
         if (testMatch) {
           if (currentTest) tests.push(currentTest);
           currentTest = { name: testMatch[1], refs: [] };
