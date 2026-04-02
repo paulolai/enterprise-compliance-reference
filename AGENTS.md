@@ -68,7 +68,53 @@ pnpm run reports:allure:serve
 
 ---
 
+## Infrastructure Code Standards
+
+Infrastructure code (OTel setup, reporters, test fixtures, CI scripts, build tooling)
+follows the same Test-First lifecycle as business logic.
+
+**Rule:** No infrastructure module ships without a test that exercises it through its
+public API. Mocking internal dependencies is forbidden — test behavior, not implementation.
+
+**Mandatory sequence:**
+1. **Write the test** — Define what correct behavior looks like
+2. **Implement the infrastructure** — Write the minimum code to pass
+3. **Verify** — Test passes, no regressions
+
+**What to test:**
+- **Setup/initialization** — Does the module initialize without errors?
+- **Data flow** — Does data move through the pipeline correctly?
+- **Failure modes** — Does it fail loudly with clear messages?
+- **Integration** — Do components work together end-to-end?
+
+**Forbidden:**
+- Shipping infrastructure without tests
+- Mocking the component under test
+- "It's just config" excuses — config has behavior
+
+---
+
 ## Engineering Standards
+
+### 0. Subagent Dispatch (Performance)
+
+When implementing tests or code that does NOT require full conversation context,
+use subagents to avoid filling the context window.
+
+**Use subagents when:**
+- Writing independent test files (each test file is self-contained)
+- Fixing unrelated bugs in separate files
+- Generating boilerplate or scaffolding
+- Any task where the agent can work with just file paths and a clear brief
+
+**Don't use subagents when:**
+- The task requires understanding prior decisions in this conversation
+- Multiple changes depend on each other
+- You need to verify cross-cutting concerns
+
+**Pattern:** Dispatch one subagent per independent file. Give them the file path,
+the surrounding context they need, and the exact requirements. They return
+passing tests — you verify and integrate.
 
 ### 1. File Naming Convention
 Test files MUST follow: `domain.layer.type.test.ts`
