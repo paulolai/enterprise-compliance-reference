@@ -6,7 +6,10 @@ export default defineConfig({
   test: {
     // Allure requires this setup file for integration
     // Since package.json has "type": "module", we use the module string directly
-    setupFiles: ["allure-vitest/setup"],  // Critical requirement for Allure
+    setupFiles: [
+      "allure-vitest/setup",
+      './test/setup/otel-test-setup.ts',
+    ],  // Critical requirement for Allure
 
     // Dual reporter setup: Allure + Custom Attestation
     reporters: [

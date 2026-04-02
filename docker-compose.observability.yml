@@ -1,0 +1,66 @@
+# =============================================================================
+# SigNoz OpenTelemetry Observability Stack
+#
+# Usage:
+#   docker compose -f docker-compose.observability.yml up -d
+#   docker compose -f docker-compose.observability.yml down
+#
+# UI: http://localhost:3301
+# =============================================================================
+
+services:
+  otel-collector:
+    image: signoz/signoz-otel-collector:0.111.5
+    container_name: signoz-otel-collector
+    command:
+      - --config=/etc/otel-collector-config.yaml
+    volumes:
+      - ./docker/signoz/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1.2-alpine
+    container_name: signoz-clickhouse
+    volumes:
+      - signoz-clickhouse-data:/var/lib/clickhouse
+      - ./docker/signoz/clickhouse-config.xml:/etc/clickhouse-server/config.d/custom.xml
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  query-service:
+    image: signoz/query-service:0.57.0
+    container_name: signoz-query-service
+    environment:
+      ClickHouseUrl: tcp://clickhouse:9000
+    ports:
+      - "8080:8080"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    image: signoz/frontend:0.57.0
+    container_name: signoz-frontend
+    ports:
+      - "3301:3301"
+    depends_on:
+      - query-service
+    restart: unless-stopped
+
+volumes:
+  signoz-clickhouse-data:
+    driver: local

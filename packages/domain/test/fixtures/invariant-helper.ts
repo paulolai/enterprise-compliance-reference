@@ -1,24 +1,26 @@
 import * as fc from 'fast-check';
 import { expect } from 'vitest';
+import { trace, SpanStatusCode, type Tracer } from '@opentelemetry/api';
 import { PricingEngine, ShippingMethod } from '../../src';
 import type { CartItem, User, PricingResult } from '../../src';
 import { cartArb, userArb, shippingMethodArb } from '../../../shared/fixtures';
 import { registerAllureMetadata } from '../../../shared/fixtures/allure-helpers';
-import { tracer } from '../modules/tracer';
+
+const otelTracer: Tracer = trace.getTracer('executable-specs-domain');
 
 export interface InvariantMetadata {
   name?: string;
-  ruleReference: string; // e.g., "pricing-strategy.md §2"
+  ruleReference: string;
   rule: string;
-  tags: string[]; // Serenity-style tags: ['@pricing', '@vip', '@critical']
+  tags: string[];
   additionalInfo?: string;
 }
 
 export interface PreconditionMetadata {
   name?: string;
-  ruleReference: string; // e.g., "pricing-strategy.md §2 - Bulk Discounts"
-  rule: string; // e.g., "Critical boundary: quantity = 3 (exactly at bulk threshold)"
-  tags: string[]; // e.g., ['@precondition', '@pricing', '@boundary']
+  ruleReference: string;
+  rule: string;
+  tags: string[];
 }
 
 type AssertionCallback = (items: CartItem[], user: User, result: PricingResult) => void;
@@ -27,14 +29,12 @@ type ShippingAssertionCallback = (items: CartItem[], user: User, method: Shippin
 function deriveHierarchyFromTestPath(): { parentSuite: string, suite: string, feature: string } {
   const testPath = expect.getState().testPath;
   if (!testPath) return { parentSuite: 'API Verification', suite: 'Unknown', feature: 'Unknown' };
-  
+
   const fileName = testPath.split('/').pop() || '';
-  
-  // Domain tag (e.g., 'pricing' from 'pricing.properties.test.ts')
   const parts = fileName.split('.');
   let domain = 'General';
   if (parts.length > 0 && parts[0]) {
-    domain = parts[0].charAt(0).toUpperCase() + parts[0].slice(1); // Capitalize
+    domain = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
   }
 
   return {
@@ -44,65 +44,65 @@ function deriveHierarchyFromTestPath(): { parentSuite: string, suite: string, fe
   };
 }
 
-/**
- * Register invariant metadata with the tracer for attestation reports
- */
 function registerInvariant(metadata: InvariantMetadata) {
   const name = metadata.name || expect.getState().currentTestName!;
-  tracer.registerInvariant({ ...metadata, name });
+  const span = otelTracer.startSpan(`invariant.register:${name}`, {
+    attributes: {
+      'invariant.ruleReference': metadata.ruleReference,
+      'invariant.rule': metadata.rule,
+      'invariant.tags': metadata.tags,
+    },
+  });
+  span.setStatus({ code: SpanStatusCode.OK });
+  span.end();
 }
 
-/**
- * NAMING NOTE:
- * - verifyInvariant = API layer (property-based testing with fast-check)
- * - invariant = UI layer (Playwright wrapper for E2E tests)
- *
- * They serve the same purpose (wrapping tests with metadata) but for different
- * test layers. API uses 'verify' prefix to indicate mathematical verification.
- */
-
-/**
- * Helper to verify a pricing invariant.
- * Automatically handles:
- * - Property generation (Cart + User)
- * - PricingEngine execution
- * - Tracer logging with metadata
- * - Fast-check assertion
- *
- * @param metadata - Business rule documentation for attestation reports
- * @param assertion - The invariant test logic
- */
 export function verifyInvariant(
   metadata: InvariantMetadata,
   assertion: AssertionCallback
 ) {
   const name = metadata.name || expect.getState().currentTestName!;
   const allure = (globalThis as any).allure;
-  
-  // Auto-derive Hierarchy
+
   const hierarchy = deriveHierarchyFromTestPath();
   const combinedTags = metadata.tags || [];
+  const finalMetadata = { ...metadata, ...hierarchy, tags: combinedTags };
 
-  const finalMetadata = { 
-    ...metadata, 
-    ...hierarchy,
-    tags: combinedTags 
-  };
-
-  // Register metadata for attestation report
   registerInvariant({ ...finalMetadata, name });
   registerAllureMetadata(allure, finalMetadata);
 
   fc.assert(
     fc.property(cartArb, userArb, (items, user) => {
       const result = PricingEngine.calculate(items, user);
-      // Log every execution with invariant metadata
-      tracer.log(name, { items, user }, result);
+
+      const span = otelTracer.startSpan(name, {
+        attributes: {
+          'invariant.ruleReference': metadata.ruleReference,
+          'invariant.rule': metadata.rule,
+          'invariant.tags': metadata.tags,
+          'invariant.user.tenureYears': user.tenureYears,
+          'invariant.item.quantities': items.map(i => i.quantity),
+          'invariant.item.count': items.length,
+          'invariant.originalTotal': result.originalTotal,
+          'invariant.finalTotal': result.finalTotal,
+          'invariant.totalDiscount': result.totalDiscount,
+          'invariant.isCapped': result.isCapped,
+          'invariant.shipment.isFreeShipping': result.shipment.isFreeShipping,
+          'invariant.shipment.totalShipping': result.shipment.totalShipping,
+          'invariant.shippingMethod': result.shipment.method,
+        },
+      });
 
       try {
         assertion(items, user, result);
+        span.setStatus({ code: SpanStatusCode.OK });
       } catch (error) {
-        // Enhance error with business context
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        span.recordException(error instanceof Error ? error : new Error(String(error)));
+
         const context = explainBusinessContext(items, user, result);
         throw new Error(
           `Invariant Violation: ${name}\n` +
@@ -112,54 +112,62 @@ export function verifyInvariant(
           `Counterexample:\n${JSON.stringify({ items, user, result }, null, 2)}\n\n` +
           `Original Error: ${error}`
         );
+      } finally {
+        span.end();
       }
 
-      return true; // Property passed if assertion didn't throw
+      return true;
     }),
     { verbose: true }
   );
 }
 
-/**
- * Helper to verify a shipping invariant.
- * Automatically handles:
- * - Property generation (Cart + User + ShippingMethod)
- * - PricingEngine execution
- * - Tracer logging with metadata
- * - Fast-check assertion
- *
- * @param metadata - Business rule documentation for attestation reports
- * @param assertion - The invariant test logic
- */
 export function verifyShippingInvariant(
   metadata: InvariantMetadata,
   assertion: ShippingAssertionCallback
 ) {
   const name = metadata.name || expect.getState().currentTestName!;
   const allure = (globalThis as any).allure;
-  
-  // Auto-derive Hierarchy
+
   const hierarchy = deriveHierarchyFromTestPath();
   const combinedTags = metadata.tags || [];
+  const finalMetadata = { ...metadata, ...hierarchy, tags: combinedTags };
 
-  const finalMetadata = { 
-    ...metadata, 
-    ...hierarchy,
-    tags: combinedTags 
-  };
-
-  // Register metadata for attestation report
   registerInvariant({ ...finalMetadata, name });
   registerAllureMetadata(allure, finalMetadata);
 
   fc.assert(
     fc.property(cartArb, userArb, shippingMethodArb, (items, user, method) => {
       const result = PricingEngine.calculate(items, user, method);
-      tracer.log(name, { items, user, method }, result);
+
+      const span = otelTracer.startSpan(name, {
+        attributes: {
+          'invariant.ruleReference': metadata.ruleReference,
+          'invariant.rule': metadata.rule,
+          'invariant.tags': metadata.tags,
+          'invariant.user.tenureYears': user.tenureYears,
+          'invariant.item.quantities': items.map(i => i.quantity),
+          'invariant.item.count': items.length,
+          'invariant.originalTotal': result.originalTotal,
+          'invariant.finalTotal': result.finalTotal,
+          'invariant.totalDiscount': result.totalDiscount,
+          'invariant.isCapped': result.isCapped,
+          'invariant.shipment.isFreeShipping': result.shipment.isFreeShipping,
+          'invariant.shipment.totalShipping': result.shipment.totalShipping,
+          'invariant.shippingMethod': method,
+        },
+      });
 
       try {
         assertion(items, user, method, result);
+        span.setStatus({ code: SpanStatusCode.OK });
       } catch (error) {
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        span.recordException(error instanceof Error ? error : new Error(String(error)));
+
         const context = explainBusinessContext(items, user, result, method);
         throw new Error(
           `Invariant Violation: ${name}\n` +
@@ -169,6 +177,8 @@ export function verifyShippingInvariant(
           `Counterexample:\n${JSON.stringify({ items, user, method, result }, null, 2)}\n\n` +
           `Original Error: ${error}`
         );
+      } finally {
+        span.end();
       }
 
       return true;
@@ -177,15 +187,6 @@ export function verifyShippingInvariant(
   );
 }
 
-/**
- * Register precondition metadata for example tests
- *
- * This helper registers structured metadata for example-based tests (like preconditions),
- * making test intent visible in attestation reports. Unlike verifyInvariant() which is
- * used for property-based tests, this is used for specific edge case tests.
- *
- * @param metadata - Business rule documentation for attestation reports
- */
 export function registerPrecondition(metadata: PreconditionMetadata) {
   const name = metadata.name || expect.getState().currentTestName;
   if (!name) {
@@ -193,28 +194,23 @@ export function registerPrecondition(metadata: PreconditionMetadata) {
   }
   const allure = (globalThis as any).allure;
 
-  // Register Allure metadata
   registerAllureMetadata(allure, {
     ruleReference: metadata.ruleReference,
     rule: metadata.rule,
     tags: metadata.tags
   });
 
-  tracer.registerInvariant({
-    name,
-    ruleReference: metadata.ruleReference,
-    rule: metadata.rule,
-    tags: metadata.tags
+  const span = otelTracer.startSpan(`precondition:${name}`, {
+    attributes: {
+      'invariant.ruleReference': metadata.ruleReference,
+      'invariant.rule': metadata.rule,
+      'invariant.tags': metadata.tags,
+    },
   });
+  span.setStatus({ code: SpanStatusCode.OK });
+  span.end();
 }
 
-/**
- * Helper to verify a specific example (non-PBT).
- * Lightweight wrapper that handles metadata registration, error context, and optional auto-logging.
- *
- * @param metadata - Business rule documentation
- * @param testFn - The test logic. If it returns an object with {input, output}, it will be logged automatically.
- */
 export async function verifyExample(
   metadata: PreconditionMetadata,
   testFn: () => void | Promise<void> | { input: any, output: any } | Promise<{ input: any, output: any }>
@@ -224,10 +220,8 @@ export async function verifyExample(
     throw new Error('verifyExample must be called within a test or provide explicit name in metadata.name');
   }
 
-  // Auto-derive Hierarchy
   const hierarchy = deriveHierarchyFromTestPath();
   const combinedTags = metadata.tags || [];
-
   const finalMetadata = {
     ruleReference: metadata.ruleReference,
     rule: metadata.rule,
@@ -235,34 +229,46 @@ export async function verifyExample(
     ...hierarchy
   };
 
-  // Register Metadata
   const allure = (globalThis as any).allure;
   registerAllureMetadata(allure, finalMetadata);
-  tracer.registerInvariant({ ...finalMetadata, name });
 
-  // Execute Test with error context enhancement
+  const span = otelTracer.startSpan(name, {
+    attributes: {
+      'invariant.ruleReference': metadata.ruleReference,
+      'invariant.rule': metadata.rule,
+      'invariant.tags': metadata.tags,
+    },
+  });
+
   try {
     const result = await testFn();
 
-    // Auto-Log if the test returned structured data
     if (isTraceableResult(result)) {
-      tracer.log(name, result.input, result.output);
+      span.setAttributes({
+        'invariant.input': JSON.stringify(result.input),
+        'invariant.output': JSON.stringify(result.output),
+      });
     }
+
+    span.setStatus({ code: SpanStatusCode.OK });
   } catch (error) {
-    // Enhance error with business context
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    span.recordException(error instanceof Error ? error : new Error(String(error)));
+
     throw new Error(
       `Test Failed: ${name}\n` +
       `Business Rule: ${metadata.ruleReference} - ${metadata.rule}\n` +
       `Tags: ${metadata.tags.join(', ')}\n` +
       `Original Error: ${error}`
     );
+  } finally {
+    span.end();
   }
 }
 
-/**
- * Type guard to check if a value has the exact {input, output} shape
- * This prevents false positives on objects with extra properties
- */
 function isTraceableResult(result: unknown): result is { input: any, output: any } {
   return result !== null
     && typeof result === 'object'
@@ -272,19 +278,17 @@ function isTraceableResult(result: unknown): result is { input: any, output: any
     && Object.keys(result).length === 2;
 }
 
-/**
- * Helper to log precondition test data for attestation reports
- *
- * This is used by example-based precondition tests to log input/output pairs
- * for attestation reports. Unlike verifyInvariant() which handles PBT logging,
- * this is for specific edge cases that need explicit documentation.
- *
- * @param input - Test input data (items, user, method, etc.)
- * @param output - Test result (PricingResult)
- */
 export function logPrecondition(input: any, output: any) {
   const name = expect.getState().currentTestName!;
-  tracer.log(name, input, output);
+  const span = otelTracer.startSpan(`precondition.log:${name}`, {
+    attributes: {
+      'invariant.ruleReference': 'precondition',
+      'invariant.input': JSON.stringify(input),
+      'invariant.output': JSON.stringify(output),
+    },
+  });
+  span.setStatus({ code: SpanStatusCode.OK });
+  span.end();
 }
 
 function explainBusinessContext(

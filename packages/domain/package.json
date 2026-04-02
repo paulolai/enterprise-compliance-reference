@@ -18,6 +18,8 @@
     "coverage:domain": "tsx scripts/check-domain-coverage.ts"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/sdk-trace-base": "^1.30.0",
     "zod": "catalog:"
   },
   "devDependencies": {

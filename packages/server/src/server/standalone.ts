@@ -15,6 +15,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import {
   pricingRouter,
   authRouter,
@@ -30,7 +31,13 @@ import { metrics } from '../lib/metrics';
 import { setupGracefulShutdown } from './shutdown';
 import { logger } from '../lib/logger';
 import { env, getEnvSummary } from '../lib/env';
+import { startOtel } from '../lib/otel';
 import { seedProducts } from '../db/seed';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Initialize OpenTelemetry (no-op if OTEL_EXPORTER_OTLP_ENDPOINT not set)
+startOtel();
 
 // Ensure products are seeded
 await seedProducts();

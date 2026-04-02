@@ -8,7 +8,10 @@ export default defineConfig({
       ['allure-vitest/reporter', { resultsDir: '../../allure-results/api' }]
     ],
     globals: true,
-    setupFiles: ['allure-vitest/setup'],
+    setupFiles: [
+      'allure-vitest/setup',
+      './test/setup/otel-test-setup.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],

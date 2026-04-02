@@ -12,11 +12,19 @@
   },
   "dependencies": {
     "@executable-specs/domain": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.72.0",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.214.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.214.0",
+    "@opentelemetry/sdk-metrics": "^2.6.1",
+    "@opentelemetry/sdk-node": "^0.214.0",
+    "@opentelemetry/sdk-trace-base": "^2.6.1",
     "fast-check": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^22",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.1.2"
   }
 }

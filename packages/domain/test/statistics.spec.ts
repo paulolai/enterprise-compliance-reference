@@ -1,9 +1,34 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { tracer } from './modules/tracer';
+import { getInvariantProcessor } from '@executable-specs/shared';
 import { PricingEngine, ShippingMethod } from '../src';
 import type { CartItem, User } from '../src';
 import { cartArb, userArb, shippingMethodArb } from '@executable-specs/shared/fixtures';
 import { verifyInvariant, verifyShippingInvariant } from './fixtures/invariant-helper';
+
+interface TagCoverage {
+  tag: string;
+  invariants: string[];
+  totalRuns: number;
+  passed: boolean;
+}
+
+function computeTagCoverage(summaries: ReturnType<ReturnType<typeof getInvariantProcessor>['getSummaries']>): TagCoverage[] {
+  const tagsMap = new Map<string, TagCoverage>();
+  for (const summary of summaries) {
+    for (const tag of summary.tags) {
+      if (!tagsMap.has(tag)) {
+        tagsMap.set(tag, { tag, invariants: [], totalRuns: 0, passed: true });
+      }
+      const coverage = tagsMap.get(tag)!;
+      coverage.invariants.push(summary.name);
+      coverage.totalRuns += summary.totalRuns;
+      if (!summary.passed) {
+        coverage.passed = false;
+      }
+    }
+  }
+  return Array.from(tagsMap.values());
+}
 
 describe('Statistics: Coverage Analysis', () => {
 
@@ -79,8 +104,9 @@ describe('Statistics: Coverage Analysis', () => {
     });
 
     // Generate and display statistical report
-    const summaries = tracer.getInvariantSummaries();
-    const tagCoverage = tracer.getTagCoverage();
+    const processor = getInvariantProcessor();
+    const summaries = processor ? processor.getSummaries() : [];
+    const tagCoverage = processor ? computeTagCoverage(summaries) : [];
 
     console.log('\n=== STATISTICAL COVERAGE REPORT ===\n');
 
@@ -222,9 +248,10 @@ describe('Statistics: Coverage Analysis', () => {
   /**
    * Verify that the tracer is actually capturing execution data
    */
-  it('Statistics: Tracer is recording execution data correctly', () => {
-    const summaries = tracer.getInvariantSummaries();
-    const tagCoverage = tracer.getTagCoverage();
+  it('Statistics: OTel is recording execution data correctly', () => {
+    const processor = getInvariantProcessor();
+    const summaries = processor ? processor.getSummaries() : [];
+    const tagCoverage = processor ? computeTagCoverage(summaries) : [];
 
     console.log('\n=== TRACER VALIDATION ===\n');
     console.log(`Registered Invariants: ${summaries.length}`);

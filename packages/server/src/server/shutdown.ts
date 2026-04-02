@@ -1,6 +1,7 @@
 import { Server } from 'node:http';
 import { logger } from '../lib/logger';
 import { close as closeDb } from '../db';
+import { shutdownOtel } from '../lib/otel';
 
 /**
  * Setup graceful shutdown handlers for the server.
@@ -31,6 +32,10 @@ export const setupGracefulShutdown = (server: Server) => {
 
         // 3. Flush logs/metrics (if async)
         // ... any other cleanup ...
+
+        // 4. Shutdown OpenTelemetry
+        await shutdownOtel();
+        logger.info('OpenTelemetry shutdown complete');
 
         logger.info('Graceful shutdown complete');
         process.exit(0);

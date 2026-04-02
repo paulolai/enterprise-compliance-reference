@@ -3,43 +3,91 @@ import type { SerializedError } from '@vitest/utils';
 import type { RunnerTestSuite, RunnerTask } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
-import { tracer } from '../modules/tracer';
+import { getInvariantProcessor } from '@executable-specs/shared';
+import { InMemorySpanExporter } from '@opentelemetry/sdk-trace-base';
 
-// Type alias for the old-style File type used in the implementation
 interface File {
   filepath: string;
   tasks: RunnerTask[];
 }
 
-// Vitest and TestModule are not directly exported in v4, use any
 interface TestModule {
   moduleId: string;
 }
 
-// Helper type for accessing result state safely
 type TaskResultState = 'passed' | 'failed' | 'skipped' | 'pending';
 
-// Helper to safely get task result state
 function getTaskState(task: RunnerTask): TaskResultState | undefined {
-  const result = (task as any).result;
-  return result?.state as TaskResultState | undefined;
+  return (task as any).result?.state as TaskResultState | undefined;
 }
 
-// Helper to safely get task result duration
 function getTaskDuration(task: RunnerTask): number | undefined {
-  const result = (task as any).result;
-  return result?.duration as number | undefined;
+  return (task as any).result?.duration as number | undefined;
 }
 
-// Helper to get suite with parent property
 function getTaskParent(task: RunnerTask): RunnerTask | null | undefined {
   return (task as any).parent;
 }
 
-// Helper to get task type as string
 function getTaskType(task: RunnerTask): string {
   return (task as any).type as string;
+}
+
+// Read OTel data from persisted files
+function readPersistedOtelData(): { metadata: Map<string, { ruleReference: string; rule: string; tags: string[] }>; summaries: any[] } {
+  const runDir = path.join(os.tmpdir(), 'vitest-otel-data');
+  const metadata = new Map<string, { ruleReference: string; rule: string; tags: string[] }>();
+  const summaries: any[] = [];
+
+  try {
+    const metadataPath = path.join(runDir, 'metadata.json');
+    if (fs.existsSync(metadataPath)) {
+      const entries = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      for (const entry of entries) {
+        metadata.set(entry.name, {
+          ruleReference: entry.ruleReference,
+          rule: entry.rule,
+          tags: entry.tags
+        });
+      }
+    }
+  } catch (e) {
+    // Ignore
+  }
+
+  try {
+    const summariesPath = path.join(runDir, 'summaries.json');
+    if (fs.existsSync(summariesPath)) {
+      summaries.push(...JSON.parse(fs.readFileSync(summariesPath, 'utf-8')));
+    }
+  } catch (e) {
+    // Ignore
+  }
+
+  return { metadata, summaries };
+}
+
+// Helper to get OTel spans for a test name
+function getSpansForTest(testName: string): Array<{ input: unknown; output: unknown }> {
+  const { summaries } = readPersistedOtelData();
+  const summary = summaries.find(s => s.name === testName);
+  if (!summary) return [];
+
+  return Array.from({ length: summary.totalRuns }, () => ({ input: {}, output: {} }));
+}
+
+// Helper to get metadata for a test name
+function getMetadataForTest(testName: string): { ruleReference: string; rule: string; tags: string[] } | undefined {
+  const { metadata } = readPersistedOtelData();
+  return metadata.get(testName);
+}
+
+// Helper to get all metadata
+function getAllMetadata(): Map<string, { ruleReference: string; rule: string; tags: string[] }> {
+  const { metadata } = readPersistedOtelData();
+  return metadata;
 }
 
 export default class AttestationReporter implements Reporter {
@@ -48,10 +96,6 @@ export default class AttestationReporter implements Reporter {
 
   onInit(_vitest: unknown) {
     this.startTime = Date.now();
-    const currentRunFile = '/tmp/vitest-current-run-id.txt';
-    if (!fs.existsSync(currentRunFile)) {
-      tracer.clear();
-    }
   }
 
   onTestModuleCollected(module: unknown) {
@@ -59,7 +103,6 @@ export default class AttestationReporter implements Reporter {
   }
 
   onTestRunEnd(_modules: ReadonlyArray<unknown>, _unhandledErrors: readonly SerializedError[], _reason: TestRunEndReason) {
-    // Convert new TestModule[] to old File[] format using the collected modules
     const files: File[] = this.testModules.map(m => ({
       filepath: m.moduleId,
       tasks: this.flattenTasks(m)
@@ -69,13 +112,11 @@ export default class AttestationReporter implements Reporter {
     const duration = ((endTime - this.startTime) / 1000).toFixed(2);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
-    console.log(`[Attestation] Run directory: ${tracer.getRunDir()}`);
-    tracer.loadMetadata();
-    console.log(`[Attestation] Loaded ${tracer.getInvariantMetadata().size} invariants from metadata`);
-
-    const currentRunFile = '/tmp/vitest-current-run-id.txt';
-    if (fs.existsSync(currentRunFile)) {
-      fs.unlinkSync(currentRunFile);
+    const { summaries, metadata } = readPersistedOtelData();
+    if (summaries.length > 0 || metadata.size > 0) {
+      console.log(`[Attestation] ${summaries.length} invariants from OTel spans`);
+    } else {
+      console.warn('[Attestation] No OTel data found — report will have no invariant data');
     }
 
     const reportsRoot = process.env.ATTESTATION_REPORT_DIR
@@ -102,7 +143,6 @@ export default class AttestationReporter implements Reporter {
     console.log(`  - Full:  attestation-full.html`);
   }
 
-  // Helper to flatten new Task structure to old File.tasks array
   private flattenTasks(module: TestModule): RunnerTask[] {
     const tasks: RunnerTask[] = [];
     const traverse = (task: RunnerTask) => {
@@ -290,15 +330,17 @@ export default class AttestationReporter implements Reporter {
     const ruleMap = new Map<string, { desc: string, tests: Array<{name: string, fullName: string, status: string}> }>();
     const noRuleTests: Array<{name: string, fullName: string, status: string}> = [];
 
+    const allMetadata = getAllMetadata();
+
     files.forEach(file => {
       const traverse = (task: RunnerTask) => {
         const taskType = getTaskType(task);
         if (taskType === 'test') {
           const testName = getFullTestName(task);
           const simpleName = task.name.replace(/^Precondition: /, '');
-          let metadata = tracer.getInvariantMetadata().get(testName) || tracer.getInvariantMetadata().get(task.name);
+          let metadata = getMetadataForTest(testName) || getMetadataForTest(task.name);
           if (!metadata) {
-             for (const [invName, meta] of tracer.getInvariantMetadata()) {
+             for (const [invName, meta] of allMetadata) {
                 if (testName.includes(invName)) { metadata = meta; break; }
              }
           }
@@ -375,8 +417,8 @@ export default class AttestationReporter implements Reporter {
                  const testName = getFullTestName(subTask);
                  const displayName = subTask.name.replace(/^Precondition: /, '');
                  const testId = this.sanitizeForId(testName);
-                 let metadata = tracer.getInvariantMetadata().get(testName) || tracer.getInvariantMetadata().get(subTask.name);
-                 if (!metadata) { for (const [invName, meta] of tracer.getInvariantMetadata()) { if (testName.includes(invName)) { metadata = meta; break; } } }
+                 let metadata = getMetadataForTest(testName) || getMetadataForTest(subTask.name);
+                 if (!metadata) { for (const [invName, meta] of getAllMetadata()) { if (testName.includes(invName)) { metadata = meta; break; } } }
                  const subTaskState = getTaskState(subTask);
                  const statusClass = subTaskState === 'passed' ? 'status-pass' : 'status-fail';
 
@@ -387,10 +429,9 @@ export default class AttestationReporter implements Reporter {
                  if (metadata) detailsContent += `<div class="business-rule-box"><div style="font-weight: 600; color: #24292e;">${metadata.ruleReference}</div><div style="color: #586069;">${metadata.rule}</div></div>`;
 
                  if (includeTraces) {
-                    let interactions = tracer.get(testName);
-                    if (interactions.length === 0 && metadata?.name) interactions = tracer.get(metadata.name);
-                    interactions.forEach((interaction, idx) => {
-                        detailsContent += `<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;"><div style="font-size: 0.8em; color: #999; margin-bottom: 5px;">Trace #${idx + 1}</div><div class="io-block"><div class="io-section"><div class="io-label">Input</div><pre>${this.escapeHtml(JSON.stringify(interaction.input, null, 2))}</pre></div><div class="io-section"><div class="io-label">Output</div><pre>${this.escapeHtml(JSON.stringify(interaction.output, null, 2))}</pre></div></div></div>`;
+                    const spans = getSpansForTest(testName);
+                    spans.forEach((span, idx) => {
+                        detailsContent += `<div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;"><div style="font-size: 0.8em; color: #999; margin-bottom: 5px;">Trace #${idx + 1}</div><div class="io-block"><div class="io-section"><div class="io-label">Input</div><pre>${this.escapeHtml(JSON.stringify(span.input, null, 2))}</pre></div><div class="io-section"><div class="io-label">Output</div><pre>${this.escapeHtml(JSON.stringify(span.output, null, 2))}</pre></div></div></div>`;
                     });
                  }
 
