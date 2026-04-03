@@ -36,6 +36,7 @@ The Markdown Strategy is the absolute Source of Truth. The code and tests exist 
 **Domain:** E-commerce / Pricing Engine Testing
 **Stack:** TypeScript, Vitest, Playwright, Hono, React
 **Package Manager:** `pnpm`
+**Python Tools:** `uv` (for Python-based tooling like podman-compose)
 
 **Essential Commands:**
 ```bash
